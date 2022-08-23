@@ -4,12 +4,22 @@
 
 module MorbidSimulations where
 
-import Morbid (GuessParams (GuessParams), LockParams (LockParams), amount, guessWord, registeredKnownCurrencies,
-             secretWord)
-import Ledger.Ada qualified as Ada
-import Playground.Types (ContractCall (AddBlocks), Simulation (Simulation), SimulatorAction, simulationActions,
-                         simulationId, simulationName, simulationWallets)
-import SimulationUtils (callEndpoint, simulatorWallet)
+import Ledger.Ada            (lovelaceValueOf)
+import Ledger.Value          (Value)
+
+import Morbid                (registeredKnownCurrencies)
+
+import Playground.Types      (ContractCall (AddBlocks))
+import Playground.Types      (Simulation (Simulation))
+import Playground.Types      (SimulatorAction)
+import Playground.Types      (simulationActions)
+import Playground.Types      (simulationId)
+import Playground.Types      (simulationName)
+import Playground.Types      (simulationWallets)
+
+import SimulationUtils       (callEndpoint)
+import SimulationUtils       (simulatorWallet)
+
 import Wallet.Emulator.Types (WalletNumber (..))
 
 simulations :: [Simulation]
@@ -22,11 +32,13 @@ simulations = [basicMorbid, badGuess]
         Simulation
             { simulationName = "Basic Morbid"
             , simulationId = 1
-            , simulationWallets = simulatorWallet registeredKnownCurrencies 100_000_000 <$> [wallet1, wallet2]
+            , simulationWallets = simulatorWallet registeredKnownCurrencies 100_000_000 <$> [wallet1, wallet2, wallet3]
             , simulationActions =
-                  [ lock wallet1 "Plutus" 50_000_000
-                  , AddBlocks 1
-                  , guess wallet2 "Plutus"
+                  [ chestFunds wallet2
+                  , AddBlocks 20
+                  , unlockChest wallet1 (lovelaceValueOf 40_000_000)
+                  , AddBlocks 40
+                  , unlockChest wallet1 (lovelaceValueOf 40_000_000)
                   , AddBlocks 1
                   ]
             }
@@ -36,21 +48,17 @@ simulations = [basicMorbid, badGuess]
             , simulationId = 2
             , simulationWallets = simulatorWallet registeredKnownCurrencies 100_000_000 <$> [wallet1, wallet2, wallet3]
             , simulationActions =
-                  [ lock wallet1 "Plutus" 50_000_000
-                  , AddBlocks 1
-                  , guess wallet2 "Marlowe"
-                  , AddBlocks 1
-                  , guess wallet3 "Plutus"
+                  [ chestFunds wallet2
+                  , AddBlocks 20
+                  , unlockChest wallet1 (lovelaceValueOf 40_000_000)
+                  , AddBlocks 40
+                  , unlockChest wallet1 (lovelaceValueOf 40_000_000)
                   , AddBlocks 1
                   ]
             }
 
-lock :: WalletNumber -> String -> Integer -> SimulatorAction
-lock caller secretWord balance =
-    callEndpoint
-        caller
-        "lock"
-        LockParams {secretWord, amount = Ada.lovelaceValueOf balance}
+chestFunds :: WalletNumber -> SimulatorAction
+chestFunds caller = callEndpoint caller "Create Chest" ()
 
-guess :: WalletNumber -> String -> SimulatorAction
-guess caller guessWord = callEndpoint caller "guess" (GuessParams {guessWord})
+unlockChest :: WalletNumber -> Value -> SimulatorAction
+unlockChest caller = callEndpoint caller "Unlock Chest"

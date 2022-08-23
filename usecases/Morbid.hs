@@ -1,185 +1,229 @@
-{-# LANGUAGE DataKinds                  #-}
-{-# LANGUAGE DeriveAnyClass             #-}
-{-# LANGUAGE DeriveGeneric              #-}
-{-# LANGUAGE DerivingStrategies         #-}
-{-# LANGUAGE FlexibleContexts           #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE MultiParamTypeClasses      #-}
-{-# LANGUAGE NamedFieldPuns             #-}
-{-# LANGUAGE OverloadedStrings          #-}
-{-# LANGUAGE ScopedTypeVariables        #-}
-{-# LANGUAGE TemplateHaskell            #-}
-{-# LANGUAGE TupleSections              #-}
-{-# LANGUAGE TypeApplications           #-}
-{-# LANGUAGE TypeFamilies               #-}
-{-# LANGUAGE TypeOperators              #-}
-{-# OPTIONS_GHC -fno-ignore-interface-pragmas #-}
+{-# LANGUAGE DataKinds             #-}
+{-# LANGUAGE DeriveGeneric         #-}
+{-# LANGUAGE FlexibleContexts      #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE NamedFieldPuns        #-}
+{-# LANGUAGE NoImplicitPrelude     #-}
+{-# LANGUAGE NumericUnderscores    #-}
+{-# LANGUAGE OverloadedStrings     #-}
+{-# LANGUAGE ScopedTypeVariables   #-}
+{-# LANGUAGE TemplateHaskell       #-}
+{-# LANGUAGE TypeApplications      #-}
+{-# LANGUAGE TypeFamilies          #-}
+{-# LANGUAGE TypeOperators         #-}
 
 module Morbid where
 
--- TRIM TO HERE
--- A game with two players. Player 1 thinks of a secret word
--- and uses its hash, and the game validator script, to lock
--- some funds (the prize) in a pay-to-script transaction output.
--- Player 2 guesses the word by attempting to spend the transaction
--- output. If the guess is correct, the validator script releases the funds.
--- If it isn't, the funds stay locked.
-import Control.Monad (void)
-import Data.ByteString.Char8 qualified as C
-import Data.Map (Map)
-import Data.Map qualified as Map
-import Data.Maybe (catMaybes)
-import Ledger (Address, Datum (Datum), ScriptContext, Validator, Value)
-import Ledger qualified
-import Ledger.Ada qualified as Ada
-import Ledger.Constraints qualified as Constraints
-import Ledger.Tx (ChainIndexTxOut (..))
-import Ledger.Typed.Scripts qualified as Scripts
-import Playground.Contract
-import Plutus.Contract
-import PlutusTx qualified
-import PlutusTx.Prelude hiding (pure, (<$>))
-import Prelude qualified as Haskell
+{- DAVY JONES' LOCKER
+A dead-man's switch contract where you can Create Chest and
+the chest can only be unlocked after 30 days of not being
+postponed by the creator. You can also Add Treasure to the
+chest, and of course Delay Unlock by 30 days. Anyone can
+redeem the ADA as long as the chest is unlockedable.
+-}
+import           Control.Lens            (view)
+import           Control.Monad           (void, when)
+
+import           Data.Default            (Default (def))
+import qualified Data.Map                 as Map
+import qualified Data.Text                as T
+
+import           Ledger                  (Address, Validator)
+import           Ledger                  (PaymentPubKeyHash (unPaymentPubKeyHash))
+import           Ledger                  (POSIXTime, POSIXTimeRange)
+import qualified Ledger.Ada               as Ada
+import           Ledger.Constraints      (TxConstraints)
+import           Ledger.Constraints      (mustBeSignedBy, mustPayToTheScript, mustValidateIn)
+import qualified Ledger.Constraints       as Constraints
+import           Ledger.Contexts         (ScriptContext (..), TxInfo (..))
+import qualified Ledger.Contexts          as Validation
+import qualified Ledger.Interval          as Interval
+import qualified Ledger.TimeSlot          as TimeSlot
+import qualified Ledger.Tx                as Tx
+import qualified Ledger.Typed.Scripts     as Scripts
+import           Ledger.Value            (Value)
+import qualified Ledger.Value             as Value
+
+import           Playground.Contract
+import           Plutus.Contract
+import           Plutus.Contract.Test
+import qualified Plutus.Contract.Typed.Tx as Typed
+import qualified PlutusTx
+import           PlutusTx.Prelude         hiding (Semigroup (..), fold)
+import           Prelude                  as Haskell (Semigroup (..), show)
 
 ------------------------------------------------------------
 
-newtype HashedString = HashedString BuiltinByteString deriving newtype (PlutusTx.ToData, PlutusTx.FromData, PlutusTx.UnsafeFromData)
-
-PlutusTx.makeLift ''HashedString
-
-newtype ClearString = ClearString BuiltinByteString deriving newtype (PlutusTx.ToData, PlutusTx.FromData, PlutusTx.UnsafeFromData)
-
-PlutusTx.makeLift ''ClearString
+-- | Parameter of endpoints
+-- type CreateChest = Value
+-- type AddTreasure = Value
 
 type MorbidSchema =
-        Endpoint "lock" LockParams
-        .\/ Endpoint "guess" GuessParams
+        Endpoint "Create Chest" ()
+        .\/ Endpoint "Unlock Chest" Value
+
+-- | Tranche of a vesting scheme.
+data MorbidTranche = MorbidTranche {
+    morbidTrancheDate   :: POSIXTime,
+    morbidTrancheAmount :: Value
+    } deriving Generic
+
+PlutusTx.makeLift ''MorbidTranche
+
+-- | A vesting scheme consisting of two tranches. Each tranche defines a date
+--   (POSIX time) after which an additional amount can be spent.
+data MorbidParams = MorbidParams {
+    morbidTranche1 :: MorbidTranche,
+    morbidTranche2 :: MorbidTranche,
+    morbidOwner    :: PaymentPubKeyHash
+    } deriving Generic
+
+PlutusTx.makeLift ''MorbidParams
+
+{-# INLINABLE totalAmount #-}
+-- | The total amount vested
+totalAmount :: MorbidParams -> Value
+totalAmount MorbidParams{morbidTranche1,morbidTranche2} =
+    morbidTrancheAmount morbidTranche1 + morbidTrancheAmount morbidTranche2
+
+{-# INLINABLE availableFrom #-}
+-- | The amount guaranteed to be available from a given tranche in a given time range.
+availableFrom :: MorbidTranche -> POSIXTimeRange -> Value
+availableFrom (MorbidTranche d v) range =
+    -- The valid range is an open-ended range starting from the tranche vesting date
+    let validRange = Interval.from d
+    -- If the valid range completely contains the argument range (meaning in particular
+    -- that the start time of the argument range is after the tranche vesting date), then
+    -- the money in the tranche is available, otherwise nothing is available.
+    in if validRange `Interval.contains` range then v else zero
+
+availableAt :: MorbidParams -> POSIXTime -> Value
+availableAt MorbidParams{morbidTranche1, morbidTranche2} sl =
+    let f MorbidTranche{morbidTrancheDate, morbidTrancheAmount} =
+            if sl >= morbidTrancheDate then morbidTrancheAmount else mempty
+    in foldMap f [morbidTranche1, morbidTranche2]
+
+{-# INLINABLE remainingFrom #-}
+-- | The amount that has not been released from this tranche yet
+remainingFrom :: MorbidTranche -> POSIXTimeRange -> Value
+remainingFrom t@MorbidTranche{morbidTrancheAmount} range =
+    morbidTrancheAmount - availableFrom t range
+
+{-# INLINABLE validate #-}
+validate :: MorbidParams -> () -> () -> ScriptContext -> Bool
+validate MorbidParams{morbidTranche1, morbidTranche2, morbidOwner} () () ctx@ScriptContext{scriptContextTxInfo=txInfo@TxInfo{txInfoValidRange}} =
+    let
+        remainingActual  = Validation.valueLockedBy txInfo (Validation.ownHash ctx)
+
+        remainingExpected =
+            remainingFrom morbidTranche1 txInfoValidRange
+            + remainingFrom morbidTranche2 txInfoValidRange
+
+    in remainingActual `Value.geq` remainingExpected
+            -- The policy encoded in this contract
+            -- is "vestingOwner can do with the funds what they want" (as opposed
+            -- to "the funds must be paid to vestingOwner"). This is enforcey by
+            -- the following condition:
+            && Validation.txSignedBy txInfo (unPaymentPubKeyHash morbidOwner)
+            -- That way the recipient of the funds can pay them to whatever address they
+            -- please, potentially saving one transaction.
 
 data Morbid
 instance Scripts.ValidatorTypes Morbid where
-    type instance RedeemerType Morbid = ClearString
-    type instance DatumType Morbid = HashedString
+    type instance RedeemerType Morbid = ()
+    type instance DatumType Morbid = ()
 
-morbidInstance :: Scripts.TypedValidator Morbid
-morbidInstance = Scripts.mkTypedValidator @Morbid
-    $$(PlutusTx.compile [|| validateGuess ||])
-    $$(PlutusTx.compile [|| wrap ||]) where
-        wrap = Scripts.wrapValidator @HashedString @ClearString
+morbidScript :: MorbidParams -> Validator
+morbidScript = Scripts.validatorScript . typedValidator
 
--- create a data script for the guessing game by hashing the string
--- and lifting the hash to its on-chain representation
-hashString :: Haskell.String -> HashedString
-hashString = HashedString . sha2_256 . toBuiltin . C.pack
+typedValidator :: MorbidParams -> Scripts.TypedValidator Morbid
+typedValidator = Scripts.mkTypedValidatorParam @Morbid
+    $$(PlutusTx.compile [|| validate ||])
+    $$(PlutusTx.compile [|| wrap ||])
+    where
+        wrap = Scripts.wrapValidator
 
--- create a redeemer script for the guessing game by lifting the
--- string to its on-chain representation
-clearString :: Haskell.String -> ClearString
-clearString = ClearString . toBuiltin . C.pack
+contractAddress :: MorbidParams -> Ledger.Address
+contractAddress = Scripts.validatorAddress . typedValidator
 
--- | The validation function (Datum -> Redeemer -> ScriptContext -> Bool)
-validateGuess :: HashedString -> ClearString -> ScriptContext -> Bool
-validateGuess hs cs _ = isGoodGuess hs cs
+morbidContract :: MorbidParams -> Contract () MorbidSchema T.Text ()
+morbidContract morbid = selectList [chest, retrieve]
+  where
+    chest = endpoint @"Create Chest" $ \_ -> chestFundsC morbid
+    retrieve = endpoint @"Unlock Chest" $ \payment -> do
+        liveness <- retrieveFundsC morbid payment
+        case liveness of
+            Alive -> awaitPromise retrieve
+            Dead  -> pure ()
 
-isGoodGuess :: HashedString -> ClearString -> Bool
-isGoodGuess (HashedString actual) (ClearString guess') = actual == sha2_256 guess'
+payIntoContract :: Value -> TxConstraints () ()
+payIntoContract = mustPayToTheScript ()
 
--- | The validator script of the game.
-morbidValidator :: Validator
-morbidValidator = Scripts.validatorScript morbidInstance
+chestFundsC
+    :: MorbidParams
+    -> Contract () s T.Text ()
+chestFundsC morbid = do
+    let txn = payIntoContract (totalAmount morbid)
+    mkTxConstraints (Constraints.typedValidatorLookups $ typedValidator morbid) txn
+      >>= void . submitUnbalancedTx . Constraints.adjustUnbalancedTx
 
--- | The address of the game (the hash of its validator script)
-morbidAddress :: Address
-morbidAddress = Ledger.scriptAddress morbidValidator
+data Liveness = Alive | Dead
 
--- | Parameters for the "lock" endpoint
-data LockParams = LockParams
-    { secretWord :: Haskell.String
-    , amount     :: Value
-    }
-    deriving stock (Haskell.Eq, Haskell.Show, Generic)
-    deriving anyclass (FromJSON, ToJSON, ToSchema, ToArgument)
+retrieveFundsC
+    :: MorbidParams
+    -> Value
+    -> Contract () s T.Text Liveness
+retrieveFundsC morbid payment = do
+    let inst = typedValidator morbid
+        addr = Scripts.validatorAddress inst
+    nextTime <- awaitTime 0
+    unspentOutputs <- utxosAt addr
+    let
+        currentlyLocked = foldMap (view Tx.ciTxOutValue) (Map.elems unspentOutputs)
+        remainingValue = currentlyLocked - payment
+        mustRemainLocked = totalAmount morbid - availableAt morbid nextTime
+        maxPayment = currentlyLocked - mustRemainLocked
 
---  | Parameters for the "guess" endpoint
-newtype GuessParams = GuessParams
-    { guessWord :: Haskell.String
-    }
-    deriving stock (Haskell.Eq, Haskell.Show, Generic)
-    deriving anyclass (FromJSON, ToJSON, ToSchema, ToArgument)
+    when (remainingValue `Value.lt` mustRemainLocked)
+        $ throwError
+        $ T.unwords
+            [ "Cannot take out"
+            , T.pack (show payment) `T.append` "."
+            , "The maximum is"
+            , T.pack (show maxPayment) `T.append` "."
+            , "At least"
+            , T.pack (show mustRemainLocked)
+            , "must remain locked by the script."
+            ]
 
--- | The "lock" contract endpoint. See note [Contract endpoints]
-lock :: AsContractError e => Promise () MorbidSchema e ()
-lock = endpoint @"lock" @LockParams $ \(LockParams secret amt) -> do
-    logInfo @Haskell.String $ "Pay " <> Haskell.show amt <> " to the script"
-    let tx         = Constraints.mustPayToTheScript (hashString secret) amt
-    void (submitTxConstraints morbidInstance tx)
+    let liveness = if remainingValue `Value.gt` mempty then Alive else Dead
+        remainingOutputs = case liveness of
+                            Alive -> payIntoContract remainingValue
+                            Dead  -> mempty
+        txn = Typed.collectFromScript unspentOutputs ()
+                <> remainingOutputs
+                <> mustValidateIn (Interval.from nextTime)
+                <> mustBeSignedBy (morbidOwner morbid)
+                -- we don't need to add a pubkey output for 'vestingOwner' here
+                -- because this will be done by the wallet when it balances the
+                -- transaction.
+    mkTxConstraints (Constraints.typedValidatorLookups inst
+                  <> Constraints.unspentOutputs unspentOutputs) txn
+      >>= void . submitUnbalancedTx . Constraints.adjustUnbalancedTx
+    return liveness
 
--- | The "guess" contract endpoint. See note [Contract endpoints]
-guess :: AsContractError e => Promise () MorbidSchema e ()
-guess = endpoint @"guess" @GuessParams $ \(GuessParams theGuess) -> do
-    -- Wait for script to have a UTxO of a least 1 lovelace
-    logInfo @Haskell.String "Waiting for script to have a UTxO of at least 1 lovelace"
-    utxos <- fundsAtAddressGeq morbidAddress (Ada.lovelaceValueOf 1)
-
-    let redeemer = clearString theGuess
-        tx       = collectFromScript utxos redeemer
-
-    -- Log a message saying if the secret word was correctly guessed
-    let hashedSecretWord = findSecretWordValue utxos
-        isCorrectSecretWord = fmap (`isGoodGuess` redeemer) hashedSecretWord == Just True
-    if isCorrectSecretWord
-        then logWarn @Haskell.String "Correct secret word! Submitting the transaction"
-        else logWarn @Haskell.String "Incorrect secret word, but still submiting the transaction"
-
-    -- This is only for test purposes to have a possible failing transaction.
-    -- In a real use-case, we would not submit the transaction if the guess is
-    -- wrong.
-    logInfo @Haskell.String "Submitting transaction to guess the secret word"
-    void (submitTxConstraintsSpending morbidInstance utxos tx)
-
--- | Find the secret word in the Datum of the UTxOs
-findSecretWordValue :: Map TxOutRef ChainIndexTxOut -> Maybe HashedString
-findSecretWordValue =
-  listToMaybe . catMaybes . Map.elems . Map.map secretWordValue
-
--- | Extract the secret word in the Datum of a given transaction output is possible
-secretWordValue :: ChainIndexTxOut -> Maybe HashedString
-secretWordValue o = do
-  Datum d <- either (const Nothing) Just (_ciTxOutDatum o)
-  PlutusTx.fromBuiltinData d
-
-morbid :: AsContractError e => Contract () MorbidSchema e ()
-morbid = do
-    logInfo @Haskell.String "Waiting for guess or lock endpoint..."
-    selectList [lock, guess]
-
-{- Note [Contract endpoints]
-
-A contract endpoint is a function that uses the wallet API to interact with the
-blockchain. We can look at contract endpoints from two different points of view.
-
-1. Contract users
-
-Contract endpoints are the visible interface of the contract. They provide a
-UI (HTML form) for entering the parameters of the actions we may take as part
-of the contract.
-
-2. Contract authors
-
-As contract authors we define endpoints as functions that return a value of
-type 'MockWallet ()'. This type indicates that the function uses the wallet API
-to produce and spend transaction outputs on the blockchain.
-
-Endpoints can have any number of parameters: 'lock' has two
-parameters, 'guess' has one and 'startGame' has none. For each endpoint we
-include a call to 'mkFunction' at the end of the contract definition. This
-causes the Haskell compiler to generate a schema for the endpoint. The Plutus
-Playground then uses this schema to present an HTML form to the user where the
-parameters can be entered.
-
--}
-
-endpoints :: AsContractError e => Contract () MorbidSchema e ()
-endpoints = morbid
+endpoints :: Contract () MorbidSchema T.Text ()
+endpoints = morbidContract morbidParams
+  where
+    morbidOwner = mockWalletPaymentPubKeyHash w1
+    morbidParams =
+        MorbidParams {morbidTranche1, morbidTranche2, morbidOwner}
+    morbidTranche1 =
+        MorbidTranche
+            {morbidTrancheDate = TimeSlot.scSlotZeroTime def + 20000, morbidTrancheAmount = Ada.lovelaceValueOf 50_000_000}
+    morbidTranche2 =
+        MorbidTranche
+            {morbidTrancheDate = TimeSlot.scSlotZeroTime def + 40000, morbidTrancheAmount = Ada.lovelaceValueOf 30_000_000}
 
 mkSchemaDefinitions ''MorbidSchema
 
