@@ -54,6 +54,7 @@ import           Plutus.Contract
 import           Plutus.Contract.Test
 import qualified Plutus.Contract.Typed.Tx as Typed
 import qualified PlutusTx
+import qualified PlutusTx.Builtins.Class  as BI (toBuiltin)
 import           PlutusTx.Prelude
 import qualified Prelude                  as Haskell
 
@@ -96,7 +97,13 @@ instance Scripts.ValidatorTypes Morbid where
 
 {-# INLINABLE validate #-}
 validate :: ChestDatum -> ChestRedeemer -> ScriptContext -> Bool
-validate datum redeemer context = True
+validate datum redeemer context =
+    let deadline = _dDeadline datum
+        now      = txInfoValidRange $ scriptContextTxInfo context
+    in  traceIfFalse
+        (BI.toBuiltin . T.pack $ "Validating deadline ") -- ++ Haskell.show deadline)
+        (Interval.contains (Interval.from deadline) now)
+    
 
 typedValidator :: Scripts.TypedValidator Morbid
 typedValidator = Scripts.mkTypedValidator @Morbid
@@ -123,8 +130,12 @@ morbidContract = selectList
 -- | The "Create Chest" contract endpoint
 createChest :: AsContractError x => Promise () MorbidSchema x ()
 createChest = endpoint @"1. Create Chest" $ \ initialDeposit -> do
-    let you = ChestDatum $ TimeSlot.scSlotZeroTime def + 2_592_000_000 -- 30 x 24 x 3600 x 1000ms
+    now <- currentTime
+    logInfo @Haskell.String $ "Current slot time " ++ Haskell.show now
+    
+    let you = ChestDatum $ now + 50_000 -- 2_592_000_000 -- 30 x 24 x 3600 x 1000ms
         txn = you `Constraints.mustPayToTheScript` initialDeposit
+    
     logInfo @Haskell.String $ "Creating chest for " ++ Haskell.show you
     void $ submitTxConstraints typedValidator txn
 
@@ -142,10 +153,11 @@ delayUnlock = endpoint @"3. Delay Unlock" $ \ _ -> do
 unlockChest :: AsContractError x => Promise () MorbidSchema x ()
 unlockChest = endpoint @"4. Unlock Chest" $ \ _ -> do
     utxoS  <- utxosAt contractAddress
+    now    <- currentTime
     
     let you = ChestRedeemer ()
         txn = collectFromScript utxoS you
-    logInfo @Haskell.String $ "Unlocking chest"
+    logInfo @Haskell.String $ "Unlocking chest at " ++ Haskell.show now
     void $ submitTxConstraintsSpending typedValidator utxoS txn
 
 endpoints :: AsContractError x => Contract () MorbidSchema x ()
