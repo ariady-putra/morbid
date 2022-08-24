@@ -1,23 +1,5 @@
-{-# LANGUAGE DataKinds                  #-}
-{-# LANGUAGE DeriveGeneric              #-}
-{-# LANGUAGE DerivingStrategies         #-}
-{-# LANGUAGE FlexibleContexts           #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE MultiParamTypeClasses      #-}
-{-# LANGUAGE NamedFieldPuns             #-}
-{-# LANGUAGE NoImplicitPrelude          #-}
-{-# LANGUAGE NumericUnderscores         #-}
-{-# LANGUAGE OverloadedStrings          #-}
-{-# LANGUAGE ScopedTypeVariables        #-}
-{-# LANGUAGE TemplateHaskell            #-}
-{-# LANGUAGE TypeApplications           #-}
-{-# LANGUAGE TypeFamilies               #-}
-{-# LANGUAGE TypeOperators              #-}
-
-{-# OPTIONS_GHC -fno-ignore-interface-pragmas   #-}
-{-# OPTIONS_GHC -fno-warn-unused-imports        #-}
-{-# OPTIONS_GHC -fno-warn-unused-matches        #-}
-{-# OPTIONS_GHC -fno-warn-redundant-constraints #-}
+{-# LANGUAGE NumericUnderscores #-}
+{-# LANGUAGE OverloadedStrings  #-}
 
 module MorbidSimulations where
 
@@ -54,19 +36,21 @@ unlockChest caller = callEndpoint caller "4. Unlock Chest" ()
 simulations :: [Simulation]
 simulations = [davyJonesLocker, tooSoon]
   where
-    wallet1 = WalletNumber 1
-    wallet2 = WalletNumber 2
-    wallet3 = WalletNumber 3
+    wallet = map (WalletNumber) [1..4]
     davyJonesLocker =
         Simulation
             { simulationName = "Davy Jones' Locker"
             , simulationId = 1
-            , simulationWallets = simulatorWallet registeredKnownCurrencies 100_000_000 <$> [wallet1, wallet2, wallet3]
+            , simulationWallets = simulatorWallet registeredKnownCurrencies 100_000_000 <$> wallet
             , simulationActions =
-                  [ createChest wallet1 (lovelaceValueOf 50_000_000)
+                  [ createChest (wallet !! 1) (lovelaceValueOf 50_000_000)
                   , AddBlocks 1
-                  , AddBlocks 50
-                  , unlockChest wallet2
+                  , addTreasure (wallet !! 2) (lovelaceValueOf 25_000_000)
+                  , AddBlocks 1
+                  , delayUnlock (wallet !! 3)
+                  , AddBlocks 15
+                  , AddBlocks 15
+                  , unlockChest (wallet !! 4)
                   , AddBlocks 1
                   ]
             }
@@ -74,12 +58,16 @@ simulations = [davyJonesLocker, tooSoon]
         Simulation
             { simulationName = "Too Soon"
             , simulationId = 2
-            , simulationWallets = simulatorWallet registeredKnownCurrencies 100_000_000 <$> [wallet1, wallet2, wallet3]
+            , simulationWallets = simulatorWallet registeredKnownCurrencies 100_000_000 <$> wallet
             , simulationActions =
-                  [ createChest wallet1 (lovelaceValueOf 50_000_000)
+                  [ createChest (wallet !! 1) (lovelaceValueOf 50_000_000)
                   , AddBlocks 1
-                  , AddBlocks 49
-                  , unlockChest wallet2
+                  , addTreasure (wallet !! 2) (lovelaceValueOf 25_000_000)
+                  , AddBlocks 1
+                  , delayUnlock (wallet !! 3)
+                  , AddBlocks 15
+                  , AddBlocks 14
+                  , unlockChest (wallet !! 4)
                   , AddBlocks 1
                   ]
             }

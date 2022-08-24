@@ -22,10 +22,8 @@
 module Morbid where
 
 {- DAVY JONES' LOCKER
-A dead-man's switch contract where you can Create Chest and
-the chest can only be unlocked after 30 days of not being
-postponed by the creator. You can also Add Treasure to the
-chest, and of course Delay Unlock by 30 days. Anyone can
+A dead-man's switch contract where you can Create Chest and the chest can only be unlocked after 30 days of not being
+postponed by the creator. You can also Add Treasure to the chest, and of course Delay Unlock by 30 days. Anyone can
 redeem the treasure when the chest has passed the deadline.
 -}
 import           Control.Lens            (view)
@@ -35,12 +33,9 @@ import           Data.Default            (Default (def))
 import qualified Data.Map                 as Map
 import qualified Data.Text                as T
 
-import           Ledger                  (Address, Validator)
-import           Ledger                  (PaymentPubKeyHash (unPaymentPubKeyHash))
-import           Ledger                  (POSIXTime, POSIXTimeRange)
+import           Ledger                  (Address, PaymentPubKeyHash (unPaymentPubKeyHash), POSIXTime, POSIXTimeRange, Validator)
 import qualified Ledger.Ada               as Ada
-import           Ledger.Constraints      (TxConstraints)
-import           Ledger.Constraints      (mustBeSignedBy, mustPayToTheScript, mustValidateIn)
+import           Ledger.Constraints      (mustBeSignedBy, mustPayToTheScript, mustValidateIn, TxConstraints)
 import qualified Ledger.Constraints       as Constraints
 import           Ledger.Contexts         (ScriptContext (..), TxInfo (..))
 import qualified Ledger.Contexts          as Validation
@@ -59,7 +54,7 @@ import qualified PlutusTx
 import           PlutusTx.Prelude
 import qualified Prelude                  as Haskell
 
-------------------------------------------------------------
+------------------------------------------------------------ DATATYPE DECLARATIONS ------------------------------------------------------------
 
 -- | Parameter of endpoints
 type CreateChest = Value
@@ -98,6 +93,8 @@ instance Scripts.ValidatorTypes Morbid where
     type instance DatumType     Morbid = ChestDatum
     type instance RedeemerType  Morbid = ChestRedeemer
 
+------------------------------------------------------------ VALIDATOR FUNCTIONS ------------------------------------------------------------
+
 {-# INLINABLE validate #-}
 validate :: ChestDatum -> ChestRedeemer -> ScriptContext -> Bool
 validate datum redeemer context = traceBool
@@ -113,8 +110,8 @@ typedValidator = Scripts.mkTypedValidator @Morbid
                 @ChestDatum
                 @ChestRedeemer
             
-        
-    
+------------------------------------------------------------ VALIDATOR FUNCTIONS ------------------------------------------------------------
+------------------------------------------------------------  UTILITY FUNCTIONS  ------------------------------------------------------------
 
 contractAddress :: Ledger.Address
 contractAddress = Scripts.validatorAddress typedValidator
@@ -127,38 +124,70 @@ morbidContract = selectList
     , unlockChest
     ]
 
+isChestAvailable :: AsContractError x => Contract () MorbidSchema x Bool
+isChestAvailable = utxosAt contractAddress >>= return . Haskell.not . Map.null
+
+accessChest :: AsContractError x => Integer -> Value -> Haskell.String -> Contract () MorbidSchema x ()
+accessChest slot deposit message = do
+    now <- currentTime
+    logInfo @Haskell.String $ "Current slot time is " ++ Haskell.show now
+    
+    let you = ChestDatum $ now + Haskell.fromInteger (slot * 1_000) -- 2_592_000_000 -- 30 x 24 x 3600 x 1000ms
+        txn = you `Constraints.mustPayToTheScript` deposit
+    logInfo @Haskell.String message
+    
+    logInfo @Haskell.String $ Haskell.show you
+    void $ submitTxConstraints typedValidator txn
+
+type WhenTrue  = Contract () MorbidSchema
+type WhenFalse = Contract () MorbidSchema
+whenChestExists :: AsContractError x => WhenTrue x () -> WhenFalse x () -> Contract () MorbidSchema x ()
+whenChestExists doTrue doFalse = do
+    chestExists <- isChestAvailable
+    if chestExists then doTrue else doFalse
+
+------------------------------------------------------------ ENDPOINT FUNCTIONS ------------------------------------------------------------
+
 -- | The "Create Chest" contract endpoint
 createChest :: AsContractError x => Promise () MorbidSchema x ()
 createChest = endpoint @"1. Create Chest" $ \ initialDeposit -> do
-    now <- currentTime
-    logInfo @Haskell.String $ "Current slot time " ++ Haskell.show now
+    whenChestExists
+        (logError @Haskell.String "There can only be one chest!")
+        (accessChest 30 initialDeposit "Creating Chest")
     
-    let you = ChestDatum $ now + 50_000 -- 2_592_000_000 -- 30 x 24 x 3600 x 1000ms
-        txn = you `Constraints.mustPayToTheScript` initialDeposit
-    
-    logInfo @Haskell.String $ "Creating chest for " ++ Haskell.show you
-    void $ submitTxConstraints typedValidator txn
 
 -- | The "Add Treasure" contract endpoint
 addTreasure :: AsContractError x => Promise () MorbidSchema x ()
 addTreasure = endpoint @"2. Add Treasure" $ \ deposit -> do
-    error ()
+    whenChestExists
+        (accessChest 30 deposit "Adding Treasure")
+        (logError @Haskell.String "There is no chest yet, please create one first!")
+    
 
 -- | The "Delay Unlock" contract endpoint
 delayUnlock :: AsContractError x => Promise () MorbidSchema x ()
 delayUnlock = endpoint @"3. Delay Unlock" $ \ _ -> do
-    error ()
+    whenChestExists
+        (accessChest 30 (Ada.lovelaceValueOf 0) "Delaying Unlock")
+        (logError @Haskell.String "Cannot delay unlock as there is no chest yet, please create one first!")
+    
 
 -- | The "Unlock Chest" contract endpoint
 unlockChest :: AsContractError x => Promise () MorbidSchema x ()
 unlockChest = endpoint @"4. Unlock Chest" $ \ _ -> do
-    utxoS  <- utxosAt contractAddress
-    now    <- currentTime
+    whenChestExists
+        (do utxoS  <- utxosAt contractAddress
+            now    <- currentTime
+            
+            let you = ChestRedeemer now
+                txn = collectFromScript utxoS you
+            
+            logInfo @Haskell.String $ "Unlocking chest for " ++ Haskell.show you
+            void $ submitTxConstraintsSpending typedValidator utxoS txn)
+        (logError @Haskell.String "There is no chest to unlock!")
     
-    let you = ChestRedeemer now
-        txn = collectFromScript utxoS you
-    logInfo @Haskell.String $ "Unlocking chest for " ++ Haskell.show you
-    void $ submitTxConstraintsSpending typedValidator utxoS txn
+
+------------------------------------------------------------ CONTRACT DEFINITIONS ------------------------------------------------------------
 
 endpoints :: AsContractError x => Contract () MorbidSchema x ()
 endpoints = morbidContract
