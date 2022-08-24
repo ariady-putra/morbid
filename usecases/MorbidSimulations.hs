@@ -43,14 +43,14 @@ simulations = [davyJonesLocker, tooSoon]
             , simulationId = 1
             , simulationWallets = simulatorWallet registeredKnownCurrencies 100_000_000 <$> wallet
             , simulationActions =
-                  [ createChest (wallet !! 1) (lovelaceValueOf 50_000_000)
+                  [ createChest (wallet !! 0) (lovelaceValueOf 50_000_000)
                   , AddBlocks 1
-                  , addTreasure (wallet !! 2) (lovelaceValueOf 25_000_000)
+                  , addTreasure (wallet !! 1) (lovelaceValueOf 25_000_000)
                   , AddBlocks 1
-                  , delayUnlock (wallet !! 3)
+                  , delayUnlock (wallet !! 2)
                   , AddBlocks 15
                   , AddBlocks 15
-                  , unlockChest (wallet !! 4)
+                  , unlockChest (wallet !! 3)
                   , AddBlocks 1
                   ]
             }
@@ -60,14 +60,14 @@ simulations = [davyJonesLocker, tooSoon]
             , simulationId = 2
             , simulationWallets = simulatorWallet registeredKnownCurrencies 100_000_000 <$> wallet
             , simulationActions =
-                  [ createChest (wallet !! 1) (lovelaceValueOf 50_000_000)
+                  [ createChest (wallet !! 0) (lovelaceValueOf 50_000_000)
                   , AddBlocks 1
-                  , addTreasure (wallet !! 2) (lovelaceValueOf 25_000_000)
+                  , addTreasure (wallet !! 1) (lovelaceValueOf 25_000_000)
                   , AddBlocks 1
-                  , delayUnlock (wallet !! 3)
+                  , delayUnlock (wallet !! 2)
                   , AddBlocks 15
                   , AddBlocks 14
-                  , unlockChest (wallet !! 4)
+                  , unlockChest (wallet !! 3)
                   , AddBlocks 1
                   ]
             }
