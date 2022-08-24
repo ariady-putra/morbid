@@ -1,16 +1,18 @@
-{-# LANGUAGE DataKinds             #-}
-{-# LANGUAGE DeriveGeneric         #-}
-{-# LANGUAGE FlexibleContexts      #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE NamedFieldPuns        #-}
-{-# LANGUAGE NoImplicitPrelude     #-}
-{-# LANGUAGE NumericUnderscores    #-}
-{-# LANGUAGE OverloadedStrings     #-}
-{-# LANGUAGE ScopedTypeVariables   #-}
-{-# LANGUAGE TemplateHaskell       #-}
-{-# LANGUAGE TypeApplications      #-}
-{-# LANGUAGE TypeFamilies          #-}
-{-# LANGUAGE TypeOperators         #-}
+{-# LANGUAGE DataKinds                  #-}
+{-# LANGUAGE DeriveGeneric              #-}
+{-# LANGUAGE DerivingStrategies         #-}
+{-# LANGUAGE FlexibleContexts           #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE MultiParamTypeClasses      #-}
+{-# LANGUAGE NamedFieldPuns             #-}
+{-# LANGUAGE NoImplicitPrelude          #-}
+{-# LANGUAGE NumericUnderscores         #-}
+{-# LANGUAGE OverloadedStrings          #-}
+{-# LANGUAGE ScopedTypeVariables        #-}
+{-# LANGUAGE TemplateHaskell            #-}
+{-# LANGUAGE TypeApplications           #-}
+{-# LANGUAGE TypeFamilies               #-}
+{-# LANGUAGE TypeOperators              #-}
 
 {-# OPTIONS_GHC -fno-ignore-interface-pragmas   #-}
 {-# OPTIONS_GHC -fno-warn-unused-imports        #-}
@@ -54,7 +56,6 @@ import           Plutus.Contract
 import           Plutus.Contract.Test
 import qualified Plutus.Contract.Typed.Tx as Typed
 import qualified PlutusTx
-import qualified PlutusTx.Builtins.Class  as BI (toBuiltin)
 import           PlutusTx.Prelude
 import qualified Prelude                  as Haskell
 
@@ -81,7 +82,9 @@ PlutusTx.makeLift ''ChestDatum
 
 -- | Redeemer parameters
 newtype ChestRedeemer
-    = ChestRedeemer ()
+    = ChestRedeemer
+    { _rRedeemTime :: POSIXTime
+    }
     deriving (Show)
     deriving newtype
     ( PlutusTx.FromData
@@ -97,13 +100,10 @@ instance Scripts.ValidatorTypes Morbid where
 
 {-# INLINABLE validate #-}
 validate :: ChestDatum -> ChestRedeemer -> ScriptContext -> Bool
-validate datum redeemer context =
-    let deadline = _dDeadline datum
-        now      = txInfoValidRange $ scriptContextTxInfo context
-    in  traceIfFalse
-        (BI.toBuiltin . T.pack $ "Validating deadline ") -- ++ Haskell.show deadline)
-        (Interval.contains (Interval.from deadline) now)
-    
+validate datum redeemer context = traceBool
+    "Chest is allowed to be unlocked, congrats"
+    "Chest deadline has not been reached yet!!"
+    $ _dDeadline datum < _rRedeemTime redeemer
 
 typedValidator :: Scripts.TypedValidator Morbid
 typedValidator = Scripts.mkTypedValidator @Morbid
@@ -155,9 +155,9 @@ unlockChest = endpoint @"4. Unlock Chest" $ \ _ -> do
     utxoS  <- utxosAt contractAddress
     now    <- currentTime
     
-    let you = ChestRedeemer ()
+    let you = ChestRedeemer now
         txn = collectFromScript utxoS you
-    logInfo @Haskell.String $ "Unlocking chest at " ++ Haskell.show now
+    logInfo @Haskell.String $ "Unlocking chest for " ++ Haskell.show you
     void $ submitTxConstraintsSpending typedValidator utxoS txn
 
 endpoints :: AsContractError x => Contract () MorbidSchema x ()

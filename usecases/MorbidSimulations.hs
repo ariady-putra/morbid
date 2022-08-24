@@ -1,9 +1,23 @@
-{-# LANGUAGE NamedFieldPuns     #-}
-{-# LANGUAGE NumericUnderscores #-}
-{-# LANGUAGE OverloadedStrings  #-}
+{-# LANGUAGE DataKinds                  #-}
+{-# LANGUAGE DeriveGeneric              #-}
+{-# LANGUAGE DerivingStrategies         #-}
+{-# LANGUAGE FlexibleContexts           #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE MultiParamTypeClasses      #-}
+{-# LANGUAGE NamedFieldPuns             #-}
+{-# LANGUAGE NoImplicitPrelude          #-}
+{-# LANGUAGE NumericUnderscores         #-}
+{-# LANGUAGE OverloadedStrings          #-}
+{-# LANGUAGE ScopedTypeVariables        #-}
+{-# LANGUAGE TemplateHaskell            #-}
+{-# LANGUAGE TypeApplications           #-}
+{-# LANGUAGE TypeFamilies               #-}
+{-# LANGUAGE TypeOperators              #-}
 
-{-# OPTIONS_GHC -fno-ignore-interface-pragmas #-}
-{-# OPTIONS_GHC -fno-warn-unused-imports #-}
+{-# OPTIONS_GHC -fno-ignore-interface-pragmas   #-}
+{-# OPTIONS_GHC -fno-warn-unused-imports        #-}
+{-# OPTIONS_GHC -fno-warn-unused-matches        #-}
+{-# OPTIONS_GHC -fno-warn-redundant-constraints #-}
 
 module MorbidSimulations where
 
@@ -50,15 +64,10 @@ simulations = [davyJonesLocker, tooSoon]
             , simulationWallets = simulatorWallet registeredKnownCurrencies 100_000_000 <$> [wallet1, wallet2, wallet3]
             , simulationActions =
                   [ createChest wallet1 (lovelaceValueOf 50_000_000)
-                  , AddBlocks 100_000
-                  , addTreasure wallet1 (lovelaceValueOf 20_000_000)
-                  , AddBlocks 500_000
-                  , delayUnlock wallet1
-                  , AddBlocks 1_000_000
+                  , AddBlocks 1
+                  , AddBlocks 50
                   , unlockChest wallet2
-                  , AddBlocks 1_000_000
-                  , unlockChest wallet3
-                  , AddBlocks 1_000
+                  , AddBlocks 1
                   ]
             }
     tooSoon =
@@ -68,14 +77,9 @@ simulations = [davyJonesLocker, tooSoon]
             , simulationWallets = simulatorWallet registeredKnownCurrencies 100_000_000 <$> [wallet1, wallet2, wallet3]
             , simulationActions =
                   [ createChest wallet1 (lovelaceValueOf 50_000_000)
-                  , AddBlocks 100
-                  , addTreasure wallet1 (lovelaceValueOf 20_000_000)
-                  , AddBlocks 500
-                  , delayUnlock wallet1
-                  , AddBlocks 1_000
+                  , AddBlocks 1
+                  , AddBlocks 49
                   , unlockChest wallet2
-                  , AddBlocks 1_000
-                  , unlockChest wallet3
                   , AddBlocks 1
                   ]
             }
