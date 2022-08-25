@@ -1,23 +1,15 @@
-{-# LANGUAGE DataKinds                  #-}
-{-# LANGUAGE DeriveGeneric              #-}
-{-# LANGUAGE DerivingStrategies         #-}
-{-# LANGUAGE FlexibleContexts           #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE MultiParamTypeClasses      #-}
-{-# LANGUAGE NamedFieldPuns             #-}
-{-# LANGUAGE NoImplicitPrelude          #-}
-{-# LANGUAGE NumericUnderscores         #-}
-{-# LANGUAGE OverloadedStrings          #-}
-{-# LANGUAGE ScopedTypeVariables        #-}
-{-# LANGUAGE TemplateHaskell            #-}
-{-# LANGUAGE TypeApplications           #-}
-{-# LANGUAGE TypeFamilies               #-}
-{-# LANGUAGE TypeOperators              #-}
-
-{-# OPTIONS_GHC -fno-ignore-interface-pragmas   #-}
-{-# OPTIONS_GHC -fno-warn-unused-imports        #-}
-{-# OPTIONS_GHC -fno-warn-unused-matches        #-}
-{-# OPTIONS_GHC -fno-warn-redundant-constraints #-}
+{-# LANGUAGE DataKinds                   #-}
+{-# LANGUAGE DerivingStrategies          #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving  #-}
+{-# LANGUAGE MultiParamTypeClasses       #-}
+{-# LANGUAGE NumericUnderscores          #-}
+{-# LANGUAGE OverloadedStrings           #-}
+{-# LANGUAGE ScopedTypeVariables         #-}
+{-# LANGUAGE TemplateHaskell             #-}
+{-# LANGUAGE TypeApplications            #-}
+{-# LANGUAGE TypeFamilies                #-}
+{-# LANGUAGE TypeOperators               #-}
+{-# OPTIONS_GHC -fno-warn-unused-matches #-}
 
 module Morbid where
 
@@ -26,33 +18,21 @@ A dead-man's switch contract where you can Create Chest and the chest can only b
 postponed by the creator. You can also Add Treasure to the chest, and of course Delay Unlock by 30 days. Anyone can
 redeem the treasure when the chest has passed the deadline.
 -}
-import           Control.Lens            (view)
-import           Control.Monad           (void, when)
+import Control.Monad        (void)
+import Data.Map             qualified as Map
 
-import           Data.Default            (Default (def))
-import qualified Data.Map                 as Map
-import qualified Data.Text                as T
+import Ledger               qualified
+import Ledger.Ada           qualified as Ada
+import Ledger.Constraints   (mustPayToTheScript)
+import Ledger.Contexts      (ScriptContext (..))
+import Ledger.Typed.Scripts qualified as Scripts
+import Ledger.Value         (Value)
 
-import           Ledger                  (Address, PaymentPubKeyHash (unPaymentPubKeyHash), POSIXTime, POSIXTimeRange, Validator)
-import qualified Ledger.Ada               as Ada
-import           Ledger.Constraints      (mustBeSignedBy, mustPayToTheScript, mustValidateIn, TxConstraints)
-import qualified Ledger.Constraints       as Constraints
-import           Ledger.Contexts         (ScriptContext (..), TxInfo (..))
-import qualified Ledger.Contexts          as Validation
-import qualified Ledger.Interval          as Interval
-import qualified Ledger.TimeSlot          as TimeSlot
-import qualified Ledger.Tx                as Tx
-import qualified Ledger.Typed.Scripts     as Scripts
-import           Ledger.Value            (Value)
-import qualified Ledger.Value             as Value
-
-import           Playground.Contract
-import           Plutus.Contract
-import           Plutus.Contract.Test
-import qualified Plutus.Contract.Typed.Tx as Typed
-import qualified PlutusTx
-import           PlutusTx.Prelude
-import qualified Prelude                  as Haskell
+import Playground.Contract
+import Plutus.Contract
+import PlutusTx             qualified
+import PlutusTx.Prelude
+import Prelude              qualified as Haskell
 
 ------------------------------------------------------------ DATATYPE DECLARATIONS ------------------------------------------------------------
 
@@ -65,7 +45,7 @@ type UnlockChest = ()
 -- | Datum parameters
 newtype ChestDatum
     = ChestDatum
-    { _dDeadline :: POSIXTime
+    { _datumDeadline :: Ledger.POSIXTime
     }
     deriving (Show)
     deriving newtype
@@ -78,7 +58,7 @@ PlutusTx.makeLift ''ChestDatum
 -- | Redeemer parameters
 newtype ChestRedeemer
     = ChestRedeemer
-    { _rRedeemTime :: POSIXTime
+    { _redeemTime :: Ledger.POSIXTime
     }
     deriving (Show)
     deriving newtype
@@ -98,9 +78,9 @@ instance Scripts.ValidatorTypes Morbid where
 {-# INLINABLE validate #-}
 validate :: ChestDatum -> ChestRedeemer -> ScriptContext -> Bool
 validate datum redeemer context = traceBool
-    "Chest is allowed to be unlocked, congrats"
-    "Chest deadline has not been reached yet!!"
-    $ _dDeadline datum < _rRedeemTime redeemer
+    "Chest is eligible to be unlocked, congrats!"
+    "Chest deadline has not been reached yet!"
+    $ _datumDeadline datum < _redeemTime redeemer
 
 typedValidator :: Scripts.TypedValidator Morbid
 typedValidator = Scripts.mkTypedValidator @Morbid
@@ -110,38 +90,34 @@ typedValidator = Scripts.mkTypedValidator @Morbid
                 @ChestDatum
                 @ChestRedeemer
             
------------------------------------------------------------- VALIDATOR FUNCTIONS ------------------------------------------------------------
-------------------------------------------------------------  UTILITY FUNCTIONS  ------------------------------------------------------------
+------------------------------------------------------------ ALIAS DECLARATIONS ------------------------------------------------------------
+
+type MorbidContract = Contract () MorbidSchema
+type MorbidPromise  = Promise  () MorbidSchema
+
+------------------------------------------------------------ UTILITY FUNCTIONS ------------------------------------------------------------
 
 contractAddress :: Ledger.Address
 contractAddress = Scripts.validatorAddress typedValidator
 
-morbidContract :: AsContractError x => Contract () MorbidSchema x ()
-morbidContract = selectList
-    [ createChest
-    , addTreasure
-    , delayUnlock
-    , unlockChest
-    ]
-
-isChestAvailable :: AsContractError x => Contract () MorbidSchema x Bool
+isChestAvailable :: AsContractError x => MorbidContract x Bool
 isChestAvailable = utxosAt contractAddress >>= return . Haskell.not . Map.null
 
-accessChest :: AsContractError x => Integer -> Value -> Haskell.String -> Contract () MorbidSchema x ()
+accessChest :: AsContractError x => Integer -> Value -> Haskell.String -> MorbidContract x ()
 accessChest slot deposit message = do
-    now <- currentTime
+    now  <- currentTime
     logInfo @Haskell.String $ "Current slot time is " ++ Haskell.show now
     
     let you = ChestDatum $ now + Haskell.fromInteger (slot * 1_000) -- 2_592_000_000 -- 30 x 24 x 3600 x 1000ms
-        txn = you `Constraints.mustPayToTheScript` deposit
+        txn = you `mustPayToTheScript` deposit
     logInfo @Haskell.String message
     
     logInfo @Haskell.String $ Haskell.show you
     void $ submitTxConstraints typedValidator txn
 
-type WhenTrue  = Contract () MorbidSchema
-type WhenFalse = Contract () MorbidSchema
-whenChestExists :: AsContractError x => WhenTrue x () -> WhenFalse x () -> Contract () MorbidSchema x ()
+type WhenTrue  = MorbidContract
+type WhenFalse = MorbidContract
+whenChestExists :: AsContractError x => WhenTrue x () -> WhenFalse x () -> MorbidContract x ()
 whenChestExists doTrue doFalse = do
     chestExists <- isChestAvailable
     if chestExists then doTrue else doFalse
@@ -149,15 +125,15 @@ whenChestExists doTrue doFalse = do
 ------------------------------------------------------------ ENDPOINT FUNCTIONS ------------------------------------------------------------
 
 -- | The "Create Chest" contract endpoint
-createChest :: AsContractError x => Promise () MorbidSchema x ()
+createChest :: AsContractError x => MorbidPromise x ()
 createChest = endpoint @"1. Create Chest" $ \ initialDeposit -> do
     whenChestExists
-        (logError @Haskell.String "There can only be one chest!")
+        (logError @Haskell.String "There is an active chest already!")
         (accessChest 30 initialDeposit "Creating Chest")
     
 
 -- | The "Add Treasure" contract endpoint
-addTreasure :: AsContractError x => Promise () MorbidSchema x ()
+addTreasure :: AsContractError x => MorbidPromise x ()
 addTreasure = endpoint @"2. Add Treasure" $ \ deposit -> do
     whenChestExists
         (accessChest 30 deposit "Adding Treasure")
@@ -165,7 +141,7 @@ addTreasure = endpoint @"2. Add Treasure" $ \ deposit -> do
     
 
 -- | The "Delay Unlock" contract endpoint
-delayUnlock :: AsContractError x => Promise () MorbidSchema x ()
+delayUnlock :: AsContractError x => MorbidPromise x ()
 delayUnlock = endpoint @"3. Delay Unlock" $ \ _ -> do
     whenChestExists
         (accessChest 30 (Ada.lovelaceValueOf 0) "Delaying Unlock")
@@ -173,7 +149,7 @@ delayUnlock = endpoint @"3. Delay Unlock" $ \ _ -> do
     
 
 -- | The "Unlock Chest" contract endpoint
-unlockChest :: AsContractError x => Promise () MorbidSchema x ()
+unlockChest :: AsContractError x => MorbidPromise x ()
 unlockChest = endpoint @"4. Unlock Chest" $ \ _ -> do
     whenChestExists
         (do utxoS  <- utxosAt contractAddress
@@ -183,13 +159,21 @@ unlockChest = endpoint @"4. Unlock Chest" $ \ _ -> do
                 txn = collectFromScript utxoS you
             
             logInfo @Haskell.String $ "Unlocking chest for " ++ Haskell.show you
-            void $ submitTxConstraintsSpending typedValidator utxoS txn)
+            void $ submitTxConstraintsSpending typedValidator utxoS txn
+        )   -- otherwise:
         (logError @Haskell.String "There is no chest to unlock!")
     
 
 ------------------------------------------------------------ CONTRACT DEFINITIONS ------------------------------------------------------------
 
-endpoints :: AsContractError x => Contract () MorbidSchema x ()
+morbidContract :: AsContractError x => MorbidContract x ()
+morbidContract = selectList
+    [ createChest
+    , addTreasure
+    , delayUnlock
+    , unlockChest
+    ]
+endpoints :: AsContractError x => MorbidContract x ()
 endpoints = morbidContract
 
 type MorbidSchema = Endpoint "1. Create Chest" CreateChest
