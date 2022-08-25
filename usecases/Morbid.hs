@@ -14,9 +14,11 @@
 module Morbid where
 
 {- DAVY JONES' LOCKER
-A dead-man's switch contract where you can Create Chest and the chest can only be unlocked after 30 days of not being
-postponed by the creator. You can also Add Treasure to the chest, and of course Delay Unlock by 30 days. Anyone can
-redeem the treasure when the chest has passed the deadline.
+A dead-man's switch contract where you can Create Chest
+and the chest can only be unlocked after a period of time
+of not being postponed. You can also Add Treasure to the
+chest. Anyone can redeem the treasure when the deadline
+has passed.
 -}
 import Control.Monad        (void)
 import Data.Map             qualified as Map
