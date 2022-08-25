@@ -20,5 +20,9 @@ Redeem all ADA from the chest
 ---
 
 <img src="https://github.com/ariady-putra/plutus-playground-server/blob/main/screenshots/1_DavyJonesLocker.png">
-For the modified plutus-playground-server with the additional Dead-man's Switch tab please visit
-<a href="https://github.com/ariady-putra/plutus-playground-server">ariady-putra/plutus-playground-server</a>
+For the modified <b>Plutus Playground Server</b> with the additional <b>Dead-man's Switch</b> tab please visit:
+<ul>
+  <li>
+    <a href="https://github.com/ariady-putra/plutus-playground-server">ariady-putra/plutus-playground-server</a>
+  </li>
+</ul>
