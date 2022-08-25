@@ -12,7 +12,7 @@ Deposit initial ADA
 Deposit more ADA to the chest
 
 ## Delay Unlock
-Postpone chest unlocking by 30 days
+Postpone chest unlocking deadline
 
 ## Unlock Chest
 Redeem all ADA from the chest
