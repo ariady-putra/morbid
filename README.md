@@ -16,3 +16,7 @@ Postpone chest unlocking deadline
 
 ## Unlock Chest
 Redeem all ADA from the chest
+
+---
+
+<img src="https://github.com/ariady-putra/plutus-playground-server/blob/main/screenshots/1_DavyJonesLocker.png">
