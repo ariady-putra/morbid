@@ -27,8 +27,9 @@ has passed.
 
 import Control.Monad (void)
 
-import Data.Map   qualified as M
-import Data.Maybe (catMaybes)
+import Data.ByteString.Char8 qualified as C8
+import Data.Map              qualified as M
+import Data.Maybe            (catMaybes)
 
 import Ledger               qualified
 import Ledger.Ada           qualified as Ada
@@ -51,6 +52,7 @@ data CreateChest
     = CreateChest
     { _initialDeposit :: Value
     , _lockForSlots   :: Integer
+    , _createPassword :: Haskell.String
     }
     deriving Generic
     deriving anyclass
@@ -68,9 +70,10 @@ newtype AddTreasure
     , ToJSON
     , ToSchema
     )
-newtype DelayUnlock
+data DelayUnlock
     = DelayUnlock
     { _postponeForSlots :: Integer
+    , _password         :: Haskell.String
     }
     deriving Generic
     deriving anyclass
@@ -85,6 +88,7 @@ data ChestDatum
     = ChestDatum
     { _chestDeadline :: Ledger.POSIXTime
     , _chestCreator  :: Ledger.PaymentPubKeyHash
+    , _chestPassword :: BuiltinByteString
     }
     deriving Show
 PlutusTx.unstableMakeIsData ''ChestDatum
@@ -112,10 +116,10 @@ instance Scripts.ValidatorTypes Morbid where
 {-# INLINABLE validate #-}
 validate :: ChestDatum -> ChestRedeemer -> ScriptContext ->
     Bool
-validate datum redeemer context = True {-traceBool
+validate datum redeemer context = traceBool
     "Chest is eligible to be unlocked, congrats!"
     "Chest deadline has not been reached yet!"
-    $ _chestDeadline datum < _redeemTime redeemer-}
+    $ _chestDeadline datum < _redeemTime redeemer
 
 typedValidator :: Scripts.TypedValidator Morbid
 typedValidator = Scripts.mkTypedValidator @Morbid
@@ -135,6 +139,10 @@ type MorbidPromise  = Promise  () MorbidSchema
 -- | Script contract address
 contractAddress :: Ledger.Address
 contractAddress = Scripts.validatorAddress typedValidator
+
+-- | Convert Haskell.String to hashed BuiltinByteString
+hashString :: Haskell.String -> BuiltinByteString
+hashString = sha2_256 . toBuiltin . C8.pack
 
 -- | Log 2 Haskell.String as logDebug | logInfo | logWarn | logError
 logAs :: (AsContractError x) =>
@@ -177,6 +185,7 @@ accessChest pkh slot deposit message = do
     let you = ChestDatum
             { _chestDeadline = now + Haskell.fromInteger (slot * 1_000)
             , _chestCreator  = pkh
+            , _chestPassword = hashString message
             }
         txn = you `mustPayToTheScript` deposit
     logStrAs logInfo message
@@ -224,9 +233,11 @@ createChest = endpoint @"1. Create Chest" $ \ params -> do
             
             let initialDeposit = _initialDeposit params
                 deadline       = _lockForSlots   params
+                password       = _createPassword params
                 you = ChestDatum
                     { _chestDeadline = now + Haskell.fromInteger (deadline * 1_000)
                     , _chestCreator  = pkh
+                    , _chestPassword = hashString password
                     }
                 txn = you `mustPayToTheScript` initialDeposit
             
@@ -255,13 +266,15 @@ delayUnlock = endpoint @"3. Delay Unlock" $ \ params -> do
             logStrShowAs logInfo "UTXOs are " utxoS
             
             case getChestDatumFrom utxoS of
-                Just d@(ChestDatum _ chestCreator) -> do
+                Just d@(ChestDatum chestDeadline chestCreator chestKey) -> do
                     logStrShowAs logInfo "Chest creator is " chestCreator
                     
                     pkh <- ownPaymentPubKeyHash
                     logStrShowAs logInfo "OwnPubKeyHash is " pkh
                     
-                    if pkh == chestCreator
+                    let password = _password params
+                    -- if pkh == chestCreator
+                    if chestKey == hashString password
                         then do
                             now <- currentTime
                             logStrShowAs logInfo "Curr slot time = " now
@@ -273,7 +286,8 @@ delayUnlock = endpoint @"3. Delay Unlock" $ \ params -> do
                             logStrShowAs logInfo "Delaying unlock for " you
                             void $ submitTxConstraints typedValidator txn
                         else do
-                            logStrAs logError "ERROR delayUnlock: You're not the chest creator!"
+                            -- logStrAs logError "ERROR delayUnlock: You're not the chest creator!"
+                            logStrAs logError "ERROR delayUnlock: Invalid password!"
                 Nothing -> do
                     logStrShowAs logError "ERROR delayUnlock . getChestDatumFrom $ utxoS: UTXOs are " utxoS
         ){-
@@ -302,11 +316,11 @@ unlockChest = endpoint @"4. Unlock Chest" $ \ _ -> do
         (logStrAs logError "ERROR unlockChest: There is no chest to unlock!")
     
 
-dummy :: (AsContractError x) =>
+{-dummy :: (AsContractError x) =>
     MorbidPromise x ()
 dummy = endpoint @"Dummy" $ \ _ -> do
     pkh <- ownPaymentPubKeyHash
-    logStrShowAs logInfo "Dummy PKH is " pkh
+    logStrShowAs logInfo "Dummy PKH is " pkh-}
 
 ------------------------------------------------------------ CONTRACT DEFINITIONS ------------------------------------------------------------
 
@@ -317,13 +331,13 @@ endpoints = selectList
             , addTreasure
             , delayUnlock
             , unlockChest
-            , dummy
+            -- , dummy
             ]
 type MorbidSchema = Endpoint "1. Create Chest" CreateChest
                 .\/ Endpoint "2. Add Treasure" AddTreasure
                 .\/ Endpoint "3. Delay Unlock" DelayUnlock
                 .\/ Endpoint "4. Unlock Chest" UnlockChest
-                .\/ Endpoint "Dummy" ()
+                -- .\/ Endpoint "Dummy" ()
 mkSchemaDefinitions ''MorbidSchema
 
 $(mkKnownCurrencies [])
