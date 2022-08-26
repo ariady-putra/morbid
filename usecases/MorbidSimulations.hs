@@ -3,21 +3,21 @@
 
 module MorbidSimulations where
 
-import Ledger.Ada            (lovelaceValueOf)
-import Ledger.Value          (Value)
+import Ledger.Ada   qualified as Ada
+import Ledger.Value (Value)
 
-import Morbid                (registeredKnownCurrencies)
+import Morbid (registeredKnownCurrencies)
 
-import Playground.Types      (ContractCall (AddBlocks))
-import Playground.Types      (Simulation (Simulation))
-import Playground.Types      (SimulatorAction)
-import Playground.Types      (simulationActions)
-import Playground.Types      (simulationId)
-import Playground.Types      (simulationName)
-import Playground.Types      (simulationWallets)
+import Playground.Types (ContractCall (AddBlocks))
+import Playground.Types (Simulation (Simulation))
+import Playground.Types (SimulatorAction)
+import Playground.Types (simulationActions)
+import Playground.Types (simulationId)
+import Playground.Types (simulationName)
+import Playground.Types (simulationWallets)
 
-import SimulationUtils       (callEndpoint)
-import SimulationUtils       (simulatorWallet)
+import SimulationUtils (callEndpoint)
+import SimulationUtils (simulatorWallet)
 
 import Wallet.Emulator.Types (WalletNumber (..))
 
@@ -43,9 +43,9 @@ simulations = [davyJonesLocker, tooSoon]
             , simulationId = 1
             , simulationWallets = simulatorWallet registeredKnownCurrencies 100_000_000 <$> wallet
             , simulationActions =
-                  [ createChest (wallet !! 0) (lovelaceValueOf 50_000_000)
+                  [ createChest (wallet !! 0) (Ada.lovelaceValueOf 50_000_000)
                   , AddBlocks 1
-                  , addTreasure (wallet !! 1) (lovelaceValueOf 25_000_000)
+                  , addTreasure (wallet !! 1) (Ada.lovelaceValueOf 25_000_000)
                   , AddBlocks 1
                   , delayUnlock (wallet !! 2)
                   , AddBlocks 15
@@ -60,9 +60,9 @@ simulations = [davyJonesLocker, tooSoon]
             , simulationId = 2
             , simulationWallets = simulatorWallet registeredKnownCurrencies 100_000_000 <$> wallet
             , simulationActions =
-                  [ createChest (wallet !! 0) (lovelaceValueOf 50_000_000)
+                  [ createChest (wallet !! 0) (Ada.lovelaceValueOf 50_000_000)
                   , AddBlocks 1
-                  , addTreasure (wallet !! 1) (lovelaceValueOf 25_000_000)
+                  , addTreasure (wallet !! 1) (Ada.lovelaceValueOf 25_000_000)
                   , AddBlocks 1
                   , delayUnlock (wallet !! 2)
                   , AddBlocks 15
