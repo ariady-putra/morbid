@@ -33,7 +33,12 @@ import Data.Maybe            (catMaybes)
 
 import Ledger               qualified
 import Ledger.Ada           qualified as Ada
+import Ledger.Constraints   (mustIncludeDatum)
 import Ledger.Constraints   (mustPayToTheScript)
+import Ledger.Constraints   (mustSpendScriptOutput)
+import Ledger.Constraints   (otherScript)
+import Ledger.Constraints   (typedValidatorLookups)
+import Ledger.Constraints   (unspentOutputs)
 import Ledger.Contexts      (ScriptContext (..))
 import Ledger.Tx            (ChainIndexTxOut (..))
 import Ledger.Typed.Scripts qualified as Scripts
@@ -116,10 +121,10 @@ instance Scripts.ValidatorTypes Morbid where
 {-# INLINABLE validate #-}
 validate :: ChestDatum -> ChestRedeemer -> ScriptContext ->
     Bool
-validate datum redeemer context = traceBool
+validate datum redeemer context = True {-traceBool
     "Chest is eligible to be unlocked, congrats!"
     "Chest deadline has not been reached yet!"
-    $ _chestDeadline datum < _redeemTime redeemer
+    $ _chestDeadline datum <= _redeemTime redeemer-}
 
 typedValidator :: Scripts.TypedValidator Morbid
 typedValidator = Scripts.mkTypedValidator @Morbid
@@ -139,6 +144,10 @@ type MorbidPromise  = Promise  () MorbidSchema
 -- | Script contract address
 contractAddress :: Ledger.Address
 contractAddress = Scripts.validatorAddress typedValidator
+
+-- | Script validator
+contractValidator :: Ledger.Validator
+contractValidator = Scripts.validatorScript typedValidator
 
 -- | Convert Haskell.String to hashed BuiltinByteString
 hashString :: Haskell.String -> BuiltinByteString
@@ -265,31 +274,37 @@ delayUnlock = endpoint @"3. Delay Unlock" $ \ params -> do
         (do utxoS <- utxosAt contractAddress
             logStrShowAs logInfo "UTXOs are " utxoS
             
-            case getChestDatumFrom utxoS of
-                Just d@(ChestDatum chestDeadline chestCreator chestKey) -> do
+            case (getChestDatumFrom utxoS, [(and, out) | (and, out) <- M.toList utxoS]) of
+                (Just d@(ChestDatum chestDeadline chestCreator chestKey), (and, out):_) -> do
                     logStrShowAs logInfo "Chest creator is " chestCreator
                     
                     pkh <- ownPaymentPubKeyHash
                     logStrShowAs logInfo "OwnPubKeyHash is " pkh
                     
-                    let password = _password params
+                    if chestKey == (hashString $ _password params)
                     -- if pkh == chestCreator
-                    if chestKey == hashString password
                         then do
                             now <- currentTime
                             logStrShowAs logInfo "Curr slot time = " now
                             
-                            let deadline = _postponeForSlots params
-                                you = d { _chestDeadline = now + Haskell.fromInteger (deadline * 1_000) }
-                                txn = you `mustPayToTheScript` (Ada.lovelaceValueOf 0)
+                            let deadline =  now + Haskell.fromInteger (_postponeForSlots params * 1_000)
+                                validity =  (unspentOutputs $ M.singleton and out) Haskell.<>
+                                            (typedValidatorLookups typedValidator) Haskell.<>
+                                            (otherScript        contractValidator)
+                                you = d { _chestDeadline = deadline }
+                                txn =   (you `mustPayToTheScript`    (_ciTxOutValue out)) <>
+                                        (and `mustSpendScriptOutput` (Ledger.Redeemer $
+                                              PlutusTx.toBuiltinData ChestRedeemer { _redeemTime = deadline })
+                                        ) <>  mustIncludeDatum       (Ledger.Datum $
+                                              PlutusTx.toBuiltinData you)
                             
                             logStrShowAs logInfo "Delaying unlock for " you
-                            void $ submitTxConstraints typedValidator txn
+                            void $ submitTxConstraintsWith @Morbid validity txn
                         else do
                             -- logStrAs logError "ERROR delayUnlock: You're not the chest creator!"
                             logStrAs logError "ERROR delayUnlock: Invalid password!"
-                Nothing -> do
-                    logStrShowAs logError "ERROR delayUnlock . getChestDatumFrom $ utxoS: UTXOs are " utxoS
+                _ -> do
+                    logStrShowAs logError "ERROR delayUnlock: UTXOs are " utxoS
         ){-
     otherwise-}-- >>
         (logStrAs logError "ERROR delayUnlock: Cannot delay unlock as there is no chest yet, please create one first!")
