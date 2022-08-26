@@ -292,11 +292,11 @@ delayUnlock = endpoint @"3. Delay Unlock" $ \ params -> do
                                             (typedValidatorLookups typedValidator) Haskell.<>
                                             (otherScript        contractValidator)
                                 you = d { _chestDeadline = deadline }
-                                txn =   (you `mustPayToTheScript`    (_ciTxOutValue out)) <>
-                                        (and `mustSpendScriptOutput` (Ledger.Redeemer $
-                                              PlutusTx.toBuiltinData ChestRedeemer { _redeemTime = deadline })
-                                        ) <>  mustIncludeDatum       (Ledger.Datum $
-                                              PlutusTx.toBuiltinData you)
+                                txn =   (you `mustPayToTheScript`    (_ciTxOutValue out))  <>
+                                        (and `mustSpendScriptOutput` (Ledger.Redeemer
+                                            $ PlutusTx.toBuiltinData ChestRedeemer { _redeemTime = deadline })
+                                        ) <>  mustIncludeDatum       (Ledger.Datum
+                                            $ PlutusTx.toBuiltinData you)
                             
                             logStrShowAs logInfo "Delaying unlock for " you
                             void $ submitTxConstraintsWith @Morbid validity txn
@@ -318,14 +318,22 @@ unlockChest = endpoint @"4. Unlock Chest" $ \ _ -> do
         (do utxoS <- utxosAt contractAddress
             logStrShowAs logInfo "UTXOs are " utxoS
             
-            now <- currentTime
-            logStrShowAs logInfo "Curr slot time = " now
-            
-            let you = ChestRedeemer now
-                txn = collectFromScript utxoS you
-            
-            logStrShowAs logInfo "Unlocking chest for " you
-            void $ submitTxConstraintsSpending typedValidator utxoS txn
+            case getChestDatumFrom utxoS of
+                Just (ChestDatum chestDeadline _ _) -> do
+                    now <- currentTime
+                    logStrShowAs logInfo "Curr slot time = " now
+                    
+                    if chestDeadline < now
+                        then do
+                            let you = ChestRedeemer now
+                                txn = collectFromScript utxoS you
+                            
+                            logStrShowAs logInfo "Unlocking chest for " you
+                            void $ submitTxConstraintsSpending typedValidator utxoS txn
+                        else do
+                            logStrAs logError "ERROR unlockChest: Chest deadline has not been reached yet!"
+                _ -> do
+                    logStrShowAs logError "ERROR unlockChest: UTXOs are " utxoS
         ){-
     otherwise-}-- >>
         (logStrAs logError "ERROR unlockChest: There is no chest to unlock!")
