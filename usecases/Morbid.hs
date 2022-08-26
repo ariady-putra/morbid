@@ -112,10 +112,10 @@ instance Scripts.ValidatorTypes Morbid where
 {-# INLINABLE validate #-}
 validate :: ChestDatum -> ChestRedeemer -> ScriptContext ->
     Bool
-validate datum redeemer context = traceBool
+validate datum redeemer context = True {-traceBool
     "Chest is eligible to be unlocked, congrats!"
     "Chest deadline has not been reached yet!"
-    $ _chestDeadline datum < _redeemTime redeemer
+    $ _chestDeadline datum < _redeemTime redeemer-}
 
 typedValidator :: Scripts.TypedValidator Morbid
 typedValidator = Scripts.mkTypedValidator @Morbid
@@ -165,7 +165,7 @@ isChestAvailable :: (AsContractError x) =>
     MorbidContract x Bool
 isChestAvailable = utxosAt contractAddress >>= return . Haskell.not . M.null
 
--- | Modify chest state
+-- | DEPRECATED: Modify chest state
 accessChest :: (AsContractError x) =>
     Ledger.PaymentPubKeyHash -> Integer -> Value -> Haskell.String ->
     MorbidContract x ()
@@ -239,7 +239,7 @@ createChest = endpoint @"1. Create Chest" $ \ params -> do
 addTreasure :: (AsContractError x) =>
     MorbidPromise x ()
 addTreasure = endpoint @"2. Add Treasure" $ \ params -> do
-    whenChestExists -- (accessChest pkh 30 deposit "Adding Treasure")
+    whenChestExists
         (do logStrAs logInfo "Adding Treasure"
         ){-
     otherwise-}-- >>
@@ -250,7 +250,7 @@ addTreasure = endpoint @"2. Add Treasure" $ \ params -> do
 delayUnlock :: (AsContractError x) =>
     MorbidPromise x ()
 delayUnlock = endpoint @"3. Delay Unlock" $ \ params -> do
-    whenChestExists -- (accessChest pkh 30 (Ada.lovelaceValueOf 0) "Delaying Unlock")
+    whenChestExists
         (do utxoS <- utxosAt contractAddress
             logStrShowAs logInfo "UTXOs are " utxoS
             
@@ -302,6 +302,12 @@ unlockChest = endpoint @"4. Unlock Chest" $ \ _ -> do
         (logStrAs logError "ERROR unlockChest: There is no chest to unlock!")
     
 
+dummy :: (AsContractError x) =>
+    MorbidPromise x ()
+dummy = endpoint @"Dummy" $ \ _ -> do
+    pkh <- ownPaymentPubKeyHash
+    logStrShowAs logInfo "Dummy PKH is " pkh
+
 ------------------------------------------------------------ CONTRACT DEFINITIONS ------------------------------------------------------------
 
 endpoints :: (AsContractError x) =>
@@ -311,11 +317,13 @@ endpoints = selectList
             , addTreasure
             , delayUnlock
             , unlockChest
+            , dummy
             ]
 type MorbidSchema = Endpoint "1. Create Chest" CreateChest
                 .\/ Endpoint "2. Add Treasure" AddTreasure
                 .\/ Endpoint "3. Delay Unlock" DelayUnlock
                 .\/ Endpoint "4. Unlock Chest" UnlockChest
+                .\/ Endpoint "Dummy" ()
 mkSchemaDefinitions ''MorbidSchema
 
 $(mkKnownCurrencies [])
