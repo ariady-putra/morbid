@@ -230,7 +230,7 @@ getChestDatumFrom =
 
 ------------------------------------------------------------ ENDPOINT FUNCTIONS ------------------------------------------------------------
 
--- | The "Create Chest" contract endpoint
+-- | Create Chest contract endpoint, there can only be one chest
 createChest :: (AsContractError x) =>
     MorbidPromise x ()
 createChest = endpoint @"1. Create Chest" $ \ params -> do
@@ -258,18 +258,38 @@ createChest = endpoint @"1. Create Chest" $ \ params -> do
         )   -- (accessChest pkh deadline initialDeposit "Creating Chest")
     
 
--- | The "Add Treasure" contract endpoint
+-- | Add Treasure contract endpoint, anyone can deposit treasures to the chest
 addTreasure :: (AsContractError x) =>
     MorbidPromise x ()
 addTreasure = endpoint @"2. Add Treasure" $ \ params -> do
     whenChestExists
-        (do logStrAs logInfo "Adding Treasure"
+        (do utxoS <- utxosAt contractAddress
+            logStrShowAs logInfo "UTXOs are " utxoS
+            
+            case (getChestDatumFrom utxoS, [(txOutRef, scriptChainIndexTxOut) | (txOutRef, scriptChainIndexTxOut) <- M.toList utxoS]) of
+                (Just you@(ChestDatum chestDeadline chestCreator chestKey), (txOutRef, scriptChainIndexTxOut):_) -> do
+                    let validity =  (unspentOutputs $ txOutRef `M.singleton` scriptChainIndexTxOut
+                                    ) Haskell.<>
+                                    (typedValidatorLookups typedValidator
+                                    ) Haskell.<>
+                                    (otherScript contractValidator
+                                    )
+                        txn =   (you `mustPayToTheScript` (_ciTxOutValue scriptChainIndexTxOut + _deposit params)
+                                ) <>
+                                (mustSpendScriptOutput txOutRef (Ledger.Redeemer $ PlutusTx.toBuiltinData ChestRedeemer { _redeemTime = chestDeadline })
+                                ) <>
+                                (mustIncludeDatum (Ledger.Datum $ PlutusTx.toBuiltinData you)
+                                )
+                    logStrShowAs logInfo "Adding treasure for " you
+                    void $ submitTxConstraintsWith @Morbid validity txn
+                _ -> do
+                    logStrShowAs logError "ERROR addTreasure: UTXOs are " utxoS
         ){-
     otherwise-}-- >>
         (logStrAs logError "ERROR addTreasure: There is no chest yet, please create one first!")
     
 
--- | The "Delay Unlock" contract endpoint
+-- | Delay Unlock contract endpoint, not anyone can postpone the chest unlocking
 delayUnlock :: (AsContractError x) =>
     MorbidPromise x ()
 delayUnlock = endpoint @"3. Delay Unlock" $ \ params -> do
@@ -316,7 +336,7 @@ delayUnlock = endpoint @"3. Delay Unlock" $ \ params -> do
         (logStrAs logError "ERROR delayUnlock: Cannot delay unlock as there is no chest yet, please create one first!")
     
 
--- | The "Unlock Chest" contract endpoint
+-- | Unlock Chest contract endpoint, anyone can redeem the chest contents when the deadline has passed
 unlockChest :: (AsContractError x) =>
     MorbidPromise x ()
 unlockChest = endpoint @"4. Unlock Chest" $ \ _ -> do
