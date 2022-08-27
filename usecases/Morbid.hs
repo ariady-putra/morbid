@@ -268,15 +268,15 @@ addTreasure = endpoint @"2. Add Treasure" $ \ params -> do
                     pkh <- ownPaymentPubKeyHash
                     logStrShowAs logInfo "OwnPubKeyHash is " pkh
 
-                    let validity       =    (unspentOutputs $ txOutRef `M.singleton` scriptChainIndexTxOut
+                    let validity        =   (unspentOutputs $ txOutRef `M.singleton` scriptChainIndexTxOut
                                             ) Haskell.<>
                                             (typedValidatorLookups typedValidator
                                             ) Haskell.<>
                                             (otherScript contractValidator
                                             )
-                        builinDatum    = Ledger.Datum
+                        builtinDatum    = Ledger.Datum
                                         $ PlutusTx.toBuiltinData you
-                        builinRedeemer = Ledger.Redeemer
+                        builtinRedeemer = Ledger.Redeemer
                                         $ PlutusTx.toBuiltinData
                                             ChestRedeemer
                                             { _redeemTime     = chestDeadline
@@ -284,11 +284,11 @@ addTreasure = endpoint @"2. Add Treasure" $ \ params -> do
                                             , _redeemPassword = hashString ""
                                             , _redeemAction   = ActionAddTreasure
                                             }
-                        txn            =    (you `mustPayToTheScript` (_ciTxOutValue scriptChainIndexTxOut + _deposit params)
+                        txn             =   (you `mustPayToTheScript` (_ciTxOutValue scriptChainIndexTxOut + _deposit params)
                                             ) <>
-                                            (mustSpendScriptOutput txOutRef builinRedeemer
+                                            (mustSpendScriptOutput txOutRef builtinRedeemer
                                             ) <>
-                                            (mustIncludeDatum builinDatum
+                                            (mustIncludeDatum builtinDatum
                                             )
                     logStrShowAs logInfo "Adding treasure for " you
                     void $ submitTxConstraintsWith @Morbid validity txn
@@ -317,17 +317,17 @@ delayUnlock = endpoint @"3. Delay Unlock" $ \ params -> do
                     now <- currentTime
                     logStrShowAs logInfo "Curr slot time = " now
                     
-                    let deadline       =    now + Haskell.fromInteger (_postponeForSlots params * 1_000)
-                        validity       =    (unspentOutputs $ txOutRef `M.singleton` scriptChainIndexTxOut
+                    let deadline        =   now + Haskell.fromInteger (_postponeForSlots params * 1_000)
+                        validity        =   (unspentOutputs $ txOutRef `M.singleton` scriptChainIndexTxOut
                                             ) Haskell.<>
                                             (typedValidatorLookups typedValidator
                                             ) Haskell.<>
                                             (otherScript contractValidator
                                             )
-                        you            = d { _chestDeadline = deadline }
-                        builinDatum    = Ledger.Datum
+                        you             = d { _chestDeadline = deadline }
+                        builtinDatum    = Ledger.Datum
                                         $ PlutusTx.toBuiltinData you
-                        builinRedeemer = Ledger.Redeemer
+                        builtinRedeemer = Ledger.Redeemer
                                         $ PlutusTx.toBuiltinData
                                             ChestRedeemer
                                             { _redeemTime     = deadline
@@ -335,11 +335,11 @@ delayUnlock = endpoint @"3. Delay Unlock" $ \ params -> do
                                             , _redeemPassword = hashString $ _password params
                                             , _redeemAction   = ActionDelayUnlock
                                             }
-                        txn            =    (you `mustPayToTheScript` (_ciTxOutValue scriptChainIndexTxOut)
+                        txn             =   (you `mustPayToTheScript` (_ciTxOutValue scriptChainIndexTxOut)
                                             ) <>
-                                            (mustSpendScriptOutput txOutRef builinRedeemer
+                                            (mustSpendScriptOutput txOutRef builtinRedeemer
                                             ) <>
-                                            (mustIncludeDatum builinDatum
+                                            (mustIncludeDatum builtinDatum
                                             )
                     logStrShowAs logInfo "Delaying unlock for " you
                     void $ submitTxConstraintsWith @Morbid validity txn
