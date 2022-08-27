@@ -1,16 +1,14 @@
-{-# LANGUAGE DataKinds                   #-}
-{-# LANGUAGE DeriveAnyClass              #-}
-{-# LANGUAGE DeriveGeneric               #-}
-{-# LANGUAGE DerivingStrategies          #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving  #-}
-{-# LANGUAGE MultiParamTypeClasses       #-}
-{-# LANGUAGE NumericUnderscores          #-}
-{-# LANGUAGE OverloadedStrings           #-}
-{-# LANGUAGE ScopedTypeVariables         #-}
-{-# LANGUAGE TemplateHaskell             #-}
-{-# LANGUAGE TypeApplications            #-}
-{-# LANGUAGE TypeFamilies                #-}
-{-# LANGUAGE TypeOperators               #-}
+{-# LANGUAGE DataKinds             #-}
+{-# LANGUAGE DeriveAnyClass        #-}
+{-# LANGUAGE DeriveGeneric         #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE NumericUnderscores    #-}
+{-# LANGUAGE OverloadedStrings     #-}
+{-# LANGUAGE ScopedTypeVariables   #-}
+{-# LANGUAGE TemplateHaskell       #-}
+{-# LANGUAGE TypeApplications      #-}
+{-# LANGUAGE TypeFamilies          #-}
+{-# LANGUAGE TypeOperators         #-}
 
 {-# OPTIONS_GHC -fno-warn-redundant-constraints #-}
 {-# OPTIONS_GHC -fno-warn-unused-matches        #-}
@@ -58,35 +56,35 @@ data CreateChest
     , _lockForSlots   :: Integer
     , _createPassword :: Haskell.String
     }
-    deriving Generic
-    deriving anyclass
-    ( FromJSON
-    , ToJSON
-    , ToSchema
-    , ToArgument
+    deriving
+    ( Playground.Contract.Generic
+    , Playground.Contract.FromJSON
+    , Playground.Contract.ToJSON
+    , Playground.Contract.ToSchema
+    , Playground.Contract.ToArgument
     )
 newtype AddTreasure
     = AddTreasure
     { _deposit :: Value
     }
-    deriving Generic
-    deriving anyclass
-    ( FromJSON
-    , ToJSON
-    , ToSchema
-    , ToArgument
+    deriving
+    ( Playground.Contract.Generic
+    , Playground.Contract.FromJSON
+    , Playground.Contract.ToJSON
+    , Playground.Contract.ToSchema
+    , Playground.Contract.ToArgument
     )
 data DelayUnlock
     = DelayUnlock
     { _postponeForSlots :: Integer
     , _password         :: Haskell.String
     }
-    deriving Generic
-    deriving anyclass
-    ( FromJSON
-    , ToJSON
-    , ToSchema
-    , ToArgument
+    deriving
+    ( Playground.Contract.Generic
+    , Playground.Contract.FromJSON
+    , Playground.Contract.ToJSON
+    , Playground.Contract.ToSchema
+    , Playground.Contract.ToArgument
     )
 type UnlockChest = () -- anyone can unlock the chest when the deadline had passed
 
