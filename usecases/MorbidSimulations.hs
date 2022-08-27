@@ -3,13 +3,16 @@
 
 module MorbidSimulations where
 
-import Ledger.Ada   qualified as Ada
-import Ledger.Value (Value)
+import Ledger.Ada qualified as Ada
 
+import Morbid (CreateChest (..))
+import Morbid (AddTreasure (..))
+import Morbid (DelayUnlock (..))
+import Morbid (UnlockChest)
 import Morbid (registeredKnownCurrencies)
 
 import Playground.Types (ContractCall (AddBlocks))
-import Playground.Types (Simulation (Simulation))
+import Playground.Types (Simulation  (Simulation))
 import Playground.Types (SimulatorAction)
 import Playground.Types (simulationActions)
 import Playground.Types (simulationId)
@@ -21,55 +24,133 @@ import SimulationUtils (simulatorWallet)
 
 import Wallet.Emulator.Types (WalletNumber (..))
 
-createChest :: WalletNumber -> Value -> SimulatorAction
-createChest caller = callEndpoint caller "1. Create Chest"
+type Deposit  = Integer
+type Slot     = Integer
+type Password = String
 
-addTreasure :: WalletNumber -> Value -> SimulatorAction
-addTreasure caller = callEndpoint caller "2. Add Treasure"
+createChest :: WalletNumber -> CreateChest ->
+    SimulatorAction
+createChest = (`callEndpoint` "1. Create Chest")
 
-delayUnlock :: WalletNumber -> SimulatorAction
-delayUnlock caller = callEndpoint caller "3. Delay Unlock" ()
+addTreasure :: WalletNumber -> AddTreasure ->
+    SimulatorAction
+addTreasure = (`callEndpoint` "2. Add Treasure")
 
-unlockChest :: WalletNumber -> SimulatorAction
-unlockChest caller = callEndpoint caller "4. Unlock Chest" ()
+delayUnlock :: WalletNumber -> DelayUnlock ->
+    SimulatorAction
+delayUnlock = (`callEndpoint` "3. Delay Unlock")
+
+unlockChest :: WalletNumber -> UnlockChest ->
+    SimulatorAction
+unlockChest = (`callEndpoint` "4. Unlock Chest")
+
+createChestFor :: Password -> Deposit ->
+    CreateChest
+createChestFor password deposit = CreateChest
+    { _initialDeposit = Ada.lovelaceValueOf deposit
+    , _lockForSlots   = 30
+    , _createPassword = password
+    }
+
+depositTreasure :: Deposit ->
+    AddTreasure
+depositTreasure deposit = AddTreasure
+    { _deposit = Ada.lovelaceValueOf deposit
+    }
+
+postponeUnlock :: Password ->
+    DelayUnlock
+postponeUnlock password = DelayUnlock
+    { _postponeForSlots = 30
+    , _password         = password
+    }
 
 simulations :: [Simulation]
-simulations = [davyJonesLocker, tooSoon]
-  where
-    wallet = map (WalletNumber) [1..4]
-    davyJonesLocker =
-        Simulation
-            { simulationName = "Davy Jones' Locker"
-            , simulationId = 1
-            , simulationWallets = simulatorWallet registeredKnownCurrencies 100_000_000 <$> wallet
-            , simulationActions =
-                  [ createChest (wallet !! 0) (Ada.lovelaceValueOf 50_000_000)
-                  , AddBlocks 1
-                  , addTreasure (wallet !! 1) (Ada.lovelaceValueOf 25_000_000)
-                  , AddBlocks 1
-                  , delayUnlock (wallet !! 2)
-                  , AddBlocks 15
-                  , AddBlocks 15
-                  , unlockChest (wallet !! 3)
-                  , AddBlocks 1
-                  ]
-            }
-    tooSoon =
-        Simulation
-            { simulationName = "Too Soon"
-            , simulationId = 2
-            , simulationWallets = simulatorWallet registeredKnownCurrencies 100_000_000 <$> wallet
-            , simulationActions =
-                  [ createChest (wallet !! 0) (Ada.lovelaceValueOf 50_000_000)
-                  , AddBlocks 1
-                  , addTreasure (wallet !! 1) (Ada.lovelaceValueOf 25_000_000)
-                  , AddBlocks 1
-                  , delayUnlock (wallet !! 2)
-                  , AddBlocks 15
-                  , AddBlocks 14
-                  , unlockChest (wallet !! 3)
-                  , AddBlocks 1
-                  ]
-            }
+simulations =
+    [ davyJonesLocker
+    , duplicateChest
+    , noChestToDelay
+    , invalidPassword
+    , noChestToUnlock
+    , unlockToSoon
+    ] where wallet = map (WalletNumber) [1..]
+            davyJonesLocker =
+                Simulation
+                { simulationName = "Davy Jones' Locker"
+                , simulationId = 1
+                , simulationWallets = simulatorWallet registeredKnownCurrencies 100_000_000 <$> take 4 wallet
+                , simulationActions =
+                    [ createChest (wallet !! 0) (createChestFor "DavyJones" 50_000_000)
+                    , AddBlocks 1
+                    , addTreasure (wallet !! 1) (depositTreasure 25_000_000)
+                    , AddBlocks 1
+                    , delayUnlock (wallet !! 2) (postponeUnlock "DavyJones")
+                    , AddBlocks 30
+                    , unlockChest (wallet !! 3) ()
+                    , AddBlocks 1
+                    ]
+                }
+            duplicateChest =
+                Simulation
+                    { simulationName = "Duplicate Chest"
+                    , simulationId = 2
+                    , simulationWallets = simulatorWallet registeredKnownCurrencies 100_000_000 <$> take 2 wallet
+                    , simulationActions =
+                        [ createChest (wallet !! 0) (createChestFor "DavyJones" 50_000_000)
+                        , AddBlocks 1
+                        , createChest (wallet !! 1) (createChestFor "FlyingDutchman" 25_000_000)
+                        , AddBlocks 1
+                        ]
+                    }
+            noChestToDelay =
+                Simulation
+                    { simulationName = "No chest to Postpone"
+                    , simulationId = 3
+                    , simulationWallets = simulatorWallet registeredKnownCurrencies 100_000_000 <$> take 1 wallet
+                    , simulationActions =
+                        [ delayUnlock (wallet !! 0) (postponeUnlock "DavyJones")
+                        , AddBlocks 1
+                        ]
+                    }
+            invalidPassword =
+                Simulation
+                    { simulationName = "Wrong Password"
+                    , simulationId = 4
+                    , simulationWallets = simulatorWallet registeredKnownCurrencies 100_000_000 <$> take 2 wallet
+                    , simulationActions =
+                        [ createChest (wallet !! 0) (createChestFor "DavyJones" 50_000_000)
+                        , AddBlocks 1
+                        , delayUnlock (wallet !! 1) (postponeUnlock "FlyingDutchman")
+                        , AddBlocks 1
+                        ]
+                    }
+            noChestToUnlock =
+                Simulation
+                    { simulationName = "No chest to Unlock"
+                    , simulationId = 5
+                    , simulationWallets = simulatorWallet registeredKnownCurrencies 100_000_000 <$> take 1 wallet
+                    , simulationActions =
+                        [ unlockChest (wallet !! 0) ()
+                        , AddBlocks 1
+                        ]
+                    }
+            unlockToSoon =
+                Simulation
+                    { simulationName = "Unlock too Soon"
+                    , simulationId = 6
+                    , simulationWallets = simulatorWallet registeredKnownCurrencies 100_000_000 <$> take 4 wallet
+                    , simulationActions =
+                        [ createChest (wallet !! 0) (createChestFor "DavyJones" 50_000_000)
+                        , AddBlocks 1
+                        , addTreasure (wallet !! 1) (depositTreasure 25_000_000)
+                        , AddBlocks 1
+                        , delayUnlock (wallet !! 2) (postponeUnlock "DavyJones")
+                        , AddBlocks 29
+                        , unlockChest (wallet !! 3) ()
+                        , AddBlocks 1
+                        ]
+                    }
+                
+            
         
     
