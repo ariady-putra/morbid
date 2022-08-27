@@ -22,7 +22,7 @@ A dead-man's switch contract where you can Create Chest
 and the chest can only be unlocked after a period of time
 of not being postponed. You can also Add Treasure to the
 chest. Anyone can redeem the treasure when the deadline
-has passed.
+had passed.
 -}
 
 import Control.Monad (void)
@@ -88,7 +88,7 @@ data DelayUnlock
     , ToSchema
     , ToArgument
     )
-type UnlockChest = ()
+type UnlockChest = () -- anyone can unlock the chest when the deadline had passed
 
 -- | Contract actions enum
 data MorbidAction
@@ -202,26 +202,6 @@ isChestAvailable :: (AsContractError x) =>
     MorbidContract x Bool
 isChestAvailable = utxosAt contractAddress >>= return . Haskell.not . M.null
 
--- | DEPRECATED: Modify chest state
-accessChest :: (AsContractError x) =>
-    Ledger.PaymentPubKeyHash -> Integer -> Value -> Haskell.String ->
-    MorbidContract x ()
-accessChest pkh slot deposit message = do
-    now <- currentTime
-    logStrShowAs logInfo "Curr slot time = " now
-    
-    --  let you = ChestDatum $ now + Haskell.fromInteger (slot * 1_000) -- 2_592_000_000 -- 30 x 24 x 3600 x 1000ms
-    let you = ChestDatum
-            { _chestDeadline = now + Haskell.fromInteger (slot * 1_000)
-            , _chestCreator  = pkh
-            , _chestPassword = hashString message
-            }
-        txn = you `mustPayToTheScript` deposit
-    logStrAs logInfo message
-    
-    logShowAs logInfo you
-    void $ submitTxConstraints typedValidator txn
-
 type WhenTrue  = MorbidContract
 type WhenFalse = MorbidContract
 -- | Do action based on chest existence
@@ -272,7 +252,7 @@ createChest = endpoint @"1. Create Chest" $ \ params -> do
             
             logStrShowAs logInfo "Creating chest for " you
             void $ submitTxConstraints typedValidator txn
-        )   -- (accessChest pkh deadline initialDeposit "Creating Chest")
+        )
     
 
 -- | Add Treasure contract endpoint, anyone can deposit treasures to the chest
@@ -319,7 +299,7 @@ addTreasure = endpoint @"2. Add Treasure" $ \ params -> do
         (logStrAs logError "ERROR addTreasure: There is no chest yet, please create one first!")
     
 
--- | Delay Unlock contract endpoint, not anyone can postpone the chest unlocking
+-- | Delay Unlock contract endpoint, not anyone can postpone the chest unlocking deadline
 delayUnlock :: (AsContractError x) =>
     MorbidPromise x ()
 delayUnlock = endpoint @"3. Delay Unlock" $ \ params -> do
@@ -370,7 +350,7 @@ delayUnlock = endpoint @"3. Delay Unlock" $ \ params -> do
         (logStrAs logError "ERROR delayUnlock: Cannot delay unlock as there is no chest yet, please create one first!")
     
 
--- | Unlock Chest contract endpoint, anyone can redeem the chest contents when the deadline has passed
+-- | Unlock Chest contract endpoint, anyone can redeem the chest contents when the deadline had passed
 unlockChest :: (AsContractError x) =>
     MorbidPromise x ()
 unlockChest = endpoint @"4. Unlock Chest" $ \ _ -> do
@@ -403,12 +383,6 @@ unlockChest = endpoint @"4. Unlock Chest" $ \ _ -> do
         (logStrAs logError "ERROR unlockChest: There is no chest to unlock!")
     
 
-{-dummy :: (AsContractError x) =>
-    MorbidPromise x ()
-dummy = endpoint @"Dummy" $ \ _ -> do
-    pkh <- ownPaymentPubKeyHash
-    logStrShowAs logInfo "Dummy PKH is " pkh-}
-
 ------------------------------------------------------------ CONTRACT DEFINITIONS ------------------------------------------------------------
 
 endpoints :: (AsContractError x) =>
@@ -418,13 +392,11 @@ endpoints = selectList
             , addTreasure
             , delayUnlock
             , unlockChest
-            -- , dummy
             ]
 type MorbidSchema = Endpoint "1. Create Chest" CreateChest
                 .\/ Endpoint "2. Add Treasure" AddTreasure
                 .\/ Endpoint "3. Delay Unlock" DelayUnlock
                 .\/ Endpoint "4. Unlock Chest" UnlockChest
-                -- .\/ Endpoint "Dummy" ()
 mkSchemaDefinitions ''MorbidSchema
 
 $(mkKnownCurrencies [])
