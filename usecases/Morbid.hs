@@ -32,7 +32,6 @@ import Data.Map              qualified as M
 import Data.Maybe            (catMaybes)
 
 import Ledger               qualified
-import Ledger.Ada           qualified as Ada
 import Ledger.Constraints   (mustIncludeDatum)
 import Ledger.Constraints   (mustPayToTheScript)
 import Ledger.Constraints   (mustSpendScriptOutput)
@@ -64,6 +63,7 @@ data CreateChest
     ( FromJSON
     , ToJSON
     , ToSchema
+    , ToArgument
     )
 newtype AddTreasure
     = AddTreasure
@@ -74,6 +74,7 @@ newtype AddTreasure
     ( FromJSON
     , ToJSON
     , ToSchema
+    , ToArgument
     )
 data DelayUnlock
     = DelayUnlock
@@ -85,6 +86,7 @@ data DelayUnlock
     ( FromJSON
     , ToJSON
     , ToSchema
+    , ToArgument
     )
 type UnlockChest = ()
 
@@ -145,12 +147,13 @@ type MorbidPromise  = Promise  () MorbidSchema
 contractAddress :: Ledger.Address
 contractAddress = Scripts.validatorAddress typedValidator
 
--- | Script validator
+-- | Script contract validator
 contractValidator :: Ledger.Validator
 contractValidator = Scripts.validatorScript typedValidator
 
 -- | Convert Haskell.String to hashed BuiltinByteString
-hashString :: Haskell.String -> BuiltinByteString
+hashString :: Haskell.String ->
+    BuiltinByteString
 hashString = sha2_256 . toBuiltin . C8.pack
 
 -- | Log 2 Haskell.String as logDebug | logInfo | logWarn | logError
@@ -274,8 +277,8 @@ delayUnlock = endpoint @"3. Delay Unlock" $ \ params -> do
         (do utxoS <- utxosAt contractAddress
             logStrShowAs logInfo "UTXOs are " utxoS
             
-            case (getChestDatumFrom utxoS, [(and, out) | (and, out) <- M.toList utxoS]) of
-                (Just d@(ChestDatum chestDeadline chestCreator chestKey), (and, out):_) -> do
+            case (getChestDatumFrom utxoS, [(txOutRef, scriptChainIndexTxOut) | (txOutRef, scriptChainIndexTxOut) <- M.toList utxoS]) of
+                (Just d@(ChestDatum chestDeadline chestCreator chestKey), (txOutRef, scriptChainIndexTxOut):_) -> do
                     logStrShowAs logInfo "Chest creator is " chestCreator
                     
                     pkh <- ownPaymentPubKeyHash
@@ -288,16 +291,19 @@ delayUnlock = endpoint @"3. Delay Unlock" $ \ params -> do
                             logStrShowAs logInfo "Curr slot time = " now
                             
                             let deadline =  now + Haskell.fromInteger (_postponeForSlots params * 1_000)
-                                validity =  (unspentOutputs $ M.singleton and out) Haskell.<>
-                                            (typedValidatorLookups typedValidator) Haskell.<>
-                                            (otherScript        contractValidator)
+                                validity =  (unspentOutputs $ txOutRef `M.singleton` scriptChainIndexTxOut
+                                            ) Haskell.<>
+                                            (typedValidatorLookups typedValidator
+                                            ) Haskell.<>
+                                            (otherScript contractValidator
+                                            )
                                 you = d { _chestDeadline = deadline }
-                                txn =   (you `mustPayToTheScript`    (_ciTxOutValue out))  <>
-                                        (and `mustSpendScriptOutput` (Ledger.Redeemer
-                                            $ PlutusTx.toBuiltinData ChestRedeemer { _redeemTime = deadline })
-                                        ) <>  mustIncludeDatum       (Ledger.Datum
-                                            $ PlutusTx.toBuiltinData you)
-                            
+                                txn =   (you `mustPayToTheScript` (_ciTxOutValue scriptChainIndexTxOut)
+                                        ) <>
+                                        (mustSpendScriptOutput txOutRef (Ledger.Redeemer $ PlutusTx.toBuiltinData ChestRedeemer { _redeemTime = deadline })
+                                        ) <>
+                                        (mustIncludeDatum (Ledger.Datum $ PlutusTx.toBuiltinData you)
+                                        )
                             logStrShowAs logInfo "Delaying unlock for " you
                             void $ submitTxConstraintsWith @Morbid validity txn
                         else do
@@ -323,7 +329,7 @@ unlockChest = endpoint @"4. Unlock Chest" $ \ _ -> do
                     now <- currentTime
                     logStrShowAs logInfo "Curr slot time = " now
                     
-                    if chestDeadline < now
+                    if chestDeadline <= now
                         then do
                             let you = ChestRedeemer now
                                 txn = collectFromScript utxoS you
