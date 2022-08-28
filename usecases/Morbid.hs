@@ -356,26 +356,22 @@ unlockChest = endpoint @"4. Unlock Chest" $ \ _ -> do
         (do utxoS <- utxosAt contractAddress
             logStrShowAs logInfo "UTXOs are " utxoS
             
-            case getChestDatumFrom utxoS of
-                Just (ChestDatum chestDeadline _ _) -> do
-                    now <- currentTime
-                    logStrShowAs logInfo "Curr slot time = " now
-                    
-                    pkh <- ownPaymentPubKeyHash
-                    logStrShowAs logInfo "OwnPubKeyHash is " pkh
-                    
-                    let you = ChestRedeemer
-                            { _redeemTime     = now
-                            , _redeemPKH      = pkh
-                            , _redeemPassword = hashString ""
-                            , _redeemAction   = ActionUnlockChest
-                            }
-                        txn = collectFromScript utxoS you
-                    
-                    logStrShowAs logInfo "Unlocking chest for " you
-                    void $ submitTxConstraintsSpending typedValidator utxoS txn
-                _ -> do
-                    logStrShowAs logError "ERROR unlockChest: UTXOs are " utxoS
+            now <- currentTime
+            logStrShowAs logInfo "Curr slot time = " now
+            
+            pkh <- ownPaymentPubKeyHash
+            logStrShowAs logInfo "OwnPubKeyHash is " pkh
+            
+            let you = ChestRedeemer
+                    { _redeemTime     = now
+                    , _redeemPKH      = pkh
+                    , _redeemPassword = hashString ""
+                    , _redeemAction   = ActionUnlockChest
+                    }
+                txn = collectFromScript utxoS you
+            
+            logStrShowAs logInfo "Unlocking chest for " you
+            void $ submitTxConstraintsSpending typedValidator utxoS txn
         ){-
     otherwise-}-- >>
         (logStrAs logError "ERROR unlockChest: There is no chest to unlock!")
