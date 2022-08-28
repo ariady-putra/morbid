@@ -15,12 +15,19 @@
 
 module Morbid where
 
-{- DAVY JONES' LOCKER
+{-
+DAVY JONES' LOCKER
+
 A dead-man's switch contract where you can Create Chest
 and the chest can only be unlocked after a period of time
 of not being postponed. You can also Add Treasure to the
 chest. Anyone can redeem the treasure when the deadline
-had passed.
+has passed.
+
+author      :   Kiki Ariady Putra
+maintainer  :   ariady_putra@yahoo.com
+
+Jakarta 2022
 -}
 
 import Control.Monad (void)
@@ -86,7 +93,7 @@ data DelayUnlock
     , Playground.Contract.ToSchema
     , Playground.Contract.ToArgument
     )
-type UnlockChest = () -- anyone can unlock the chest when the deadline had passed
+type UnlockChest = () -- anyone can unlock the chest when the deadline has passed
 
 -- | Contract actions enum
 data MorbidAction
@@ -143,8 +150,8 @@ validate datum redeemer context =
         
     
 
-typedValidator :: Scripts.TypedValidator Morbid
-typedValidator = Scripts.mkTypedValidator @Morbid
+morbidValidator :: Scripts.TypedValidator Morbid
+morbidValidator = Scripts.mkTypedValidator @Morbid
     $$(PlutusTx.compile [|| validate ||])
     $$(PlutusTx.compile [||   wrap   ||])
     where wrap = Scripts.wrapValidator
@@ -160,11 +167,11 @@ type MorbidPromise  = Promise  () MorbidSchema
 
 -- | Script contract address
 contractAddress :: Ledger.Address
-contractAddress = Scripts.validatorAddress typedValidator
+contractAddress = Scripts.validatorAddress morbidValidator
 
 -- | Script contract validator
 contractValidator :: Ledger.Validator
-contractValidator = Scripts.validatorScript typedValidator
+contractValidator = Scripts.validatorScript morbidValidator
 
 -- | Convert Haskell.String to hashed BuiltinByteString
 hashString :: Haskell.String ->
@@ -249,7 +256,7 @@ createChest = endpoint @"1. Create Chest" $ \ params -> do
                 txn = you `mustPayToTheScript` initialDeposit
             
             logStrShowAs logInfo "Creating chest for " you
-            void $ submitTxConstraints typedValidator txn
+            void $ submitTxConstraints morbidValidator txn
         )
     
 
@@ -268,7 +275,7 @@ addTreasure = endpoint @"2. Add Treasure" $ \ params -> do
 
                     let validity        =   (unspentOutputs $ txOutRef `M.singleton` scriptChainIndexTxOut
                                             ) Haskell.<>
-                                            (typedValidatorLookups typedValidator
+                                            (typedValidatorLookups morbidValidator
                                             ) Haskell.<>
                                             (otherScript contractValidator
                                             )
@@ -318,7 +325,7 @@ delayUnlock = endpoint @"3. Delay Unlock" $ \ params -> do
                     let deadline        =   now + Haskell.fromInteger (_postponeForSlots params * 1_000)
                         validity        =   (unspentOutputs $ txOutRef `M.singleton` scriptChainIndexTxOut
                                             ) Haskell.<>
-                                            (typedValidatorLookups typedValidator
+                                            (typedValidatorLookups morbidValidator
                                             ) Haskell.<>
                                             (otherScript contractValidator
                                             )
@@ -348,7 +355,7 @@ delayUnlock = endpoint @"3. Delay Unlock" $ \ params -> do
         (logStrAs logError "ERROR delayUnlock: Cannot delay unlock as there is no chest yet, please create one first!")
     
 
--- | Unlock Chest contract endpoint, anyone can redeem the chest contents when the deadline had passed
+-- | Unlock Chest contract endpoint, anyone can redeem the chest contents when the deadline has passed
 unlockChest :: (AsContractError x) =>
     MorbidPromise x ()
 unlockChest = endpoint @"4. Unlock Chest" $ \ _ -> do
@@ -371,7 +378,7 @@ unlockChest = endpoint @"4. Unlock Chest" $ \ _ -> do
                 txn = collectFromScript utxoS you
             
             logStrShowAs logInfo "Unlocking chest for " you
-            void $ submitTxConstraintsSpending typedValidator utxoS txn
+            void $ submitTxConstraintsSpending morbidValidator utxoS txn
         ){-
     otherwise-}-- >>
         (logStrAs logError "ERROR unlockChest: There is no chest to unlock!")
