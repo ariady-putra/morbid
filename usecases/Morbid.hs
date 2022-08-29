@@ -240,11 +240,7 @@ createChest = endpoint @"1. Create Chest" $ \ params -> do
         (logStrAs logError "ERROR createChest: There is an active chest already!"){-
     otherwise-}-- >>
         (do pkh <- ownPaymentPubKeyHash
-            logStrShowAs logInfo "OwnPubKeyHash is " pkh
-            
             now <- currentTime
-            logStrShowAs logInfo "Curr slot time = " now
-            
             let initialDeposit = _initialDeposit params
                 deadline       = _lockForSlots   params
                 password       = _createPassword params
@@ -254,7 +250,6 @@ createChest = endpoint @"1. Create Chest" $ \ params -> do
                     , _chestPassword = hashString password
                     }
                 txn = you `mustPayToTheScript` initialDeposit
-            
             logStrShowAs logInfo "Creating chest for " you
             void $ submitTxConstraints morbidValidator txn
         )
@@ -266,13 +261,10 @@ addTreasure :: (AsContractError x) =>
 addTreasure = endpoint @"2. Add Treasure" $ \ params -> do
     whenChestExists
         (do utxoS <- utxosAt contractAddress
-            logStrShowAs logInfo "UTXOs are " utxoS
-            
             case (getChestDatumFrom utxoS, [(txOutRef, scriptChainIndexTxOut) | (txOutRef, scriptChainIndexTxOut) <- M.toList utxoS]) of
-                (Just you@(ChestDatum chestDeadline chestCreator chestKey), (txOutRef, scriptChainIndexTxOut):_) -> do
-                    pkh <- ownPaymentPubKeyHash
-                    logStrShowAs logInfo "OwnPubKeyHash is " pkh
-
+                (Just you, (txOutRef, scriptChainIndexTxOut):_) -> do
+                    pkh                 <-  ownPaymentPubKeyHash
+                    now                 <-  currentTime
                     let validity        =   (unspentOutputs $ txOutRef `M.singleton` scriptChainIndexTxOut
                                             ) Haskell.<>
                                             (typedValidatorLookups morbidValidator
@@ -284,7 +276,7 @@ addTreasure = endpoint @"2. Add Treasure" $ \ params -> do
                         builtinRedeemer = Ledger.Redeemer
                                         $ PlutusTx.toBuiltinData
                                             ChestRedeemer
-                                            { _redeemTime     = chestDeadline
+                                            { _redeemTime     = now
                                             , _redeemPKH      = pkh
                                             , _redeemPassword = hashString ""
                                             , _redeemAction   = ActionAddTreasure
@@ -313,15 +305,9 @@ delayUnlock = endpoint @"3. Delay Unlock" $ \ params -> do
             logStrShowAs logInfo "UTXOs are " utxoS
             
             case (getChestDatumFrom utxoS, [(txOutRef, scriptChainIndexTxOut) | (txOutRef, scriptChainIndexTxOut) <- M.toList utxoS]) of
-                (Just d@(ChestDatum chestDeadline chestCreator chestKey), (txOutRef, scriptChainIndexTxOut):_) -> do
-                    logStrShowAs logInfo "Chest creator is " chestCreator
-                    
-                    pkh <- ownPaymentPubKeyHash
-                    logStrShowAs logInfo "OwnPubKeyHash is " pkh
-                    
-                    now <- currentTime
-                    logStrShowAs logInfo "Curr slot time = " now
-                    
+                (Just d, (txOutRef, scriptChainIndexTxOut):_) -> do
+                    pkh                 <-  ownPaymentPubKeyHash
+                    now                 <-  currentTime
                     let deadline        =   now + Haskell.fromInteger (_postponeForSlots params * 1_000)
                         validity        =   (unspentOutputs $ txOutRef `M.singleton` scriptChainIndexTxOut
                                             ) Haskell.<>
@@ -360,15 +346,9 @@ unlockChest :: (AsContractError x) =>
     MorbidPromise x ()
 unlockChest = endpoint @"4. Unlock Chest" $ \ _ -> do
     whenChestExists
-        (do utxoS <- utxosAt contractAddress
-            logStrShowAs logInfo "UTXOs are " utxoS
-            
-            now <- currentTime
-            logStrShowAs logInfo "Curr slot time = " now
-            
-            pkh <- ownPaymentPubKeyHash
-            logStrShowAs logInfo "OwnPubKeyHash is " pkh
-            
+        (do utxoS  <- utxosAt contractAddress
+            now    <- currentTime
+            pkh    <- ownPaymentPubKeyHash
             let you = ChestRedeemer
                     { _redeemTime     = now
                     , _redeemPKH      = pkh
@@ -376,7 +356,6 @@ unlockChest = endpoint @"4. Unlock Chest" $ \ _ -> do
                     , _redeemAction   = ActionUnlockChest
                     }
                 txn = collectFromScript utxoS you
-            
             logStrShowAs logInfo "Unlocking chest for " you
             void $ submitTxConstraintsSpending morbidValidator utxoS txn
         ){-
