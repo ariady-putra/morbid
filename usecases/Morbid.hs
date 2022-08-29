@@ -25,7 +25,7 @@ chest. Anyone can redeem the treasure when the deadline
 has passed.
 
 author      :   Kiki Ariady Putra
-maintainer  :   ariady_putra@yahoo.com
+maintainer  :   aurodeus@gmail.com
 
 Jakarta 2022
 -}
