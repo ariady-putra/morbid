@@ -261,7 +261,7 @@ addTreasure :: (AsContractError x) =>
 addTreasure = endpoint @"2. Add Treasure" $ \ params -> do
     whenChestExists
         (do utxoS <- utxosAt contractAddress
-            case (getChestDatumFrom utxoS, [(txOutRef, scriptChainIndexTxOut) | (txOutRef, scriptChainIndexTxOut) <- M.toList utxoS]) of
+            case (getChestDatumFrom utxoS, M.toList utxoS) of
                 (Just you, (txOutRef, scriptChainIndexTxOut):_) -> do
                     pkh                 <-  ownPaymentPubKeyHash
                     now                 <-  currentTime
@@ -302,7 +302,7 @@ delayUnlock :: (AsContractError x) =>
 delayUnlock = endpoint @"3. Delay Unlock" $ \ params -> do
     whenChestExists
         (do utxoS <- utxosAt contractAddress
-            case (getChestDatumFrom utxoS, [(txOutRef, scriptChainIndexTxOut) | (txOutRef, scriptChainIndexTxOut) <- M.toList utxoS]) of
+            case (getChestDatumFrom utxoS, M.toList utxoS) of
                 (Just d, (txOutRef, scriptChainIndexTxOut):_) -> do
                     pkh                 <-  ownPaymentPubKeyHash
                     now                 <-  currentTime
