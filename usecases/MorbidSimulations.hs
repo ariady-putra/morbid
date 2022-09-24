@@ -81,13 +81,13 @@ simulations =
                 , simulationWallets = simulatorWallet registeredKnownCurrencies 100_000_000 <$> take 4 wallet
                 , simulationActions =
                     [ createChest (wallet !! 0) (createChestFor "DavyJones" 50_000_000)
-                    , AddBlocks 1
+                    , AddBlocks 10
                     , addTreasure (wallet !! 1) (depositTreasure 25_000_000)
-                    , AddBlocks 1
+                    , AddBlocks 10
                     , delayUnlock (wallet !! 2) (postponeUnlock "DavyJones")
                     , AddBlocks 30
                     , unlockChest (wallet !! 3) ()
-                    , AddBlocks 1
+                    , AddBlocks 10
                     ]
                 }
             duplicateChest =
@@ -97,9 +97,9 @@ simulations =
                     , simulationWallets = simulatorWallet registeredKnownCurrencies 100_000_000 <$> take 2 wallet
                     , simulationActions =
                         [ createChest (wallet !! 0) (createChestFor "DavyJones" 50_000_000)
-                        , AddBlocks 1
+                        , AddBlocks 10
                         , createChest (wallet !! 1) (createChestFor "FlyingDutchman" 25_000_000)
-                        , AddBlocks 1
+                        , AddBlocks 10
                         ]
                     }
             noChestToDelay =
@@ -109,7 +109,7 @@ simulations =
                     , simulationWallets = simulatorWallet registeredKnownCurrencies 100_000_000 <$> take 1 wallet
                     , simulationActions =
                         [ delayUnlock (wallet !! 0) (postponeUnlock "DavyJones")
-                        , AddBlocks 1
+                        , AddBlocks 10
                         ]
                     }
             invalidPassword =
@@ -119,9 +119,9 @@ simulations =
                     , simulationWallets = simulatorWallet registeredKnownCurrencies 100_000_000 <$> take 2 wallet
                     , simulationActions =
                         [ createChest (wallet !! 0) (createChestFor "DavyJones" 50_000_000)
-                        , AddBlocks 1
+                        , AddBlocks 10
                         , delayUnlock (wallet !! 1) (postponeUnlock "FlyingDutchman")
-                        , AddBlocks 1
+                        , AddBlocks 10
                         ]
                     }
             noChestToUnlock =
@@ -131,7 +131,7 @@ simulations =
                     , simulationWallets = simulatorWallet registeredKnownCurrencies 100_000_000 <$> take 1 wallet
                     , simulationActions =
                         [ unlockChest (wallet !! 0) ()
-                        , AddBlocks 1
+                        , AddBlocks 10
                         ]
                     }
             unlockToSoon =
@@ -141,13 +141,13 @@ simulations =
                     , simulationWallets = simulatorWallet registeredKnownCurrencies 100_000_000 <$> take 4 wallet
                     , simulationActions =
                         [ createChest (wallet !! 0) (createChestFor "DavyJones" 50_000_000)
-                        , AddBlocks 1
+                        , AddBlocks 10
                         , addTreasure (wallet !! 1) (depositTreasure 25_000_000)
-                        , AddBlocks 1
+                        , AddBlocks 10
                         , delayUnlock (wallet !! 2) (postponeUnlock "DavyJones")
                         , AddBlocks 29
                         , unlockChest (wallet !! 3) ()
-                        , AddBlocks 1
+                        , AddBlocks 10
                         ]
                     }
                 
