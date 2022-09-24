@@ -37,9 +37,12 @@ import Data.Map              qualified as M
 import Data.Maybe            (catMaybes)
 
 import Ledger               qualified
+import Ledger               (from, before)
+import Ledger               (txInfoValidRange)
 import Ledger.Constraints   (mustIncludeDatum)
 import Ledger.Constraints   (mustPayToTheScript)
 import Ledger.Constraints   (mustSpendScriptOutput)
+import Ledger.Constraints   (mustValidateIn)
 import Ledger.Constraints   (otherScript)
 import Ledger.Constraints   (typedValidatorLookups)
 import Ledger.Constraints   (unspentOutputs)
@@ -146,7 +149,8 @@ validate datum redeemer context =
             _chestPassword datum == _redeemPassword redeemer
         ActionUnlockChest -> traceIfFalse -- just validate deadline
             "On-chain validation ERROR ActionUnlockChest: Chest deadline has not been reached yet!" $
-            _chestDeadline datum <= _redeemTime redeemer
+            -- _chestDeadline datum <= _redeemTime redeemer
+            _chestDeadline datum `before` txInfoValidRange (scriptContextTxInfo context)
         
     
 
@@ -353,7 +357,7 @@ unlockChest = endpoint @"4. Unlock Chest" $ \ _ -> do
                     , _redeemPassword = hashString ""
                     , _redeemAction   = ActionUnlockChest
                     }
-                txn = collectFromScript utxoS you
+                txn = collectFromScript utxoS you <> mustValidateIn (from now)
             logStrShowAs logInfo "Unlocking chest for " you
             void $ submitTxConstraintsSpending morbidValidator utxoS txn
         ){-
