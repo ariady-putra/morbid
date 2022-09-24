@@ -121,8 +121,7 @@ PlutusTx.unstableMakeIsData ''ChestDatum
 -- | Redeemer parameters
 data ChestRedeemer
     = ChestRedeemer
-    { _redeemTime     :: Ledger.POSIXTime
-    , _redeemPKH      :: Ledger.PaymentPubKeyHash
+    { _redeemPKH      :: Ledger.PaymentPubKeyHash
     , _redeemPassword :: BuiltinByteString
     , _redeemAction   :: MorbidAction
     }
@@ -149,7 +148,6 @@ validate datum redeemer context =
             _chestPassword datum == _redeemPassword redeemer
         ActionUnlockChest -> traceIfFalse -- just validate deadline
             "On-chain validation ERROR ActionUnlockChest: Chest deadline has not been reached yet!" $
-            -- _chestDeadline datum <= _redeemTime redeemer
             _chestDeadline datum `before` txInfoValidRange (scriptContextTxInfo context)
         
     
@@ -268,7 +266,6 @@ addTreasure = endpoint @"2. Add Treasure" $ \ params -> do
             case (getChestDatumFrom utxoS, M.toList utxoS) of
                 (Just you, (txOutRef, scriptChainIndexTxOut):_) -> do
                     pkh                 <-  ownPaymentPubKeyHash
-                    now                 <-  currentTime
                     let validity        =   (unspentOutputs $ txOutRef `M.singleton` scriptChainIndexTxOut
                                             ) Haskell.<>
                                             (typedValidatorLookups morbidValidator
@@ -280,8 +277,7 @@ addTreasure = endpoint @"2. Add Treasure" $ \ params -> do
                         builtinRedeemer = Ledger.Redeemer
                                         $ PlutusTx.toBuiltinData
                                             ChestRedeemer
-                                            { _redeemTime     = now
-                                            , _redeemPKH      = pkh
+                                            { _redeemPKH      = pkh
                                             , _redeemPassword = hashString ""
                                             , _redeemAction   = ActionAddTreasure
                                             }
@@ -323,8 +319,7 @@ delayUnlock = endpoint @"3. Delay Unlock" $ \ params -> do
                         builtinRedeemer = Ledger.Redeemer
                                         $ PlutusTx.toBuiltinData
                                             ChestRedeemer
-                                            { _redeemTime     = deadline
-                                            , _redeemPKH      = pkh
+                                            { _redeemPKH      = pkh
                                             , _redeemPassword = hashString $ _password params
                                             , _redeemAction   = ActionDelayUnlock
                                             }
@@ -352,8 +347,7 @@ unlockChest = endpoint @"4. Unlock Chest" $ \ _ -> do
             now    <- currentTime
             pkh    <- ownPaymentPubKeyHash
             let you = ChestRedeemer
-                    { _redeemTime     = now
-                    , _redeemPKH      = pkh
+                    { _redeemPKH      = pkh
                     , _redeemPassword = hashString ""
                     , _redeemAction   = ActionUnlockChest
                     }
