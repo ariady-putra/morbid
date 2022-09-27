@@ -98,16 +98,6 @@ data DelayUnlock
     )
 type UnlockChest = () -- anyone can unlock the chest when the deadline has passed
 
--- | Contract actions enum
-data MorbidAction
-    = ActionCreateChest
-    | ActionAddTreasure
-    | ActionDelayUnlock
-    | ActionUnlockChest
-    deriving Show
-PlutusTx.unstableMakeIsData ''MorbidAction
-PlutusTx.makeLift ''MorbidAction
-
 -- | Datum parameters
 data ChestDatum
     = ChestDatum
@@ -120,11 +110,13 @@ PlutusTx.unstableMakeIsData ''ChestDatum
 
 -- | Redeemer parameters
 data ChestRedeemer
-    = ChestRedeemer
+    = ActionCreateChest
+    | ActionAddTreasure
+    | ActionDelayUnlock
     { _redeemPKH      :: Ledger.PaymentPubKeyHash
     , _redeemPassword :: BuiltinByteString
-    , _redeemAction   :: MorbidAction
     }
+    | ActionUnlockChest
     deriving Show
 PlutusTx.unstableMakeIsData ''ChestRedeemer
 
@@ -138,15 +130,13 @@ instance Scripts.ValidatorTypes Morbid where
 {-# INLINABLE validate #-}
 validate :: ChestDatum -> ChestRedeemer -> ScriptContext ->
     Bool
-validate datum redeemer context =
-    case _redeemAction redeemer of
-        ActionCreateChest -> True -- off-chain validation
-        ActionAddTreasure -> True -- anyone can add treasures
-        ActionDelayUnlock -> traceIfFalse -- just validate either owner or password
+validate _ ActionCreateChest _ = True -- off-chain validation
+validate _ ActionAddTreasure _ = True -- anyone can add treasures
+validate datum (ActionDelayUnlock pkh password) _ = traceIfFalse -- just validate either owner or password
             "On-chain validation ERROR ActionDelayUnlock: You're not the chest creator or Invalid Password" $
-            _chestCreator  datum == _redeemPKH      redeemer ||
-            _chestPassword datum == _redeemPassword redeemer
-        ActionUnlockChest -> traceIfFalse -- just validate deadline
+            _chestCreator  datum == pkh ||
+            _chestPassword datum == password
+validate datum ActionUnlockChest context = traceIfFalse -- just validate deadline
             "On-chain validation ERROR ActionUnlockChest: Chest deadline has not been reached yet!" $
             _chestDeadline datum `before` txInfoValidRange (scriptContextTxInfo context)
         
@@ -265,7 +255,6 @@ addTreasure = endpoint @"2. Add Treasure" $ \ params -> do
         (do utxoS <- utxosAt contractAddress
             case (getChestDatumFrom utxoS, M.toList utxoS) of
                 (Just you, (txOutRef, scriptChainIndexTxOut):_) -> do
-                    pkh                 <-  ownPaymentPubKeyHash
                     let validity        =   (unspentOutputs $ txOutRef `M.singleton` scriptChainIndexTxOut
                                             ) Haskell.<>
                                             (typedValidatorLookups morbidValidator
@@ -275,12 +264,7 @@ addTreasure = endpoint @"2. Add Treasure" $ \ params -> do
                         builtinDatum    = Ledger.Datum
                                         $ PlutusTx.toBuiltinData you
                         builtinRedeemer = Ledger.Redeemer
-                                        $ PlutusTx.toBuiltinData
-                                            ChestRedeemer
-                                            { _redeemPKH      = pkh
-                                            , _redeemPassword = hashString ""
-                                            , _redeemAction   = ActionAddTreasure
-                                            }
+                                        $ PlutusTx.toBuiltinData ActionAddTreasure
                         txn             =   (you `mustPayToTheScript` (_ciTxOutValue scriptChainIndexTxOut + _deposit params)
                                             ) <>
                                             (mustSpendScriptOutput txOutRef builtinRedeemer
@@ -318,10 +302,9 @@ delayUnlock = endpoint @"3. Delay Unlock" $ \ params -> do
                                         $ PlutusTx.toBuiltinData you
                         builtinRedeemer = Ledger.Redeemer
                                         $ PlutusTx.toBuiltinData
-                                            ChestRedeemer
+                                            ActionDelayUnlock
                                             { _redeemPKH      = pkh
                                             , _redeemPassword = hashString $ _password params
-                                            , _redeemAction   = ActionDelayUnlock
                                             }
                         txn             =   (you `mustPayToTheScript` (_ciTxOutValue scriptChainIndexTxOut)
                                             ) <>
@@ -345,12 +328,7 @@ unlockChest = endpoint @"4. Unlock Chest" $ \ _ -> do
     whenChestExists
         (do utxoS  <- utxosAt contractAddress
             now    <- currentTime
-            pkh    <- ownPaymentPubKeyHash
-            let you = ChestRedeemer
-                    { _redeemPKH      = pkh
-                    , _redeemPassword = hashString ""
-                    , _redeemAction   = ActionUnlockChest
-                    }
+            let you = ActionUnlockChest
                 txn = collectFromScript utxoS you <> mustValidateIn (from now)
             logStrShowAs logInfo "Unlocking chest for " you
             void $ submitTxConstraintsSpending morbidValidator utxoS txn
