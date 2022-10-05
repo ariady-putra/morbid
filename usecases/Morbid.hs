@@ -106,7 +106,9 @@ data ChestDatum
     , _chestPassword :: BuiltinByteString
     }
     deriving Show
-PlutusTx.unstableMakeIsData ''ChestDatum
+PlutusTx.makeIsDataIndexed ''ChestDatum
+    [ ('ChestDatum, 0)
+    ]
 
 -- | Redeemer parameters
 data ChestRedeemer
@@ -118,7 +120,12 @@ data ChestRedeemer
     }
     | ActionUnlockChest
     deriving Show
-PlutusTx.unstableMakeIsData ''ChestRedeemer
+PlutusTx.makeIsDataIndexed ''ChestRedeemer
+    [ ('ActionCreateChest, 0)
+    , ('ActionAddTreasure, 1)
+    , ('ActionDelayUnlock, 2)
+    , ('ActionUnlockChest, 3)
+    ]
 
 data Morbid
 instance Scripts.ValidatorTypes Morbid where
