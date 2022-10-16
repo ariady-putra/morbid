@@ -137,8 +137,12 @@ instance Scripts.ValidatorTypes Morbid where
 {-# INLINABLE validate #-}
 validate :: ChestDatum -> ChestRedeemer -> ScriptContext ->
     Bool
-validate _ ActionCreateChest _ = True -- off-chain validation
-validate _ ActionAddTreasure _ = True -- anyone can add treasures
+validate _ ActionCreateChest _ = False -- off-chain validation
+validate datum ActionAddTreasure context = -- anyone can add treasures
+    let builtinDatum = Ledger.Datum $ PlutusTx.toBuiltinData datum
+        contextDatum = snd . head . Ledger.txInfoData $ scriptContextTxInfo context
+    in  traceIfFalse "On-chain validation ERROR ActionAddTreasure: Tampered Datum" $
+            builtinDatum == contextDatum
 validate datum (ActionDelayUnlock pkh password) _ = traceIfFalse -- just validate either owner or password
             "On-chain validation ERROR ActionDelayUnlock: You're not the chest creator or Invalid Password" $
             _chestCreator  datum == pkh ||
