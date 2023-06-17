@@ -109,11 +109,11 @@ fn must_not_be_drained(context ctx: ScriptContext) -> Bool {
   let txn = ctx.transaction
   let input_ada =
     txn.inputs
-      |> map(fn(input) { input.output.value |> lovelace_of })
+      |> map(fn(input) { lovelace_of(input.output.value) })
       |> sum_ints()
   let output_ada =
     txn.outputs
-      |> map(fn(output) { output.value |> lovelace_of })
+      |> map(fn(output) { lovelace_of(output.value) })
       |> sum_ints()
   //
   // it's okay to receive more inputs,
