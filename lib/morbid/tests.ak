@@ -1,82 +1,100 @@
 //// ```
 //// ┍━ morbid/tests ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-//// │ PASS [mem: 3299559, cpu: 1784210390] allow_delay_by_creator
+//// │ PASS [mem: 3571453, cpu: 1933925498] allow_delay_by_creator
+//// │ ↳ Datum: "d8799f055143683335375f437233343730725f504b48ff"
+//// │ ↳ Redeemer: "d87980"
+//// │ ↳ ScriptContext: "d8799fd8799f9fd8799fd8799fd8799f514372333437334368333537377848343568ff00ffd8799fd8799fd8799f40ffd87a80ffa140a1401a00989680d87b9fd8799f055143683335375f437233343730725f504b48ffffd87a80ffffff809fd8799fd8799fd8799f40ffd87a80ffa140a1401a00989680d87b9fd8799f065143683335375f437233343730725f504b48ffffd87a80ffffa140a1401a001e8480a080a0d8799fd8799fd87b80d87a80ffd8799fd87980d87a80ffff9f5143683335375f437233343730725f504b48ffa0a0d8799f40ffffd87a9fd8799fd8799f40ff00ffffff"
+//// │ PASS [mem: 3572816, cpu: 1934531638] disallow_delay_by_others
+//// │ ↳ Datum: "d8799f055143683335375f437233343730725f504b48ff"
+//// │ ↳ Redeemer: "d87980"
+//// │ ↳ ScriptContext: "d8799fd8799f9fd8799fd8799fd8799f514372333437334368333537377848343568ff00ffd8799fd8799fd8799f40ffd87a80ffa140a1401a00989680d87b9fd8799f055143683335375f437233343730725f504b48ffffd87a80ffffff809fd8799fd8799fd8799f40ffd87a80ffa140a1401a00989680d87b9fd8799f065143683335375f437233343730725f504b48ffffd87a80ffffa140a1401a001e8480a080a0d8799fd8799fd87b80d87a80ffd8799fd87980d87a80ffff9f51303768337227355075384b337948343568ffa0a0d8799f40ffffd87a9fd8799fd8799f40ff00ffffff"
+//// │ ↳ txn_signed_by_creator() ? False
+//// │ PASS [mem: 3113076, cpu: 1720327151] disallow_delay_by_no_tx_signer
+//// │ ↳ Datum: "d8799f055143683335375f437233343730725f504b48ff"
+//// │ ↳ Redeemer: "d87980"
+//// │ ↳ ScriptContext: "d8799fd8799f9fd8799fd8799fd8799f514372333437334368333537377848343568ff00ffd8799fd8799fd8799f40ffd87a80ffa140a1401a00989680d87b9fd8799f055143683335375f437233343730725f504b48ffffd87a80ffffff809fd8799fd8799fd8799f40ffd87a80ffa140a1401a00989680d87b9fd8799f065143683335375f437233343730725f504b48ffffd87a80ffffa140a1401a001e8480a080a0d8799fd8799fd87b80d87a80ffd8799fd87980d87a80ffff80a0a0d8799f40ffffd87a9fd8799fd8799f40ff00ffffff"
+//// │ ↳ txn_signed_by_creator() ? False
+//// │ PASS [mem: 3478535, cpu: 1878497642] disallow_delay_with_draining_ada
+//// │ ↳ Datum: "d8799f055143683335375f437233343730725f504b48ff"
+//// │ ↳ Redeemer: "d87980"
+//// │ ↳ ScriptContext: "d8799fd8799f9fd8799fd8799fd8799f514372333437334368333537377848343568ff00ffd8799fd8799fd8799f40ffd87a80ffa0d87b9fd8799f055143683335375f437233343730725f504b48ffffd87a80ffffff809fd8799fd8799fd8799f40ffd87a80ffa140a1401a00989680d87b9fd8799f065143683335375f437233343730725f504b48ffffd87a80ffffa140a1401a001e8480a080a0d8799fd8799fd87b80d87a80ffd8799fd87980d87a80ffff9f5143683335375f437233343730725f504b48ffa0a0d8799f40ffffd87a9fd8799fd8799f40ff00ffffff"
+//// │ ↳ input_ada >= output_ada ? False
+//// │ ↳ txn_must_not_drain_ada() ? False
+//// │ PASS [mem: 3326273, cpu: 1793933668] disallow_delay_without_recreate_chest
 //// │ ↳ Datum: "d8799f055143683335375f437233343730725f504b48ff"
 //// │ ↳ Redeemer: "d87980"
 //// │ ↳ ScriptContext: "d8799fd8799f9fd8799fd8799fd8799f514372333437334368333537377848343568ff00ffd8799fd8799fd8799f40ffd87a80ffa140a1401a00989680d87b9fd8799f055143683335375f437233343730725f504b48ffffd87a80ffffff809fd8799fd8799fd8799f40ffd87a80ffa140a1401a00989680d87980d87a80ffffa140a1401a001e8480a080a0d8799fd8799fd87b80d87a80ffd8799fd87980d87a80ffff9f5143683335375f437233343730725f504b48ffa0a0d8799f40ffffd87a9fd8799fd8799f40ff00ffffff"
-//// │ PASS [mem: 3299991, cpu: 1784514732] disallow_delay_by_others
+//// │ ↳ txn_must_recreate_chest() ? False
+//// │ PASS [mem: 3573318, cpu: 1934844738] disallow_delay_by_recreate_chest_with_earlier_deadline
 //// │ ↳ Datum: "d8799f055143683335375f437233343730725f504b48ff"
 //// │ ↳ Redeemer: "d87980"
-//// │ ↳ ScriptContext: "d8799fd8799f9fd8799fd8799fd8799f514372333437334368333537377848343568ff00ffd8799fd8799fd8799f40ffd87a80ffa140a1401a00989680d87b9fd8799f055143683335375f437233343730725f504b48ffffd87a80ffffff809fd8799fd8799fd8799f40ffd87a80ffa140a1401a00989680d87980d87a80ffffa140a1401a001e8480a080a0d8799fd8799fd87b80d87a80ffd8799fd87980d87a80ffff9f51303768337227355075384b337948343568ffa0a0d8799f40ffffd87a9fd8799fd8799f40ff00ffffff"
-//// │ ↳ txn_signed_only_by_creator() ? False
-//// │ PASS [mem: 2842180, cpu: 1570898309] disallow_delay_by_no_tx_signer
+//// │ ↳ ScriptContext: "d8799fd8799f9fd8799fd8799fd8799f514372333437334368333537377848343568ff00ffd8799fd8799fd8799f40ffd87a80ffa140a1401a00989680d87b9fd8799f055143683335375f437233343730725f504b48ffffd87a80ffffff809fd8799fd8799fd8799f40ffd87a80ffa140a1401a00989680d87b9fd8799f045143683335375f437233343730725f504b48ffffd87a80ffffa140a1401a001e8480a080a0d8799fd8799fd87b80d87a80ffd8799fd87980d87a80ffff9f5143683335375f437233343730725f504b48ffa0a0d8799f40ffffd87a9fd8799fd8799f40ff00ffffff"
+//// │ ↳ new_deadline > deadline ? False
+//// │ ↳ txn_must_recreate_chest() ? False
+//// │ PASS [mem: 3572116, cpu: 1934278775] disallow_delay_by_recreate_chest_with_different_creator
 //// │ ↳ Datum: "d8799f055143683335375f437233343730725f504b48ff"
 //// │ ↳ Redeemer: "d87980"
-//// │ ↳ ScriptContext: "d8799fd8799f9fd8799fd8799fd8799f514372333437334368333537377848343568ff00ffd8799fd8799fd8799f40ffd87a80ffa140a1401a00989680d87b9fd8799f055143683335375f437233343730725f504b48ffffd87a80ffffff809fd8799fd8799fd8799f40ffd87a80ffa140a1401a00989680d87980d87a80ffffa140a1401a001e8480a080a0d8799fd8799fd87b80d87a80ffd8799fd87980d87a80ffff80a0a0d8799f40ffffd87a9fd8799fd8799f40ff00ffffff"
-//// │ ↳ txn_signed_only_by_creator() ? False
-//// │ PASS [mem: 3206906, cpu: 1728745804] disallow_delay_by_unbalanced_ada
-//// │ ↳ Datum: "d8799f055143683335375f437233343730725f504b48ff"
-//// │ ↳ Redeemer: "d87980"
-//// │ ↳ ScriptContext: "d8799fd8799f9fd8799fd8799fd8799f514372333437334368333537377848343568ff00ffd8799fd8799fd8799f40ffd87a80ffa0d87b9fd8799f055143683335375f437233343730725f504b48ffffd87a80ffffff809fd8799fd8799fd8799f40ffd87a80ffa140a1401a00989680d87980d87a80ffffa140a1401a001e8480a080a0d8799fd8799fd87b80d87a80ffd8799fd87980d87a80ffff9f5143683335375f437233343730725f504b48ffa0a0d8799f40ffffd87a9fd8799fd8799f40ff00ffffff"
-//// │ ↳ txn_io_ada_balanced() ? False
-//// │ PASS [mem: 4492629, cpu: 2414832644] allow_delay_by_referenced_datum
+//// │ ↳ ScriptContext: "d8799fd8799f9fd8799fd8799fd8799f514372333437334368333537377848343568ff00ffd8799fd8799fd8799f40ffd87a80ffa140a1401a00989680d87b9fd8799f055143683335375f437233343730725f504b48ffffd87a80ffffff809fd8799fd8799fd8799f40ffd87a80ffa140a1401a00989680d87b9fd8799f0651303768337227355075384b337948343568ffffd87a80ffffa140a1401a001e8480a080a0d8799fd8799fd87b80d87a80ffd8799fd87980d87a80ffff9f5143683335375f437233343730725f504b48ffa0a0d8799f40ffffd87a9fd8799fd8799f40ff00ffffff"
+//// │ ↳ new_creator == creator ? False
+//// │ ↳ txn_must_recreate_chest() ? False
+//// │ PASS [mem: 4755591, cpu: 2561383808] allow_delay_by_referenced_datum
 //// │ ↳ Datum: "d87a9f514372333437334368333537377848343568ff"
 //// │ ↳ Redeemer: "d87980"
-//// │ ↳ ScriptContext: "d8799fd8799f9fd8799fd8799fd8799f513037683527355f5f37786e5f5f48343568ff00ffd8799fd8799fd8799f40ffd87a80ffa140a1401a00989680d87b9fd87a9f514372333437334368333537377848343568ffffd87a80ffffd8799fd8799fd8799f514372333437334368333537377848343568ff00ffd8799fd8799fd8799f40ffd87a80ffa140a1401a00989680d87b9fd8799f055143683335375f437233343730725f504b48ffffd87a80ffffff809fd8799fd8799fd8799f40ffd87a80ffa140a1401a01312d00d87980d87a80ffffa140a1401a001e8480a080a0d8799fd8799fd87b80d87a80ffd8799fd87980d87a80ffff9f5143683335375f437233343730725f504b48ffa0a0d8799f40ffffd87a9fd8799fd8799f40ff00ffffff"
-//// │ PASS [mem: 4493061, cpu: 2415136986] disallow_delay_by_incorrect_referenced_datum_tx_signer
+//// │ ↳ ScriptContext: "d8799fd8799f9fd8799fd8799fd8799f513037683527355f5f37786e5f5f48343568ff00ffd8799fd8799fd8799f40ffd87a80ffa140a1401a00989680d87b9fd87a9f514372333437334368333537377848343568ffffd87a80ffffd8799fd8799fd8799f514372333437334368333537377848343568ff00ffd8799fd8799fd8799f40ffd87a80ffa140a1401a00989680d87b9fd8799f055143683335375f437233343730725f504b48ffffd87a80ffffff809fd8799fd8799fd8799f40ffd87a80ffa140a1401a01312d00d87b9fd8799f065143683335375f437233343730725f504b48ffffd87a80ffffa140a1401a001e8480a080a0d8799fd8799fd87b80d87a80ffd8799fd87980d87a80ffff9f5143683335375f437233343730725f504b48ffa0a0d8799f40ffffd87a9fd8799fd8799f40ff00ffffff"
+//// │ PASS [mem: 4756954, cpu: 2561989948] disallow_delay_by_incorrect_referenced_datum_tx_signer
 //// │ ↳ Datum: "d87a9f514372333437334368333537377848343568ff"
 //// │ ↳ Redeemer: "d87980"
-//// │ ↳ ScriptContext: "d8799fd8799f9fd8799fd8799fd8799f513037683527355f5f37786e5f5f48343568ff00ffd8799fd8799fd8799f40ffd87a80ffa140a1401a00989680d87b9fd87a9f514372333437334368333537377848343568ffffd87a80ffffd8799fd8799fd8799f514372333437334368333537377848343568ff00ffd8799fd8799fd8799f40ffd87a80ffa140a1401a00989680d87b9fd8799f055143683335375f437233343730725f504b48ffffd87a80ffffff809fd8799fd8799fd8799f40ffd87a80ffa140a1401a01312d00d87980d87a80ffffa140a1401a001e8480a080a0d8799fd8799fd87b80d87a80ffd8799fd87980d87a80ffff9f51303768337227355075384b337948343568ffa0a0d8799f40ffffd87a9fd8799fd8799f40ff00ffffff"
-//// │ ↳ txn_signed_only_by_creator() ? False
-//// │ PASS [mem: 4300819, cpu: 2340477633] disallow_delay_by_incorrect_referenced_datum_type
+//// │ ↳ ScriptContext: "d8799fd8799f9fd8799fd8799fd8799f513037683527355f5f37786e5f5f48343568ff00ffd8799fd8799fd8799f40ffd87a80ffa140a1401a00989680d87b9fd87a9f514372333437334368333537377848343568ffffd87a80ffffd8799fd8799fd8799f514372333437334368333537377848343568ff00ffd8799fd8799fd8799f40ffd87a80ffa140a1401a00989680d87b9fd8799f055143683335375f437233343730725f504b48ffffd87a80ffffff809fd8799fd8799fd8799f40ffd87a80ffa140a1401a01312d00d87b9fd8799f065143683335375f437233343730725f504b48ffffd87a80ffffa140a1401a001e8480a080a0d8799fd8799fd87b80d87a80ffd8799fd87980d87a80ffff9f51303768337227355075384b337948343568ffa0a0d8799f40ffffd87a9fd8799fd8799f40ff00ffffff"
+//// │ ↳ txn_signed_by_creator() ? False
+//// │ PASS [mem: 4504053, cpu: 2464658983] disallow_delay_by_incorrect_referenced_datum_type
 //// │ ↳ Datum: "d87a9f514372333437334368333537377848343568ff"
 //// │ ↳ Redeemer: "d87980"
-//// │ ↳ ScriptContext: "d8799fd8799f9fd8799fd8799fd8799f513037683527355f5f37786e5f5f48343568ff00ffd8799fd8799fd8799f40ffd87a80ffa140a1401a00989680d87b9fd87a9f514372333437334368333537377848343568ffffd87a80ffffd8799fd8799fd8799f514372333437334368333537377848343568ff00ffd8799fd8799fd8799f40ffd87a80ffa140a1401a00989680d87b9fd87a9f514372333437334368333537377848343568ffffd87a80ffffff809fd8799fd8799fd8799f40ffd87a80ffa140a1401a01312d00d87980d87a80ffffa140a1401a001e8480a080a0d8799fd8799fd87b80d87a80ffd8799fd87980d87a80ffff9f5143683335375f437233343730725f504b48ffa0a0d8799f40ffffd87a9fd8799fd8799f40ff00ffffff"
-//// │ PASS [mem: 4297581, cpu: 2342909543] disallow_delay_by_incorrect_referenced_datum_tx_hash
+//// │ ↳ ScriptContext: "d8799fd8799f9fd8799fd8799fd8799f513037683527355f5f37786e5f5f48343568ff00ffd8799fd8799fd8799f40ffd87a80ffa140a1401a00989680d87b9fd87a9f514372333437334368333537377848343568ffffd87a80ffffd8799fd8799fd8799f514372333437334368333537377848343568ff00ffd8799fd8799fd8799f40ffd87a80ffa140a1401a00989680d87b9fd87a9f514372333437334368333537377848343568ffffd87a80ffffff809fd8799fd8799fd8799f40ffd87a80ffa140a1401a01312d00d87b9fd8799f065143683335375f437233343730725f504b48ffffd87a80ffffa140a1401a001e8480a080a0d8799fd8799fd87b80d87a80ffd8799fd87980d87a80ffff9f5143683335375f437233343730725f504b48ffa0a0d8799f40ffffd87a9fd8799fd8799f40ff00ffffff"
+//// │ PASS [mem: 4500827, cpu: 2467097025] disallow_delay_by_incorrect_referenced_datum_tx_hash
 //// │ ↳ Datum: "d87a9f513037683527355f5f37786e5f5f48343568ff"
 //// │ ↳ Redeemer: "d87980"
-//// │ ↳ ScriptContext: "d8799fd8799f9fd8799fd8799fd8799f513037683527355f5f37786e5f5f48343568ff00ffd8799fd8799fd8799f40ffd87a80ffa140a1401a00989680d87b9fd87a9f513037683527355f5f37786e5f5f48343568ffffd87a80ffffd8799fd8799fd8799f514372333437334368333537377848343568ff00ffd8799fd8799fd8799f40ffd87a80ffa140a1401a00989680d87b9fd8799f055143683335375f437233343730725f504b48ffffd87a80ffffff809fd8799fd8799fd8799f40ffd87a80ffa140a1401a01312d00d87980d87a80ffffa140a1401a001e8480a080a0d8799fd8799fd87b80d87a80ffd8799fd87980d87a80ffff9f5143683335375f437233343730725f504b48ffa0a0d8799f40ffffd87a9fd8799fd8799f40ff00ffffff"
-//// │ PASS [mem: 3172035, cpu: 1729776950] disallow_delay_by_no_referenced_datum
+//// │ ↳ ScriptContext: "d8799fd8799f9fd8799fd8799fd8799f513037683527355f5f37786e5f5f48343568ff00ffd8799fd8799fd8799f40ffd87a80ffa140a1401a00989680d87b9fd87a9f513037683527355f5f37786e5f5f48343568ffffd87a80ffffd8799fd8799fd8799f514372333437334368333537377848343568ff00ffd8799fd8799fd8799f40ffd87a80ffa140a1401a00989680d87b9fd8799f055143683335375f437233343730725f504b48ffffd87a80ffffff809fd8799fd8799fd8799f40ffd87a80ffa140a1401a01312d00d87b9fd8799f065143683335375f437233343730725f504b48ffffd87a80ffffa140a1401a001e8480a080a0d8799fd8799fd87b80d87a80ffd8799fd87980d87a80ffff9f5143683335375f437233343730725f504b48ffa0a0d8799f40ffffd87a9fd8799fd8799f40ff00ffffff"
+//// │ PASS [mem: 3384201, cpu: 1857122244] disallow_delay_by_no_referenced_datum
 //// │ ↳ Datum: "d87a9f514372333437334368333537377848343568ff"
 //// │ ↳ Redeemer: "d87980"
-//// │ ↳ ScriptContext: "d8799fd8799f9fd8799fd8799fd8799f5135306d3327355f5f37786e5f5f48343568ff00ffd8799fd8799fd8799f40ffd87a80ffa140a1401a00989680d87b9fd87a9f514372333437334368333537377848343568ffffd87a80ffffff809fd8799fd8799fd8799f40ffd87a80ffa140a1401a00989680d87980d87a80ffffa140a1401a001e8480a080a0d8799fd8799fd87b80d87a80ffd8799fd87980d87a80ffff9f5143683335375f437233343730725f504b48ffa0a0d8799f40ffffd87a9fd8799fd8799f40ff00ffffff"
-//// │ PASS [mem: 1122117, cpu:  659802931] allow_unlock_after_deadline
+//// │ ↳ ScriptContext: "d8799fd8799f9fd8799fd8799fd8799f5135306d3327355f5f37786e5f5f48343568ff00ffd8799fd8799fd8799f40ffd87a80ffa140a1401a00989680d87b9fd87a9f514372333437334368333537377848343568ffffd87a80ffffff809fd8799fd8799fd8799f40ffd87a80ffa140a1401a00989680d87b9fd8799f065143683335375f437233343730725f504b48ffffd87a80ffffa140a1401a001e8480a080a0d8799fd8799fd87b80d87a80ffd8799fd87980d87a80ffff9f5143683335375f437233343730725f504b48ffa0a0d8799f40ffffd87a9fd8799fd8799f40ff00ffffff"
+//// │ PASS [mem: 1123617, cpu:  660147931] allow_unlock_after_deadline
 //// │ ↳ Datum: "d8799f055143683335375f437233343730725f504b48ff"
 //// │ ↳ Redeemer: "d87a80"
 //// │ ↳ ScriptContext: "d8799fd8799f808080a140a1401a001e8480a080a0d8799fd8799fd87a9f06ffd87a80ffd8799fd87b80d87a80ffff80a0a0d8799f40ffffd87a9fd8799fd8799f40ff00ffffff"
-//// │ PASS [mem: 1110391, cpu:  655196333] disallow_unlock_before_deadline
+//// │ PASS [mem: 1111891, cpu:  655541333] disallow_unlock_before_deadline
 //// │ ↳ Datum: "d8799f055143683335375f437233343730725f504b48ff"
 //// │ ↳ Redeemer: "d87a80"
 //// │ ↳ ScriptContext: "d8799fd8799f808080a140a1401a001e8480a080a0d8799fd8799fd87980d87a80ffd8799fd87a9f06ffd87a80ffff80a0a0d8799f40ffffd87a9fd8799fd8799f40ff00ffffff"
 //// │ ↳ txn_unlock_after_deadline() ? False
-//// │ PASS [mem: 1147321, cpu:  674797914] disallow_unlock_during_deadline
+//// │ PASS [mem: 1148821, cpu:  675142914] disallow_unlock_during_deadline
 //// │ ↳ Datum: "d8799f055143683335375f437233343730725f504b48ff"
 //// │ ↳ Redeemer: "d87a80"
 //// │ ↳ ScriptContext: "d8799fd8799f808080a140a1401a001e8480a080a0d8799fd8799fd87a9f05ffd87a80ffd8799fd87a9f06ffd87a80ffff80a0a0d8799f40ffffd87a9fd8799fd8799f40ff00ffffff"
 //// │ ↳ txn_unlock_after_deadline() ? False
-//// │ PASS [mem: 2190871, cpu: 1228366279] allow_unlock_by_referenced_datum
+//// │ PASS [mem: 2182419, cpu: 1225026115] allow_unlock_by_referenced_datum
 //// │ ↳ Datum: "d87a9f514372333437334368333537377848343568ff"
 //// │ ↳ Redeemer: "d87a80"
 //// │ ↳ ScriptContext: "d8799fd8799f9fd8799fd8799fd8799f514372333437334368333537377848343568ff00ffd8799fd8799fd8799f40ffd87a80ffa0d87b9fd8799f055143683335375f437233343730725f504b48ffffd87a80ffffff8080a140a1401a001e8480a080a0d8799fd8799fd87a9f06ffd87a80ffd8799fd87b80d87a80ffff80a0a0d8799f40ffffd87a9fd8799fd8799f40ff00ffffff"
-//// │ PASS [mem: 2107970, cpu: 1192664231] disallow_unlock_by_incorrect_referenced_datum_type
+//// │ PASS [mem: 2099518, cpu: 1189324067] disallow_unlock_by_incorrect_referenced_datum_type
 //// │ ↳ Datum: "d87a9f514372333437334368333537377848343568ff"
 //// │ ↳ Redeemer: "d87a80"
 //// │ ↳ ScriptContext: "d8799fd8799f9fd8799fd8799fd8799f514372333437334368333537377848343568ff00ffd8799fd8799fd8799f40ffd87a80ffa0d87b9fd87a9f514372333437334368333537377848343568ffffd87a80ffffff8080a140a1401a001e8480a080a0d8799fd8799fd87a9f06ffd87a80ffd8799fd87b80d87a80ffff80a0a0d8799f40ffffd87a9fd8799fd8799f40ff00ffffff"
-//// │ PASS [mem: 2086404, cpu: 1187900218] disallow_unlock_by_incorrect_referenced_datum_tx_hash
+//// │ PASS [mem: 2077952, cpu: 1184560054] disallow_unlock_by_incorrect_referenced_datum_tx_hash
 //// │ ↳ Datum: "d87a9f513037683527355f5f37786e5f5f48343568ff"
 //// │ ↳ Redeemer: "d87a80"
 //// │ ↳ ScriptContext: "d8799fd8799f9fd8799fd8799fd8799f514372333437334368333537377848343568ff00ffd8799fd8799fd8799f40ffd87a80ffa0d87b9fd8799f055143683335375f437233343730725f504b48ffffd87a80ffffff8080a140a1401a001e8480a080a0d8799fd8799fd87a9f06ffd87a80ffd8799fd87b80d87a80ffff80a0a0d8799f40ffffd87a9fd8799fd8799f40ff00ffffff"
-//// │ PASS [mem: 2179145, cpu: 1223759681] disallow_unlock_by_referenced_datum_before_deadline
+//// │ PASS [mem: 2170693, cpu: 1220419517] disallow_unlock_by_referenced_datum_before_deadline
 //// │ ↳ Datum: "d87a9f514372333437334368333537377848343568ff"
 //// │ ↳ Redeemer: "d87a80"
 //// │ ↳ ScriptContext: "d8799fd8799f9fd8799fd8799fd8799f514372333437334368333537377848343568ff00ffd8799fd8799fd8799f40ffd87a80ffa0d87b9fd8799f055143683335375f437233343730725f504b48ffffd87a80ffffff8080a140a1401a001e8480a080a0d8799fd8799fd87980d87a80ffd8799fd87a9f06ffd87a80ffff80a0a0d8799f40ffffd87a9fd8799fd8799f40ff00ffffff"
 //// │ ↳ txn_unlock_after_deadline() ? False
-//// │ PASS [mem: 2216147, cpu: 1243371782] disallow_unlock_by_referenced_datum_during_deadline
+//// │ PASS [mem: 2207695, cpu: 1240031618] disallow_unlock_by_referenced_datum_during_deadline
 //// │ ↳ Datum: "d87a9f514372333437334368333537377848343568ff"
 //// │ ↳ Redeemer: "d87a80"
 //// │ ↳ ScriptContext: "d8799fd8799f9fd8799fd8799fd8799f514372333437334368333537377848343568ff00ffd8799fd8799fd8799f40ffd87a80ffa0d87b9fd8799f055143683335375f437233343730725f504b48ffffd87a80ffffff8080a140a1401a001e8480a080a0d8799fd8799fd87a9f05ffd87a80ffd8799fd87a9f06ffd87a80ffff80a0a0d8799f40ffffd87a9fd8799fd8799f40ff00ffffff"
 //// │ ↳ txn_unlock_after_deadline() ? False
-//// ┕━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 17 tests | 17 passed | 0 failed
+//// ┕━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 20 tests | 20 passed | 0 failed
 //// ```
 
 use aiken/dict
@@ -84,7 +102,7 @@ use aiken/interval.{Interval, after, before, between, empty}
 use aiken/list.{push}
 use aiken/time.{PosixTime}
 use aiken/transaction.{
-  InlineDatum, NoDatum, Output, OutputReference, ScriptContext, Spend,
+  Datum, InlineDatum, NoDatum, Output, OutputReference, ScriptContext, Spend,
   Transaction, TransactionId,
 }
 use aiken/transaction/credential.{from_verification_key}
@@ -165,18 +183,14 @@ fn add_tx_input(
 fn new_tx_input(
   tx_hash: TxHash,
   lovelace: Int,
-  datum: Data,
+  datum: Datum,
 ) -> transaction.Input {
-  expect datum: Option<Data> = datum
   transaction.Input(
     OutputReference(TransactionId(tx_hash), 0),
     Output {
       address: from_verification_key(""),
       value: lovelace |> from_lovelace,
-      datum: when datum is {
-        Some(datum) -> InlineDatum(datum)
-        None -> NoDatum
-      },
+      datum,
       reference_script: None,
     },
   )
@@ -206,11 +220,11 @@ fn add_tx_output(
   )
 }
 
-fn new_tx_output(lovelace: Int) -> transaction.Output {
+fn new_tx_output(lovelace: Int, datum: Datum) -> transaction.Output {
   transaction.Output {
     address: from_verification_key(""),
     value: lovelace |> from_lovelace,
-    datum: NoDatum,
+    datum,
     reference_script: None,
   }
 }
@@ -231,11 +245,14 @@ test allow_delay_by_creator() {
   //
   // arrange:
   let datum = CreateChest(deadline, chest_creator)
+  // re-create chest:
+  let new_datum = CreateChest(deadline + 1, chest_creator)
   let redeemer = DelayUnlock
   let tx_in =
     create_chest_tx_hash
-      |> new_tx_input(lovelace: 10_000_000, datum: Some(datum))
-  let tx_out = new_tx_output(lovelace: 10_000_000)
+      |> new_tx_input(lovelace: 10_000_000, datum: InlineDatum(datum))
+  let tx_out =
+    new_tx_output(lovelace: 10_000_000, datum: InlineDatum(new_datum))
   let context =
     empty()
       |> build_txn_context()
@@ -259,11 +276,14 @@ test disallow_delay_by_others() {
   //
   // arrange:
   let datum = CreateChest(deadline, chest_creator)
+  // re-create chest:
+  let new_datum = CreateChest(deadline + 1, chest_creator)
   let redeemer = DelayUnlock
   let tx_in =
     create_chest_tx_hash
-      |> new_tx_input(lovelace: 10_000_000, datum: Some(datum))
-  let tx_out = new_tx_output(lovelace: 10_000_000)
+      |> new_tx_input(lovelace: 10_000_000, datum: InlineDatum(datum))
+  let tx_out =
+    new_tx_output(lovelace: 10_000_000, datum: InlineDatum(new_datum))
   let context =
     empty()
       |> build_txn_context()
@@ -287,11 +307,14 @@ test disallow_delay_by_no_tx_signer() {
   //
   // arrange:
   let datum = CreateChest(deadline, chest_creator)
+  // re-create chest:
+  let new_datum = CreateChest(deadline + 1, chest_creator)
   let redeemer = DelayUnlock
   let tx_in =
     create_chest_tx_hash
-      |> new_tx_input(lovelace: 10_000_000, datum: Some(datum))
-  let tx_out = new_tx_output(lovelace: 10_000_000)
+      |> new_tx_input(lovelace: 10_000_000, datum: InlineDatum(datum))
+  let tx_out =
+    new_tx_output(lovelace: 10_000_000, datum: InlineDatum(new_datum))
   let context =
     empty()
       |> build_txn_context()
@@ -310,15 +333,108 @@ test disallow_delay_by_no_tx_signer() {
   !validate(datum, redeemer, context)
 }
 
-test disallow_delay_by_unbalanced_ada() {
+test disallow_delay_with_draining_ada() {
+  //
+  // arrange:
+  let datum = CreateChest(deadline, chest_creator)
+  // re-create chest:
+  let new_datum = CreateChest(deadline + 1, chest_creator)
+  let redeemer = DelayUnlock
+  let tx_in =
+    create_chest_tx_hash
+      |> new_tx_input(lovelace: 0, datum: InlineDatum(datum))
+  let tx_out =
+    new_tx_output(lovelace: 10_000_000, datum: InlineDatum(new_datum))
+  let context =
+    empty()
+      |> build_txn_context()
+      |> add_signatory(chest_creator)
+      |> add_tx_input(tx_in)
+      |> add_tx_output(tx_out)
+  //
+  // trace:
+  trace "Datum"
+    |> print(datum)
+  trace "Redeemer"
+    |> print(redeemer)
+  trace "ScriptContext"
+    |> print(context)
+  //
+  // assert:
+  !validate(datum, redeemer, context)
+}
+
+test disallow_delay_without_recreate_chest() {
   //
   // arrange:
   let datum = CreateChest(deadline, chest_creator)
   let redeemer = DelayUnlock
   let tx_in =
     create_chest_tx_hash
-      |> new_tx_input(lovelace: 0, datum: Some(datum))
-  let tx_out = new_tx_output(lovelace: 10_000_000)
+      |> new_tx_input(lovelace: 10_000_000, datum: InlineDatum(datum))
+  let tx_out = new_tx_output(lovelace: 10_000_000, datum: NoDatum)
+  let context =
+    empty()
+      |> build_txn_context()
+      |> add_signatory(chest_creator)
+      |> add_tx_input(tx_in)
+      |> add_tx_output(tx_out)
+  //
+  // trace:
+  trace "Datum"
+    |> print(datum)
+  trace "Redeemer"
+    |> print(redeemer)
+  trace "ScriptContext"
+    |> print(context)
+  //
+  // assert:
+  !validate(datum, redeemer, context)
+}
+
+test disallow_delay_by_recreate_chest_with_earlier_deadline() {
+  //
+  // arrange:
+  let datum = CreateChest(deadline, chest_creator)
+  let redeemer = DelayUnlock
+  // re-create chest:
+  let new_datum = CreateChest(deadline - 1, chest_creator)
+  let tx_in =
+    create_chest_tx_hash
+      |> new_tx_input(lovelace: 10_000_000, datum: InlineDatum(datum))
+  let tx_out =
+    new_tx_output(lovelace: 10_000_000, datum: InlineDatum(new_datum))
+  let context =
+    empty()
+      |> build_txn_context()
+      |> add_signatory(chest_creator)
+      |> add_tx_input(tx_in)
+      |> add_tx_output(tx_out)
+  //
+  // trace:
+  trace "Datum"
+    |> print(datum)
+  trace "Redeemer"
+    |> print(redeemer)
+  trace "ScriptContext"
+    |> print(context)
+  //
+  // assert:
+  !validate(datum, redeemer, context)
+}
+
+test disallow_delay_by_recreate_chest_with_different_creator() {
+  //
+  // arrange:
+  let datum = CreateChest(deadline, chest_creator)
+  let redeemer = DelayUnlock
+  // re-create chest:
+  let new_datum = CreateChest(deadline + 1, other_pkh)
+  let tx_in =
+    create_chest_tx_hash
+      |> new_tx_input(lovelace: 10_000_000, datum: InlineDatum(datum))
+  let tx_out =
+    new_tx_output(lovelace: 10_000_000, datum: InlineDatum(new_datum))
   let context =
     empty()
       |> build_txn_context()
@@ -343,14 +459,17 @@ test allow_delay_by_referenced_datum() {
   // arrange:
   let ref_datum = CreateChest(deadline, chest_creator)
   let datum = AddTreasure(create_chest_tx_hash)
+  // re-create chest:
+  let new_datum = CreateChest(deadline + 1, chest_creator)
   let redeemer = DelayUnlock
   let ref_txn =
     create_chest_tx_hash
-      |> new_tx_input(lovelace: 10_000_000, datum: Some(ref_datum))
+      |> new_tx_input(lovelace: 10_000_000, datum: InlineDatum(ref_datum))
   let tx_in =
     other_tx_hash
-      |> new_tx_input(lovelace: 10_000_000, datum: Some(datum))
-  let tx_out = new_tx_output(lovelace: 20_000_000)
+      |> new_tx_input(lovelace: 10_000_000, datum: InlineDatum(datum))
+  let tx_out =
+    new_tx_output(lovelace: 20_000_000, datum: InlineDatum(new_datum))
   let context =
     empty()
       |> build_txn_context()
@@ -376,14 +495,17 @@ test disallow_delay_by_incorrect_referenced_datum_tx_signer() {
   // arrange:
   let ref_datum = CreateChest(deadline, chest_creator)
   let datum = AddTreasure(create_chest_tx_hash)
+  // re-create chest:
+  let new_datum = CreateChest(deadline + 1, chest_creator)
   let redeemer = DelayUnlock
   let ref_txn =
     create_chest_tx_hash
-      |> new_tx_input(lovelace: 10_000_000, datum: Some(ref_datum))
+      |> new_tx_input(lovelace: 10_000_000, datum: InlineDatum(ref_datum))
   let tx_in =
     other_tx_hash
-      |> new_tx_input(lovelace: 10_000_000, datum: Some(datum))
-  let tx_out = new_tx_output(lovelace: 20_000_000)
+      |> new_tx_input(lovelace: 10_000_000, datum: InlineDatum(datum))
+  let tx_out =
+    new_tx_output(lovelace: 20_000_000, datum: InlineDatum(new_datum))
   let context =
     empty()
       |> build_txn_context()
@@ -410,14 +532,17 @@ test disallow_delay_by_incorrect_referenced_datum_type() {
   let ref_datum = AddTreasure(create_chest_tx_hash)
   // ref_datum refers to own datum
   let datum = AddTreasure(create_chest_tx_hash)
+  // re-create chest:
+  let new_datum = CreateChest(deadline + 1, chest_creator)
   let redeemer = DelayUnlock
   let ref_txn =
     create_chest_tx_hash
-      |> new_tx_input(lovelace: 10_000_000, datum: Some(ref_datum))
+      |> new_tx_input(lovelace: 10_000_000, datum: InlineDatum(ref_datum))
   let tx_in =
     other_tx_hash
-      |> new_tx_input(lovelace: 10_000_000, datum: Some(datum))
-  let tx_out = new_tx_output(lovelace: 20_000_000)
+      |> new_tx_input(lovelace: 10_000_000, datum: InlineDatum(datum))
+  let tx_out =
+    new_tx_output(lovelace: 20_000_000, datum: InlineDatum(new_datum))
   let context =
     empty()
       |> build_txn_context()
@@ -444,14 +569,17 @@ test disallow_delay_by_incorrect_referenced_datum_tx_hash() {
   let ref_datum = CreateChest(deadline, chest_creator)
   let datum = AddTreasure(other_tx_hash)
   // datum refers to another tx-hash
+  // re-create chest:
+  let new_datum = CreateChest(deadline + 1, chest_creator)
   let redeemer = DelayUnlock
   let ref_txn =
     create_chest_tx_hash
-      |> new_tx_input(lovelace: 10_000_000, datum: Some(ref_datum))
+      |> new_tx_input(lovelace: 10_000_000, datum: InlineDatum(ref_datum))
   let tx_in =
     other_tx_hash
-      |> new_tx_input(lovelace: 10_000_000, datum: Some(datum))
-  let tx_out = new_tx_output(lovelace: 20_000_000)
+      |> new_tx_input(lovelace: 10_000_000, datum: InlineDatum(datum))
+  let tx_out =
+    new_tx_output(lovelace: 20_000_000, datum: InlineDatum(new_datum))
   let context =
     empty()
       |> build_txn_context()
@@ -476,11 +604,14 @@ test disallow_delay_by_no_referenced_datum() {
   //
   // arrange:
   let datum = AddTreasure(create_chest_tx_hash)
+  // re-create chest:
+  let new_datum = CreateChest(deadline + 1, chest_creator)
   let redeemer = DelayUnlock
   let tx_in =
     some_tx_hash
-      |> new_tx_input(lovelace: 10_000_000, datum: Some(datum))
-  let tx_out = new_tx_output(lovelace: 10_000_000)
+      |> new_tx_input(lovelace: 10_000_000, datum: InlineDatum(datum))
+  let tx_out =
+    new_tx_output(lovelace: 10_000_000, datum: InlineDatum(new_datum))
   let context =
     empty()
       |> build_txn_context()
@@ -571,7 +702,7 @@ test allow_unlock_by_referenced_datum() {
   let redeemer = UnlockChest
   let ref_txn =
     create_chest_tx_hash
-      |> new_tx_input(lovelace: 0, datum: Some(ref_datum))
+      |> new_tx_input(lovelace: 0, datum: InlineDatum(ref_datum))
   let context =
     after(deadline + 1)
       |> build_txn_context()
@@ -598,7 +729,7 @@ test disallow_unlock_by_incorrect_referenced_datum_type() {
   let redeemer = UnlockChest
   let ref_txn =
     create_chest_tx_hash
-      |> new_tx_input(lovelace: 0, datum: Some(ref_datum))
+      |> new_tx_input(lovelace: 0, datum: InlineDatum(ref_datum))
   let context =
     after(deadline + 1)
       |> build_txn_context()
@@ -625,7 +756,7 @@ test disallow_unlock_by_incorrect_referenced_datum_tx_hash() {
   let redeemer = UnlockChest
   let ref_txn =
     create_chest_tx_hash
-      |> new_tx_input(lovelace: 0, datum: Some(ref_datum))
+      |> new_tx_input(lovelace: 0, datum: InlineDatum(ref_datum))
   let context =
     after(deadline + 1)
       |> build_txn_context()
@@ -651,7 +782,7 @@ test disallow_unlock_by_referenced_datum_before_deadline() {
   let redeemer = UnlockChest
   let ref_txn =
     create_chest_tx_hash
-      |> new_tx_input(lovelace: 0, datum: Some(ref_datum))
+      |> new_tx_input(lovelace: 0, datum: InlineDatum(ref_datum))
   let context =
     before(deadline + 1)
       |> build_txn_context()
@@ -677,7 +808,7 @@ test disallow_unlock_by_referenced_datum_during_deadline() {
   let redeemer = UnlockChest
   let ref_txn =
     create_chest_tx_hash
-      |> new_tx_input(lovelace: 0, datum: Some(ref_datum))
+      |> new_tx_input(lovelace: 0, datum: InlineDatum(ref_datum))
   let context =
     between(deadline, deadline + 1)
       |> build_txn_context()
