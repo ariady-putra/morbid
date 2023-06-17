@@ -26,17 +26,6 @@ Postpone chest unlocking deadline
 Redeem all ADA from the chest
 
 ---
-<br/><div>
-  <img src="https://github.com/ariady-putra/plutus-playground-server/blob/main/screenshots/1_DavyJonesLocker.png"/>
-  For the modified <b>Plutus Playground Server</b> with the additional <b>Dead-man's Switch</b> tab please visit:
-  <ul>
-    <li>
-      <a href="https://github.com/ariady-putra/plutus-playground-server">ariady-putra/plutus-playground-server</a>
-    </li>
-  </ul>
-</div>
-
----
 <br/><div align="center">
   <img src="https://images5.alphacoders.com/641/641119.jpg"/>
   >_But one man of her crew alive,_<br/>
