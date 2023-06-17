@@ -1,29 +1,27 @@
 # Davy Jones' Locker
 
-<br/><div align="center">
-  >_Fifteen men on the dead man's chest—_<br/>
-  >_...Yo-ho-ho, and a bottle of rum!_<br/>
-  >_Drink and the devil had done for the rest—_<br/>
-  >_...Yo-ho-ho, and a bottle of rum!_<br/>
-</div><br/>
+<br/><div align="center"><h1><strong>
+  >The code in this branch is incorrect!<br/>
+  >It only serve for historical purposes
+</strong></h1></div><br/>
 
-This is a dead-man's switch contract where you can:
-- Create Chest
-- Add Treasure
-- Delay Unlock
-- Unlock Chest
+<s>This is a dead-man's switch contract where you can</s>:
+- <s>Create Chest</s>
+- <s>Add Treasure</s>
+- <s>Delay Unlock</s>
+- <s>Unlock Chest</s>
 
-## Create Chest
-Deposit initial ADA
+## <s>Create Chest</s>
+<s>Deposit initial ADA</s>
 
-## Add Treasure
-Deposit more ADA to the chest
+## <s>Add Treasure</s>
+<s>Deposit more ADA to the chest</s>
 
-## Delay Unlock
-Postpone chest unlocking deadline
+## <s>Delay Unlock</s>
+<s>Postpone chest unlocking deadline</s>
 
-## Unlock Chest
-Redeem all ADA from the chest
+## <s>Unlock Chest</s>
+<s>Redeem all ADA from the chest</s>
 
 ---
 <br/><div>
