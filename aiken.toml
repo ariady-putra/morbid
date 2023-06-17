@@ -1,0 +1,24 @@
+name = "ariady-putra/morbid"
+version = "0.0.0"
+license = "Apache-2.0"
+description = "An Aiken contract for project 'ariady-putra/morbid'"
+
+[repository]
+user = "ariady-putra"
+project = "morbid"
+platform = "github"
+
+[[dependencies]]
+name = "aiken-lang/stdlib"
+version = "main"
+source = "github"
+
+[[dependencies]]
+name = "ariady-putra/time_util"
+version = "main"
+source = "github"
+
+[[dependencies]]
+name = "ariady-putra/string_util"
+version = "main"
+source = "github"

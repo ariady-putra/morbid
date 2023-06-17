@@ -1,0 +1,78 @@
+    Compiling aiken-lang/stdlib main (/home/ariady/aiken/morbid/build/packages/aiken-lang-stdlib)
+    Compiling ariady-putra/time_util main (/home/ariady/aiken/morbid/build/packages/ariady-putra-time_util)
+    Compiling ariady-putra/string_util main (/home/ariady/aiken/morbid/build/packages/ariady-putra-string_util)
+    Compiling ariady-putra/morbid 0.0.0 (/home/ariady/aiken/morbid)
+      Testing ...
+
+    ┍━ morbid/tests ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    │ PASS [mem: 1507546, cpu:  840504056] allow_delay_by_creator
+    │ ↳ Datum: "d8799f055143683335375f437233343730725f504b48ff"
+    │ ↳ Redeemer: "d87980"
+    │ ↳ ScriptContext: "d8799fd8799f808080a140a1401a001e8480a080a0d8799fd8799fd87b80d87a80ffd8799fd87980d87a80ffff9f5143683335375f437233343730725f504b48ffa0a0d8799f40ffffd87a9fd8799fd8799f40ff00ffffff"
+    │ PASS [mem: 1508779, cpu:  841072954] disallow_delay_by_others
+    │ ↳ Datum: "d8799f055143683335375f437233343730725f504b48ff"
+    │ ↳ Redeemer: "d87980"
+    │ ↳ ScriptContext: "d8799fd8799f808080a140a1401a001e8480a080a0d8799fd8799fd87b80d87a80ffd8799fd87980d87a80ffff9f51303768337227355075384b337948343568ffa0a0d8799f40ffffd87a9fd8799fd8799f40ff00ffffff"
+    │ ↳ signed_by == creator ? False
+    │ PASS [mem: 1050671, cpu:  627435355] disallow_delay_by_no_tx_signer
+    │ ↳ Datum: "d8799f055143683335375f437233343730725f504b48ff"
+    │ ↳ Redeemer: "d87980"
+    │ ↳ ScriptContext: "d8799fd8799f808080a140a1401a001e8480a080a0d8799fd8799fd87b80d87a80ffd8799fd87980d87a80ffff80a0a0d8799f40ffffd87a9fd8799fd8799f40ff00ffffff"
+    │ PASS [mem: 2564916, cpu: 1404939075] allow_delay_by_referenced_datum
+    │ ↳ Datum: "d87a9f514372333437334368333537377848343568ff"
+    │ ↳ Redeemer: "d87980"
+    │ ↳ ScriptContext: "d8799fd8799f9fd8799fd8799fd8799f514372333437334368333537377848343568ff00ffd8799fd8799fd8799f40ffd87a80ffa0d87b9fd8799f055143683335375f437233343730725f504b48ffffd87a80ffffff8080a140a1401a001e8480a080a0d8799fd8799fd87b80d87a80ffd8799fd87980d87a80ffff9f5143683335375f437233343730725f504b48ffa0a0d8799f40ffffd87a9fd8799fd8799f40ff00ffffff"
+    │ PASS [mem: 2566149, cpu: 1405507973] disallow_delay_by_incorrect_referenced_datum_tx_signer
+    │ ↳ Datum: "d87a9f514372333437334368333537377848343568ff"
+    │ ↳ Redeemer: "d87980"
+    │ ↳ ScriptContext: "d8799fd8799f9fd8799fd8799fd8799f514372333437334368333537377848343568ff00ffd8799fd8799fd8799f40ffd87a80ffa0d87b9fd8799f055143683335375f437233343730725f504b48ffffd87a80ffffff8080a140a1401a001e8480a080a0d8799fd8799fd87b80d87a80ffd8799fd87980d87a80ffff9f51303768337227355075384b337948343568ffa0a0d8799f40ffffd87a9fd8799fd8799f40ff00ffffff"
+    │ ↳ signed_by == creator ? False
+    │ PASS [mem: 2518463, cpu: 1383490244] disallow_delay_by_incorrect_referenced_datum_type
+    │ ↳ Datum: "d87a9f514372333437334368333537377848343568ff"
+    │ ↳ Redeemer: "d87980"
+    │ ↳ ScriptContext: "d8799fd8799f9fd8799fd8799fd8799f514372333437334368333537377848343568ff00ffd8799fd8799fd8799f40ffd87a80ffa0d87b9fd87a9f514372333437334368333537377848343568ffffd87a80ffffff8080a140a1401a001e8480a080a0d8799fd8799fd87b80d87a80ffd8799fd87980d87a80ffff9f5143683335375f437233343730725f504b48ffa0a0d8799f40ffffd87a9fd8799fd8799f40ff00ffffff"
+    │ PASS [mem: 2496905, cpu: 1378730319] disallow_delay_by_incorrect_referenced_datum_tx_hash
+    │ ↳ Datum: "d87a9f513037683527355f5f37786e5f5f48343568ff"
+    │ ↳ Redeemer: "d87980"
+    │ ↳ ScriptContext: "d8799fd8799f9fd8799fd8799fd8799f514372333437334368333537377848343568ff00ffd8799fd8799fd8799f40ffd87a80ffa0d87b9fd8799f055143683335375f437233343730725f504b48ffffd87a80ffffff8080a140a1401a001e8480a080a0d8799fd8799fd87b80d87a80ffd8799fd87980d87a80ffff9f5143683335375f437233343730725f504b48ffa0a0d8799f40ffffd87a9fd8799fd8799f40ff00ffffff"
+    │ PASS [mem: 1480511, cpu:  826122227] disallow_delay_by_no_referenced_datum
+    │ ↳ Datum: "d87a9f514372333437334368333537377848343568ff"
+    │ ↳ Redeemer: "d87980"
+    │ ↳ ScriptContext: "d8799fd8799f808080a140a1401a001e8480a080a0d8799fd8799fd87b80d87a80ffd8799fd87980d87a80ffff9f5143683335375f437233343730725f504b48ffa0a0d8799f40ffffd87a9fd8799fd8799f40ff00ffffff"
+    │ PASS [mem: 1116516, cpu:  658434375] allow_unlock_after_deadline
+    │ ↳ Datum: "d8799f055143683335375f437233343730725f504b48ff"
+    │ ↳ Redeemer: "d87a80"
+    │ ↳ ScriptContext: "d8799fd8799f808080a140a1401a001e8480a080a0d8799fd8799fd87a9f06ffd87a80ffd8799fd87b80d87a80ffff80a0a0d8799f40ffffd87a9fd8799fd8799f40ff00ffffff"
+    │ PASS [mem: 1104158, cpu:  653477435] disallow_unlock_before_deadline
+    │ ↳ Datum: "d8799f055143683335375f437233343730725f504b48ff"
+    │ ↳ Redeemer: "d87a80"
+    │ ↳ ScriptContext: "d8799fd8799f808080a140a1401a001e8480a080a0d8799fd8799fd87980d87a80ffd8799fd87a9f06ffd87a80ffff80a0a0d8799f40ffffd87a9fd8799fd8799f40ff00ffffff"
+    │ PASS [mem: 1141088, cpu:  673079016] disallow_unlock_during_deadline
+    │ ↳ Datum: "d8799f055143683335375f437233343730725f504b48ff"
+    │ ↳ Redeemer: "d87a80"
+    │ ↳ ScriptContext: "d8799fd8799f808080a140a1401a001e8480a080a0d8799fd8799fd87a9f05ffd87a80ffd8799fd87a9f06ffd87a80ffff80a0a0d8799f40ffffd87a9fd8799fd8799f40ff00ffffff"
+    │ PASS [mem: 2173216, cpu: 1222540070] allow_unlock_by_referenced_datum
+    │ ↳ Datum: "d87a9f514372333437334368333537377848343568ff"
+    │ ↳ Redeemer: "d87a80"
+    │ ↳ ScriptContext: "d8799fd8799f9fd8799fd8799fd8799f514372333437334368333537377848343568ff00ffd8799fd8799fd8799f40ffd87a80ffa0d87b9fd8799f055143683335375f437233343730725f504b48ffffd87a80ffffff8080a140a1401a001e8480a080a0d8799fd8799fd87a9f06ffd87a80ffd8799fd87b80d87a80ffff80a0a0d8799f40ffffd87a9fd8799fd8799f40ff00ffffff"
+    │ PASS [mem: 2091416, cpu: 1187171578] disallow_unlock_by_incorrect_referenced_datum_type
+    │ ↳ Datum: "d87a9f514372333437334368333537377848343568ff"
+    │ ↳ Redeemer: "d87a80"
+    │ ↳ ScriptContext: "d8799fd8799f9fd8799fd8799fd8799f514372333437334368333537377848343568ff00ffd8799fd8799fd8799f40ffd87a80ffa0d87b9fd87a9f514372333437334368333537377848343568ffffd87a80ffffff8080a140a1401a001e8480a080a0d8799fd8799fd87a9f06ffd87a80ffd8799fd87b80d87a80ffff80a0a0d8799f40ffffd87a9fd8799fd8799f40ff00ffffff"
+    │ PASS [mem: 2069850, cpu: 1182407565] disallow_unlock_by_incorrect_referenced_datum_tx_hash
+    │ ↳ Datum: "d87a9f513037683527355f5f37786e5f5f48343568ff"
+    │ ↳ Redeemer: "d87a80"
+    │ ↳ ScriptContext: "d8799fd8799f9fd8799fd8799fd8799f514372333437334368333537377848343568ff00ffd8799fd8799fd8799f40ffd87a80ffa0d87b9fd8799f055143683335375f437233343730725f504b48ffffd87a80ffffff8080a140a1401a001e8480a080a0d8799fd8799fd87a9f06ffd87a80ffd8799fd87b80d87a80ffff80a0a0d8799f40ffffd87a9fd8799fd8799f40ff00ffffff"
+    │ PASS [mem: 2160858, cpu: 1217583130] disallow_unlock_by_referenced_datum_before_deadline
+    │ ↳ Datum: "d87a9f514372333437334368333537377848343568ff"
+    │ ↳ Redeemer: "d87a80"
+    │ ↳ ScriptContext: "d8799fd8799f9fd8799fd8799fd8799f514372333437334368333537377848343568ff00ffd8799fd8799fd8799f40ffd87a80ffa0d87b9fd8799f055143683335375f437233343730725f504b48ffffd87a80ffffff8080a140a1401a001e8480a080a0d8799fd8799fd87980d87a80ffd8799fd87a9f06ffd87a80ffff80a0a0d8799f40ffffd87a9fd8799fd8799f40ff00ffffff"
+    │ PASS [mem: 2197860, cpu: 1237195231] disallow_unlock_by_referenced_datum_during_deadline
+    │ ↳ Datum: "d87a9f514372333437334368333537377848343568ff"
+    │ ↳ Redeemer: "d87a80"
+    │ ↳ ScriptContext: "d8799fd8799f9fd8799fd8799fd8799f514372333437334368333537377848343568ff00ffd8799fd8799fd8799f40ffd87a80ffa0d87b9fd8799f055143683335375f437233343730725f504b48ffffd87a80ffffff8080a140a1401a001e8480a080a0d8799fd8799fd87a9f05ffd87a80ffd8799fd87a9f06ffd87a80ffff80a0a0d8799f40ffffd87a9fd8799fd8799f40ff00ffffff"
+    ┕━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 16 tests | 16 passed | 0 failed
+
+
+Summary
+    0 errors, 0 warnings
