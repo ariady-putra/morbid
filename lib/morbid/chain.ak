@@ -7,16 +7,16 @@
 //// validator {
 ////   fn validate(datum: Data, redeemer: Data, context: ScriptContext) -> Bool {
 ////     start()
-////       |> and(must_be_condition_1(_, datum))
-////       |> and(must_be_condition_2(_, redeemer))
-////       |> and(must_be_condition_3(_))
+////       |> and(must_be_condition_1(_, context, datum))
+////       |> and(must_be_condition_2(_, context, redeemer))
+////       |> and(must_be_condition_3(_, context))
 ////       |> finish()
 ////   }
 //// }
 //// ```
 //// Where,
 //// ```
-//// fn must_be_condition_1(_, datum) {
+//// fn must_be_condition_1(_, context, datum) {
 ////   let condition_1 = context |> must_validate_datum(datum) // call another fn somewhere
 ////   if condition_1? { // useful for tracing
 ////     continue()
@@ -25,7 +25,7 @@
 ////   }
 //// }
 //// 
-//// fn must_be_condition_2(_, redeemer) {
+//// fn must_be_condition_2(_, context, redeemer) {
 ////   let condition_2 = context |> must_validate_redeemer(redeemer) // call another fn somewhere
 ////   if condition_2? { // useful for tracing
 ////     continue()
@@ -34,7 +34,7 @@
 ////   }
 //// }
 //// 
-//// fn must_be_condition_3(_) {
+//// fn must_be_condition_3(_, context) {
 ////   let condition_3 = context |> must_validate_other_things() // call another fn somewhere
 ////   if condition_3? { // useful for tracing
 ////     continue()
