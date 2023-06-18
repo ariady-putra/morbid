@@ -16,8 +16,7 @@ use time_util/cheap/posixtime.{is_after, start_of}
 /// either `DelayUnlock` or `UnlockChest`.
 /// When delaying unlock of a UTxO, the transaction must be signed by the
 /// chest creator, the sum of input ADA must not be less than output ADA,
-/// and it must re-create a `CreateChest` datum with a later deadline and
-/// the same creator.
+/// and it must re-create a `CreateChest` datum with a later deadline.
 /// When unlocking the chest of a UTxO, the transaction validity range
 /// must be after the deadline.
 pub fn validate(
