@@ -5,7 +5,7 @@ use aiken/time.{PosixTime}
 use aiken/transaction.{InlineDatum, ScriptContext}
 use aiken/transaction/value.{lovelace_of}
 use morbid/alias.{PubKeyHash, TxHash}
-use morbid/chain.{and, break, continue, finish, start}
+use morbid/chain.{and}
 use morbid/struct/datum.{AddTreasure, ChestDatum, CreateChest}
 use morbid/struct/redeemer.{ChestRedeemer, DelayUnlock, UnlockChest}
 use time_util/cheap/posixtime.{is_after, start_of}
@@ -77,41 +77,28 @@ fn validate_delay_unlock(
   let must_be_signed_by_creator =
     fn(_) {
       let signed_by_creator = ctx |> must_be_signed_by(creator)
-      if signed_by_creator? {
-        continue()
-      } else {
-        break()
-      }
+      signed_by_creator?
     }
   //
   // input ADA must not be less than output
   let must_not_drain =
     fn(_) {
       let not_drained = ctx |> must_not_be_drained()
-      if not_drained? {
-        continue()
-      } else {
-        break()
-      }
+      not_drained?
     }
   //
   // must re-create the chest
   let must_recreate_chest =
     fn(_) {
       let recreated_chest = ctx |> must_recreate_chest()
-      if recreated_chest? {
-        continue()
-      } else {
-        break()
-      }
+      recreated_chest?
     }
   //
   // return:
-  start()
+  chain.validate()
     |> and(must_be_signed_by_creator(_))
     |> and(must_not_drain(_))
     |> and(must_recreate_chest(_))
-    |> finish()
 }
 
 fn validate_unlock_chest(
@@ -166,11 +153,7 @@ fn must_recreate_chest(context ctx: ScriptContext) -> Bool {
           let must_be_signed_by_new_creator =
             fn(_) {
               let signed_by_new_creator = ctx |> must_be_signed_by(new_creator)
-              if signed_by_new_creator? {
-                continue()
-              } else {
-                break()
-              }
+              signed_by_new_creator?
             }
           let must_postpone_after_now =
             fn(_) {
@@ -190,16 +173,11 @@ fn must_recreate_chest(context ctx: ScriptContext) -> Bool {
                   _ -> False
                 }
               }
-              if postponed_after_now? {
-                continue()
-              } else {
-                break()
-              }
+              postponed_after_now?
             }
-          start()
+          chain.validate()
             |> and(must_be_signed_by_new_creator(_))
             |> and(must_postpone_after_now(_))
-            |> finish()
         }
         // couldn't destructure datum:
         _ -> False
