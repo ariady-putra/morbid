@@ -36,7 +36,7 @@
 //// (context |> must_be_condition_1())? && (context |> must_be_condition_2())? && (context |> must_be_condition_3())?
 //// ```
 //// Calling `|>` indirectly by declaring anonymous functions could give weird non-short-circuit behavior.
-//// Using `list.and([fn(..) {..}])` or `reduce` or `foldr` and `foldr` loses the lazyness behavior for some reason.
+//// Using `list.and([fn(..) {..}])` or `reduce` or `foldr` and `foldl` loses the lazyness behavior for some reason.
 //// Hence this solution; internally it mimics the `option.and_then` function.
 
 pub fn validate() {
