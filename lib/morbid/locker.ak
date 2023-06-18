@@ -34,7 +34,7 @@ pub fn validate(
     (DelayUnlock, AddTreasure(ref_txn)) ->
       //
       // ref_txn must refer to a UTxO with the datum of type CreateChest
-      when context |> must_find_ref_datum(ref_txn) is {
+      when context |> find_ref_datum(ref_txn) is {
         //
         // referenced-datum found:
         Some(CreateChest(_, creator)) ->
@@ -52,7 +52,7 @@ pub fn validate(
     (UnlockChest, AddTreasure(ref_txn)) ->
       //
       // ref_txn must refer to a UTxO with the datum of type CreateChest
-      when context |> must_find_ref_datum(ref_txn) is {
+      when context |> find_ref_datum(ref_txn) is {
         //
         // referenced-datum found:
         Some(CreateChest(deadline, _)) ->
@@ -67,37 +67,17 @@ pub fn validate(
   }
 }
 
+// //////////////////////////////// VALIDATOR HELPER FUNCTIONS //////////////////////////////// //
+//      This section contains high-level validation requirements for each type of redeemer      //
+
 fn validate_delay_unlock(
   context ctx: ScriptContext,
   creator: PubKeyHash,
 ) -> Bool {
-  //
-  // transaction must be signed by the creator
-  let must_be_signed_by_creator =
-    fn(_) {
-      let signed_by_creator = ctx |> must_be_signed_by(creator)
-      signed_by_creator?
-    }
-  //
-  // input ADA must not be less than output
-  let must_not_drain =
-    fn(_) {
-      let not_drained = ctx |> must_not_be_drained()
-      not_drained?
-    }
-  //
-  // must re-create the chest
-  let must_recreate_chest =
-    fn(_) {
-      let recreated_chest = ctx |> must_recreate_chest()
-      recreated_chest?
-    }
-  //
-  // return:
   chain.validate()
-    |> and(must_be_signed_by_creator(_))
-    |> and(must_not_drain(_))
-    |> and(must_recreate_chest(_))
+    |> and(must_be_signed_by_creator(_, ctx, creator))
+    |> and(must_not_drain(_, ctx))
+    |> and(must_recreate_chest(_, ctx))
 }
 
 fn validate_unlock_chest(
@@ -109,11 +89,76 @@ fn validate_unlock_chest(
   ctx.transaction.validity_range |> is_after(deadline)
 }
 
-fn must_be_signed_by(context ctx: ScriptContext, signer: PubKeyHash) -> Bool {
+// ////////////////////////////////////// CHAIN FUNCTIONS ////////////////////////////////////// //
+// Currently CHAIN FUNCTIONS only contains the validation helper functions for `DelayUnlock`, as //
+// during `UnlockChest` it only needs to validate the `deadline` against the time of transaction //
+
+/// `DelayUnlock`: Transaction must be signed by the creator.
+fn must_be_signed_by_creator(
+  _,
+  context ctx: ScriptContext,
+  creator: PubKeyHash,
+) -> Bool {
+  let signed_by_creator = ctx |> is_signed_by(creator)
+  signed_by_creator?
+}
+
+/// `DelayUnlock`: Input ADA must not be less than Output.
+fn must_not_drain(_, context ctx: ScriptContext) -> Bool {
+  let not_drained = ctx |> is_not_drained()
+  not_drained?
+}
+
+/// `DelayUnlock`: Must re-create the chest.
+fn must_recreate_chest(_, context ctx: ScriptContext) -> Bool {
+  let recreated_chest = ctx |> recreate_chest()
+  recreated_chest?
+}
+
+/// `DelayUnlock`: Transaction must be signed by the new owner
+/// when transferring the ownership of the chest.
+fn must_be_signed_by_new_creator(
+  _,
+  context ctx: ScriptContext,
+  new_creator: PubKeyHash,
+) -> Bool {
+  let signed_by_new_creator = ctx |> is_signed_by(new_creator)
+  signed_by_new_creator?
+}
+
+/// `DelayUnlock`: Disallow setting the past as the new deadline.
+fn must_postpone_after_now(
+  _,
+  context ctx: ScriptContext,
+  new_deadline: PosixTime,
+) -> Bool {
+  let postponed_after_now = {
+    let now = start_of(ctx.transaction.validity_range)
+    when now.bound_type is {
+      Finite(time) -> {
+        let time =
+          if now.is_inclusive? {
+            time
+          } else {
+            time + 1
+          }
+        (time < new_deadline)?
+      }
+      // infinite bound type:
+      _ -> False
+    }
+  }
+  postponed_after_now?
+}
+
+// ///////////////////////////////////// HELPER FUNCTIONS ///////////////////////////////////// //
+//       This section contains the functions to support the validation and chain functions      //
+
+fn is_signed_by(context ctx: ScriptContext, signer: PubKeyHash) -> Bool {
   ctx.transaction.extra_signatories |> has(signer)
 }
 
-fn must_not_be_drained(context ctx: ScriptContext) -> Bool {
+fn is_not_drained(context ctx: ScriptContext) -> Bool {
   let txn = ctx.transaction
   let input_ada =
     txn.inputs
@@ -129,11 +174,7 @@ fn must_not_be_drained(context ctx: ScriptContext) -> Bool {
   (input_ada >= output_ada)?
 }
 
-fn sum_ints(ints: List<Int>) -> Int {
-  ints |> reduce(0, add_integer)
-}
-
-fn must_recreate_chest(context ctx: ScriptContext) -> Bool {
+fn recreate_chest(context ctx: ScriptContext) -> Bool {
   let outputs =
     ctx.transaction.outputs
       |> filter(
@@ -149,34 +190,9 @@ fn must_recreate_chest(context ctx: ScriptContext) -> Bool {
       when output.datum is {
         InlineDatum(datum) -> {
           expect CreateChest(new_deadline, new_creator): ChestDatum = datum
-          let must_be_signed_by_new_creator =
-            fn(_) {
-              let signed_by_new_creator = ctx |> must_be_signed_by(new_creator)
-              signed_by_new_creator?
-            }
-          let must_postpone_after_now =
-            fn(_) {
-              let postponed_after_now = {
-                let now = start_of(ctx.transaction.validity_range)
-                when now.bound_type is {
-                  Finite(time) -> {
-                    let time =
-                      if now.is_inclusive? {
-                        time
-                      } else {
-                        time + 1
-                      }
-                    (time < new_deadline)?
-                  }
-                  // infinite bound type:
-                  _ -> False
-                }
-              }
-              postponed_after_now?
-            }
           chain.validate()
-            |> and(must_be_signed_by_new_creator(_))
-            |> and(must_postpone_after_now(_))
+            |> and(must_be_signed_by_new_creator(_, ctx, new_creator))
+            |> and(must_postpone_after_now(_, ctx, new_deadline))
         }
         // couldn't destructure datum:
         _ -> False
@@ -186,7 +202,7 @@ fn must_recreate_chest(context ctx: ScriptContext) -> Bool {
   }
 }
 
-fn must_find_ref_datum(
+fn find_ref_datum(
   context ctx: ScriptContext,
   ref_txn: TxHash,
 ) -> Option<ChestDatum> {
@@ -210,4 +226,11 @@ fn must_find_ref_datum(
     // referenced tx-input not found:
     None -> None
   }
+}
+
+// ///////////////////////////////////// UTILITY FUNCTIONS ///////////////////////////////////// //
+//            This section contains support function(s) not specific to the contract             //
+
+fn sum_ints(ints: List<Int>) -> Int {
+  ints |> reduce(0, add_integer)
 }
