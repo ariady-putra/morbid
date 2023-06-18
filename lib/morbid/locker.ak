@@ -40,7 +40,7 @@ pub fn validate(
         Some(CreateChest(_, creator)) ->
           context |> validate_delay_unlock(creator)
         //
-        // referenced datum not found:
+        // referenced-datum not found:
         _ -> False
       }
     //
@@ -58,7 +58,7 @@ pub fn validate(
         Some(CreateChest(deadline, _)) ->
           context |> validate_unlock_chest(deadline)
         //
-        // referenced datum not found:
+        // referenced-datum not found:
         _ -> False
       }
     //
