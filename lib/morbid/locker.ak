@@ -1,15 +1,17 @@
 use aiken/builtin.{add_integer}
+use aiken/interval.{Finite}
 use aiken/list.{filter, find, has, map, reduce}
 use aiken/time.{PosixTime}
 use aiken/transaction.{InlineDatum, ScriptContext}
 use aiken/transaction/value.{lovelace_of}
 use morbid/alias.{PubKeyHash, TxHash}
+use morbid/chain.{and, break, continue, finish, start}
 use morbid/struct/datum.{AddTreasure, ChestDatum, CreateChest}
 use morbid/struct/redeemer.{ChestRedeemer, DelayUnlock, UnlockChest}
-use time_util/cheap/posixtime.{is_after}
+use time_util/cheap/posixtime.{is_after, start_of}
 
 /// Depending on the `ChestDatum`, either `CreateChest` or `AddTreasure`,
-/// the validation may need to search for the referenced `TxHash`.
+/// the validator may need to search for the referenced `TxHash`.
 /// `ChestRedeemer` determines what action is to be done to the UTxO(s),
 /// either `DelayUnlock` or `UnlockChest`.
 /// When delaying unlock of a UTxO, the transaction must be signed by the
@@ -26,8 +28,8 @@ pub fn validate(
   when (redeemer, datum) is {
     //
     // When delaying unlock for a UTxO with the datum of type CreateChest:
-    (DelayUnlock, CreateChest(deadline, creator)) ->
-      context |> validate_delay_unlock(deadline, creator)
+    (DelayUnlock, CreateChest(_, creator)) ->
+      context |> validate_delay_unlock(creator)
     //
     // When delaying unlock for a UTxO with the datum of type AddTreasure:
     (DelayUnlock, AddTreasure(ref_txn)) ->
@@ -36,8 +38,8 @@ pub fn validate(
       when context |> must_find_ref_datum(ref_txn) is {
         //
         // referenced-datum found:
-        Some(CreateChest(deadline, creator)) ->
-          context |> validate_delay_unlock(deadline, creator)
+        Some(CreateChest(_, creator)) ->
+          context |> validate_delay_unlock(creator)
         //
         // referenced datum not found:
         _ -> False
@@ -68,24 +70,48 @@ pub fn validate(
 
 fn validate_delay_unlock(
   context ctx: ScriptContext,
-  deadline: PosixTime,
   creator: PubKeyHash,
 ) -> Bool {
   //
   // transaction must be signed by the creator
-  let txn_signed_by_creator =
-    fn() { ctx |> must_be_signed_by(creator) }
+  let must_be_signed_by_creator =
+    fn(_) {
+      let signed_by_creator = ctx |> must_be_signed_by(creator)
+      if signed_by_creator? {
+        continue()
+      } else {
+        break()
+      }
+    }
   //
   // input ADA must not be less than output
-  let txn_must_not_drain_ada =
-    fn() { ctx |> must_not_be_drained() }
+  let must_not_drain =
+    fn(_) {
+      let not_drained = ctx |> must_not_be_drained()
+      if not_drained? {
+        continue()
+      } else {
+        break()
+      }
+    }
   //
   // must re-create the chest
-  let txn_must_recreate_chest =
-    fn() { ctx |> must_recreate_chest(deadline, creator) }
+  let must_recreate_chest =
+    fn(_) {
+      let recreated_chest = ctx |> must_recreate_chest()
+      if recreated_chest? {
+        continue()
+      } else {
+        break()
+      }
+    }
   //
   // return:
-  txn_signed_by_creator()? && txn_must_not_drain_ada()? && txn_must_recreate_chest()?
+  start()
+    |> and(must_be_signed_by_creator(_))
+    |> and(must_not_drain(_))
+    |> and(must_recreate_chest(_))
+    |> finish()
 }
 
 fn validate_unlock_chest(
@@ -94,11 +120,7 @@ fn validate_unlock_chest(
 ) -> Bool {
   //
   // anyone can unlock after deadline
-  let txn_unlock_after_deadline =
-    fn() { ctx.transaction.validity_range |> is_after(deadline) }
-  //
-  // return:
-  txn_unlock_after_deadline()?
+  ctx.transaction.validity_range |> is_after(deadline)
 }
 
 fn must_be_signed_by(context ctx: ScriptContext, signer: PubKeyHash) -> Bool {
@@ -125,11 +147,7 @@ fn sum_ints(ints: List<Int>) -> Int {
   ints |> reduce(0, add_integer)
 }
 
-fn must_recreate_chest(
-  context ctx: ScriptContext,
-  deadline: PosixTime,
-  creator: PubKeyHash,
-) -> Bool {
+fn must_recreate_chest(context ctx: ScriptContext) -> Bool {
   let outputs =
     ctx.transaction.outputs
       |> filter(
@@ -145,7 +163,43 @@ fn must_recreate_chest(
       when output.datum is {
         InlineDatum(datum) -> {
           expect CreateChest(new_deadline, new_creator): ChestDatum = datum
-          (new_creator == creator)? && (new_deadline > deadline)?
+          let must_be_signed_by_new_creator =
+            fn(_) {
+              let signed_by_new_creator = ctx |> must_be_signed_by(new_creator)
+              if signed_by_new_creator? {
+                continue()
+              } else {
+                break()
+              }
+            }
+          let must_postpone_after_now =
+            fn(_) {
+              let postponed_after_now = {
+                let now = start_of(ctx.transaction.validity_range)
+                when now.bound_type is {
+                  Finite(time) -> {
+                    let time =
+                      if now.is_inclusive? {
+                        time
+                      } else {
+                        time + 1
+                      }
+                    (time < new_deadline)?
+                  }
+                  // infinite bound type:
+                  _ -> False
+                }
+              }
+              if postponed_after_now? {
+                continue()
+              } else {
+                break()
+              }
+            }
+          start()
+            |> and(must_be_signed_by_new_creator(_))
+            |> and(must_postpone_after_now(_))
+            |> finish()
         }
         // couldn't destructure datum:
         _ -> False
