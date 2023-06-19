@@ -2,7 +2,7 @@ use aiken/builtin.{add_integer}
 use aiken/interval.{Finite}
 use aiken/list.{filter, find, has, map, reduce}
 use aiken/time.{PosixTime}
-use aiken/transaction.{InlineDatum, ScriptContext}
+use aiken/transaction.{InlineDatum, ScriptContext, Spend}
 use aiken/transaction/value.{lovelace_of}
 use morbid/alias.{PubKeyHash, TxHash}
 use morbid/chain.{and}
@@ -21,48 +21,46 @@ use time_util/cheap/posixtime.{is_after, start_of}
 /// must be after the deadline.
 pub fn validate(
   datum: ChestDatum,
-  redeemer: ChestRedeemer,
-  context: ScriptContext,
+  redeemer action: ChestRedeemer,
+  context ctx: ScriptContext,
 ) -> Bool {
-  when (redeemer, datum) is {
+  when (action, datum, ctx.purpose) is {
     //
     // When delaying unlock for a UTxO with the datum of type CreateChest:
-    (DelayUnlock, CreateChest(_, creator)) ->
-      context |> validate_delay_unlock(creator)
+    (DelayUnlock, CreateChest(_, creator), Spend(_)) ->
+      ctx |> validate_delay_unlock(creator)
     //
     // When delaying unlock for a UTxO with the datum of type AddTreasure:
-    (DelayUnlock, AddTreasure(ref_txn)) ->
+    (DelayUnlock, AddTreasure(ref_txn), Spend(_)) ->
       //
       // ref_txn must refer to a UTxO with the datum of type CreateChest
-      when context |> find_ref_datum(ref_txn) is {
+      when ctx |> find_ref_datum(ref_txn) is {
         //
         // referenced-datum found:
-        Some(CreateChest(_, creator)) ->
-          context |> validate_delay_unlock(creator)
+        Some(CreateChest(_, creator)) -> ctx |> validate_delay_unlock(creator)
         //
         // referenced-datum not found:
         _ -> False
       }
     //
     // When unlocking the chest for a UTxO with the datum of type CreateChest:
-    (UnlockChest, CreateChest(deadline, _)) ->
-      context |> validate_unlock_chest(deadline)
+    (UnlockChest, CreateChest(deadline, _), Spend(_)) ->
+      ctx |> validate_unlock_chest(deadline)
     //
     // When unlocking the chest for a UTxO with the datum of type AddTreasure:
-    (UnlockChest, AddTreasure(ref_txn)) ->
+    (UnlockChest, AddTreasure(ref_txn), Spend(_)) ->
       //
       // ref_txn must refer to a UTxO with the datum of type CreateChest
-      when context |> find_ref_datum(ref_txn) is {
+      when ctx |> find_ref_datum(ref_txn) is {
         //
         // referenced-datum found:
-        Some(CreateChest(deadline, _)) ->
-          context |> validate_unlock_chest(deadline)
+        Some(CreateChest(deadline, _)) -> ctx |> validate_unlock_chest(deadline)
         //
         // referenced-datum not found:
         _ -> False
       }
     //
-    // Any other actions:
+    // Any other actions/purpose:
     _ -> False
   }
 }
