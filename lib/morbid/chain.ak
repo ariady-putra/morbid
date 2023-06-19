@@ -45,7 +45,7 @@ pub fn validate() {
 
 pub fn and(continue, next) {
   if continue {
-    next(True)
+    next(Void)
   } else {
     False
   }
