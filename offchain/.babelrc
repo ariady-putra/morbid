@@ -1,0 +1,11 @@
+{
+    "presets": [
+      ["next/babel", {
+        "preset-env": {
+          "loose": false,
+          "modules": false
+        },
+      }]
+    ],
+    "plugins": ["@babel/plugin-proposal-class-properties", "@babel/plugin-proposal-private-property-in-object", "@babel/plugin-proposal-private-methods"]
+  }
