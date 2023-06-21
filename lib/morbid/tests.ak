@@ -29,7 +29,7 @@
 //// │ ↳ Datum: "d8799f055143683335375f437233343730725f504b48ff"
 //// │ ↳ Redeemer: "d87980"
 //// │ ↳ ScriptContext: "d8799fd8799f9fd8799fd8799fd8799f514372333437334368333537377848343568ff00ffd8799fd8799fd8799f40ffd87a80ffa140a1401a00989680d87b9fd8799f055143683335375f437233343730725f504b48ffffd87a80ffffff809fd8799fd8799fd8799f40ffd87a80ffa140a1401a00989680d87b9fd8799f065143683335375f437233343730725f504b48ffffd87a80ffffa140a1401a001e8480a080a0d8799fd8799fd87a9f07ffd87a80ffd8799fd87b80d87a80ffff9f5143683335375f437233343730725f504b48ffa0a0d8799f40ffffd87a9fd8799fd8799f40ff00ffffff"
-//// │ ↳ finite_start_of(ctx.transaction.validity_range) < new_deadline ? False
+//// │ ↳ unsafe_unwrap.finite_start_of(ctx.transaction.validity_range) < new_deadline ? False
 //// │ ↳ postponed_after_now ? False
 //// │ ↳ recreated_chest ? False
 //// │ PASS [mem: 3649184, cpu: 1968018788] disallow_delay_by_recreate_chest_with_unsigned_creator
