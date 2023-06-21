@@ -8,7 +8,8 @@ use morbid/alias.{PubKeyHash, TxHash}
 use morbid/chain.{and}
 use morbid/struct/datum.{AddTreasure, ChestDatum, CreateChest}
 use morbid/struct/redeemer.{ChestRedeemer, DelayUnlock, UnlockChest}
-use time_util/cheap/posixtime.{is_after, start_of}
+use time_util/bound.{start_bound_type_of}
+use time_util/cheap/posixtime.{is_after}
 
 /// Depending on the `ChestDatum`, either `CreateChest` or `AddTreasure`,
 /// the validator may need to search for the referenced `TxHash`.
@@ -130,22 +131,12 @@ fn must_postpone_after_now(
   context ctx: ScriptContext,
   new_deadline: PosixTime,
 ) -> Bool {
-  let postponed_after_now = {
-    let now = start_of(ctx.transaction.validity_range)
-    when now.bound_type is {
-      Finite(time) -> {
-        let time =
-          if now.is_inclusive? {
-            time
-          } else {
-            time + 1
-          }
-        (time < new_deadline)?
-      }
+  let postponed_after_now =
+    when start_bound_type_of(ctx.transaction.validity_range) is {
+      Finite(now) -> (now < new_deadline)?
       // infinite bound type:
       _ -> False
     }
-  }
   postponed_after_now?
 }
 
