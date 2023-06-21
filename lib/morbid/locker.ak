@@ -1,5 +1,4 @@
 use aiken/builtin.{add_integer}
-use aiken/interval.{Finite}
 use aiken/list.{filter, find, has, map, reduce}
 use aiken/time.{PosixTime}
 use aiken/transaction.{InlineDatum, ScriptContext, Spend}
@@ -8,8 +7,8 @@ use morbid/alias.{PubKeyHash, TxHash}
 use morbid/chain.{and}
 use morbid/struct/datum.{AddTreasure, ChestDatum, CreateChest}
 use morbid/struct/redeemer.{ChestRedeemer, DelayUnlock, UnlockChest}
-use time_util/bound.{start_bound_type_of}
 use time_util/cheap/posixtime.{is_after}
+use time_util/unsafe/bound.{finite_start_of}
 
 /// Depending on the `ChestDatum`, either `CreateChest` or `AddTreasure`,
 /// the validator may need to search for the referenced `TxHash`.
@@ -132,11 +131,7 @@ fn must_postpone_after_now(
   new_deadline: PosixTime,
 ) -> Bool {
   let postponed_after_now =
-    when start_bound_type_of(ctx.transaction.validity_range) is {
-      Finite(now) -> (now < new_deadline)?
-      // infinite bound type:
-      _ -> False
-    }
+    (finite_start_of(ctx.transaction.validity_range) < new_deadline)?
   postponed_after_now?
 }
 
