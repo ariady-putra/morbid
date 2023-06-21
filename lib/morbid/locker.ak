@@ -8,7 +8,7 @@ use morbid/chain.{and}
 use morbid/struct/datum.{AddTreasure, ChestDatum, CreateChest}
 use morbid/struct/redeemer.{ChestRedeemer, DelayUnlock, UnlockChest}
 use time_util/cheap/posixtime.{is_after}
-use time_util/unsafe/bound.{finite_start_of}
+use time_util/unsafe/bound as unsafe_unwrap
 
 /// Depending on the `ChestDatum`, either `CreateChest` or `AddTreasure`,
 /// the validator may need to search for the referenced `TxHash`.
@@ -131,7 +131,7 @@ fn must_postpone_after_now(
   new_deadline: PosixTime,
 ) -> Bool {
   let postponed_after_now =
-    (finite_start_of(ctx.transaction.validity_range) < new_deadline)?
+    (unsafe_unwrap.finite_start_of(ctx.transaction.validity_range) < new_deadline)?
   postponed_after_now?
 }
 
