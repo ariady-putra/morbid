@@ -1,7 +1,10 @@
 use aiken/builtin.{add_integer}
-use aiken/list.{filter, find, has, map, reduce}
+use aiken/list.{filter, find, has, map, reduce, unique, unzip}
 use aiken/time.{PosixTime}
 use aiken/transaction.{InlineDatum, ScriptContext, Spend}
+use aiken/transaction/credential.{
+  Address, ScriptCredential, VerificationKeyCredential,
+}
 use aiken/transaction/value.{lovelace_of}
 use morbid/alias.{PubKeyHash, TxHash}
 use morbid/chain.{and}
@@ -88,8 +91,7 @@ fn validate_unlock_chest(
 }
 
 // ////////////////////////////////////// CHAIN FUNCTIONS ////////////////////////////////////// //
-// Currently CHAIN FUNCTIONS only contains the validation helper functions for `DelayUnlock`, as //
-// during `UnlockChest` it only needs to validate the `deadline` against the time of transaction //
+//             This section contains functions to be chained using `chain.validate()`            //
 
 /// `DelayUnlock`: Transaction must be signed by the creator.
 fn must_be_signed_by_creator(
@@ -113,7 +115,24 @@ fn must_recreate_chest(_, context ctx: ScriptContext) -> Bool {
   recreated_chest?
 }
 
-/// `DelayUnlock`: Transaction must be signed by the new owner
+/// Must not drain: Input Script Address == Output Script Address
+fn must_be_same_address(
+  _,
+  input_address: Address,
+  output_address: Address,
+) -> Bool {
+  let is_the_same_address = input_address == output_address
+  is_the_same_address?
+}
+
+/// Must not drain: It's okay to receive more inputs,
+/// since output is deducted by fees.
+fn must_be_greater_than_equals_to(_, input_ada: Int, output_ada: Int) -> Bool {
+  let is_input_greater_than_equals_to_output = input_ada >= output_ada
+  is_input_greater_than_equals_to_output?
+}
+
+/// Must re-create chest: Transaction must be signed by the new owner
 /// when transferring the ownership of the chest.
 fn must_be_signed_by_new_creator(
   _,
@@ -124,7 +143,7 @@ fn must_be_signed_by_new_creator(
   signed_by_new_creator?
 }
 
-/// `DelayUnlock`: Disallow setting the past as the new deadline.
+/// Must re-create chest: Disallow setting the past as the new deadline.
 fn must_postpone_after_now(
   _,
   context ctx: ScriptContext,
@@ -144,18 +163,42 @@ fn is_signed_by(context ctx: ScriptContext, signer: PubKeyHash) -> Bool {
 
 fn is_not_drained(context ctx: ScriptContext) -> Bool {
   let txn = ctx.transaction
-  let input_ada =
-    txn.inputs
-      |> map(fn(input) { lovelace_of(input.output.value) })
-      |> sum_ints()
-  let output_ada =
-    txn.outputs
-      |> map(fn(output) { lovelace_of(output.value) })
-      |> sum_ints()
   //
-  // it's okay to receive more inputs,
-  // since output is deducted by fees:
-  (input_ada >= output_ada)?
+  // Anonymous fn to filter out non script addresses:
+  let script_address =
+    fn(address: Address) {
+      when address.payment_credential is {
+        ScriptCredential(_) -> True
+        VerificationKeyCredential(_) -> False
+      }
+    }
+  //
+  // Sum Input ADA, Validate Input Address:
+  let (input_ada, input_address) =
+    txn.inputs
+      |> map(fn(input) { (lovelace_of(input.output.value), input.output.address) })
+      |> unzip()
+  expect [input_address] =
+    input_address
+      |> filter(script_address)
+      |> unique()
+  let input_ada = input_ada |> sum_ints()
+  //
+  // Sum Output ADA, Validate Output Address:
+  let (output_ada, output_address) =
+    txn.outputs
+      |> map(fn(output) { (lovelace_of(output.value), output.address) })
+      |> unzip()
+  expect [output_address] =
+    output_address
+      |> filter(script_address)
+      |> unique()
+  let output_ada = output_ada |> sum_ints()
+  //
+  // return:
+  chain.validate()
+    |> and(must_be_same_address(_, input_address, output_address))
+    |> and(must_be_greater_than_equals_to(_, input_ada, output_ada))
 }
 
 fn recreate_chest(context ctx: ScriptContext) -> Bool {
