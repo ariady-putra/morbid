@@ -115,23 +115,6 @@ fn must_recreate_chest(_, context ctx: ScriptContext) -> Bool {
   recreated_chest?
 }
 
-/// Must not drain: Input Script Address == Output Script Address
-fn must_be_same_address(
-  _,
-  input_address: Address,
-  output_address: Address,
-) -> Bool {
-  let is_the_same_address = input_address == output_address
-  is_the_same_address?
-}
-
-/// Must not drain: It's okay to receive more inputs,
-/// since output is deducted by fees.
-fn must_be_greater_than_equals_to(_, input_ada: Int, output_ada: Int) -> Bool {
-  let is_input_greater_than_equals_to_output = input_ada >= output_ada
-  is_input_greater_than_equals_to_output?
-}
-
 /// Must re-create chest: Transaction must be signed by the new owner
 /// when transferring the ownership of the chest.
 fn must_be_signed_by_new_creator(
@@ -178,7 +161,7 @@ fn is_not_drained(context ctx: ScriptContext) -> Bool {
     txn.inputs
       |> map(fn(input) { (lovelace_of(input.output.value), input.output.address) })
       |> unzip()
-  expect [input_address] =
+  expect [input_script_address] =
     input_address
       |> filter(script_address)
       |> unique()
@@ -189,16 +172,15 @@ fn is_not_drained(context ctx: ScriptContext) -> Bool {
     txn.outputs
       |> map(fn(output) { (lovelace_of(output.value), output.address) })
       |> unzip()
-  expect [output_address] =
+  expect [output_script_address] =
     output_address
       |> filter(script_address)
       |> unique()
   let output_ada = output_ada |> sum_ints()
   //
-  // return:
-  chain.validate()
-    |> and(must_be_same_address(_, input_address, output_address))
-    |> and(must_be_greater_than_equals_to(_, input_ada, output_ada))
+  // Return:
+  (input_script_address == output_script_address)? && (input_ada >= output_ada)?
+  // It's okay to receive more inputs, since output is deducted by fees.
 }
 
 fn recreate_chest(context ctx: ScriptContext) -> Bool {
