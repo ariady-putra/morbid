@@ -179,7 +179,7 @@ fn is_not_drained(context ctx: ScriptContext) -> Bool {
   let output_ada = output_ada |> sum_ints()
   //
   // Return:
-  (input_script_address == output_script_address)? && (input_ada >= output_ada)?
+  (input_ada >= output_ada)? && (input_script_address == output_script_address)?
   // It's okay to receive more inputs, since output is deducted by fees.
 }
 
