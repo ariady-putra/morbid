@@ -103,7 +103,7 @@ fn must_be_signed_by_creator(
   signed_by_creator?
 }
 
-/// `DelayUnlock`: Input ADA must not be less than Output.
+/// `DelayUnlock`: Input Lovelace must not be less than Output.
 fn must_not_drain(_, context ctx: ScriptContext) -> Bool {
   let not_drained = ctx |> is_not_drained()
   not_drained?
@@ -156,31 +156,46 @@ fn is_not_drained(context ctx: ScriptContext) -> Bool {
       }
     }
   //
-  // Sum Input ADA, Validate Input Address:
-  let (input_ada, input_address) =
+  // Anonymous fn to collect values only from script address:
+  let lovelace_of_script_address =
+    fn(output: transaction.Output) {
+      if output.address |> script_address() {
+        lovelace_of(output.value)
+      } else {
+        0
+      }
+    }
+  //
+  // Anonymous fn to map `transaction.Output` to (lovelace, address):
+  let lovelace_address =
+    fn(output: transaction.Output) {
+      (output |> lovelace_of_script_address(), output.address)
+    }
+  //
+  // Sum Input Lovelace, Validate Input Address:
+  let (input_lovelace, input_address) =
     txn.inputs
-      |> map(fn(input) { (lovelace_of(input.output.value), input.output.address) })
+      |> map(fn(input) { input.output |> lovelace_address() })
       |> unzip()
   expect [input_script_address] =
     input_address
       |> filter(script_address)
       |> unique()
-  let input_ada = input_ada |> sum_ints()
+  let input_lovelace = input_lovelace |> sum_ints()
   //
-  // Sum Output ADA, Validate Output Address:
-  let (output_ada, output_address) =
+  // Sum Output Lovelace, Validate Output Address:
+  let (output_lovelace, output_address) =
     txn.outputs
-      |> map(fn(output) { (lovelace_of(output.value), output.address) })
+      |> map(lovelace_address)
       |> unzip()
   expect [output_script_address] =
     output_address
       |> filter(script_address)
       |> unique()
-  let output_ada = output_ada |> sum_ints()
+  let output_lovelace = output_lovelace |> sum_ints()
   //
   // Return:
-  (input_ada >= output_ada)? && (input_script_address == output_script_address)?
-  // It's okay to receive more inputs, since output is deducted by fees.
+  (input_lovelace == output_lovelace)? && (input_script_address == output_script_address)?
 }
 
 fn recreate_chest(context ctx: ScriptContext) -> Bool {
