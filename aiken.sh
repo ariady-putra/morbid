@@ -11,7 +11,7 @@ echo "" # new line
 
 # aiken build
 echo -e "${MAGENTA}Running${RESET} ${WHITE}aiken build${RESET}:"
-aiken build
+aiken build $1
 echo "" # new line
 
 # aiken blueprint & address
@@ -21,5 +21,7 @@ aiken address > ${PROJECT}.address
 echo "" # new line
 
 # aiken docs
-echo -e "${MAGENTA}Running${RESET} ${WHITE}aiken docs${RESET}:"
-aiken docs
+if [ $# -eq 0 ]; then
+    echo -e "${MAGENTA}Running${RESET} ${WHITE}aiken docs${RESET}:"
+    aiken docs
+fi
