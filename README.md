@@ -14,16 +14,17 @@ This is a dead-man's switch contract where you can:
 - Unlock Chest
 
 ## Create Chest
-Deposit initial ADA
+Mints a pair of NFTs, `ChestLock` and `ChestKey`. Send `ChestLock` while depositing initial ADA.
+Keep `ChestKey` in your wallet, you will need to show it when `DelayUnlock`.
 
 ## Add Treasure
-Deposit more ADA to the chest
+Anyone can deposit more ADA to the chest.
 
 ## Delay Unlock
-Postpone chest unlocking deadline
+Show the matching `ChestKey` to postpone chest unlocking deadline.
 
 ## Unlock Chest
-Redeem all ADA from the chest
+Redeem all ADA from the chest when the deadline has passed.
 
 ---
 <br/><div align="center">
