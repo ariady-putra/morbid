@@ -103,7 +103,7 @@ fn must_be_signed_by_creator(
   signed_by_creator?
 }
 
-/// `DelayUnlock`: Input Lovelace must not be less than Output.
+/// `DelayUnlock`: Input and Output Lovelace must be balance.
 fn must_not_drain(_, context ctx: ScriptContext) -> Bool {
   let not_drained = ctx |> is_not_drained()
   not_drained?
