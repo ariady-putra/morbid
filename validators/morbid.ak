@@ -20,16 +20,17 @@
 
 use aiken/transaction.{OutputReference, ScriptContext}
 use aiken/transaction/value.{AssetName, PolicyId}
+use morbid/action.{Action}
 use morbid/locker
 
 validator(utxo_ref: OutputReference, chest_name: AssetName) {
-  fn mint_chest(redeemer: Data, context: ScriptContext) {
+  fn mint_chest(redeemer: Void, context: ScriptContext) {
     chest_name |> locker.mint_chest(utxo_ref, redeemer, context)
   }
 }
 
 validator(policy_id: PolicyId, chest_name: AssetName) {
-  fn validate(datum: Data, redeemer: Data, context: ScriptContext) -> Bool {
+  fn validate(datum: Data, redeemer: Action, context: ScriptContext) -> Bool {
     chest_name |> locker.validate(policy_id, datum, redeemer, context)
   }
 }

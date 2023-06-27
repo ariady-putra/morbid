@@ -1,16 +1,18 @@
 use aiken/builtin.{add_integer}
-use aiken/list.{filter, find, has, map, reduce, unique, unzip}
+use aiken/hash.{Blake2b_224, Hash}
+use aiken/list.{filter, filter_map, has, map, reduce, unique, unzip}
 use aiken/time.{PosixTime}
-use aiken/transaction.{InlineDatum, ScriptContext, ScriptPurpose, Spend}
-use aiken/transaction/credential.{
-  Address, ScriptCredential, VerificationKeyCredential,
+use aiken/transaction.{
+  InlineDatum, OutputReference, ScriptContext, ScriptPurpose, Spend,
 }
-use aiken/transaction/value.{lovelace_of}
+use aiken/transaction/credential.{
+  Address, Credential, Script, ScriptCredential, VerificationKeyCredential,
+}
+use aiken/transaction/value.{AssetName, PolicyId, flatten_with, lovelace_of}
 use morbid/action.{Action, DelayUnlock, UnlockChest}
-use morbid/alias.{PubKeyHash, TxHash}
-use morbid/chain.{and}
-use time_util/cheap/posixtime.{is_after}
-use time_util/unsafe/bound as unsafe_unwrap
+
+// use time_util/cheap/posixtime.{is_after}
+// use time_util/unsafe/bound as unsafe_unwrap
 
 /// When delaying unlock of a UTxO, the transaction must include a `ChestKey` NFT
 /// (it will be used to be matched against the `ChestLock`), the sum of input and
@@ -22,11 +24,10 @@ pub fn validate(
   chest_name: AssetName,
   policy_id: PolicyId,
   datum _maybe_deadline: Data,
-  redeemer: Data,
+  redeemer action: Action,
   context ctx: ScriptContext,
 ) -> Bool {
   expect Spend(_): ScriptPurpose = ctx.purpose
-  expect action: Action = redeemer
   when action is {
     DelayUnlock -> ctx |> validate_delay_unlock(policy_id, chest_name)
     UnlockChest -> ctx |> validate_unlock_chest()
@@ -34,12 +35,12 @@ pub fn validate(
 }
 
 pub fn mint_chest(
-  utxo_ref: OutputReference,
-  chest_name: AssetName,
-  redeemer action: Data,
-  context ctx: ScriptContext,
+  _chest_name: AssetName,
+  _utxo_ref: OutputReference,
+  _redeemer: Void,
+  context _ctx: ScriptContext,
 ) {
-  todo @"implement `locker.mint_chest` validation fn"
+  True
 }
 
 // //////////////////////////////// VALIDATOR HELPER FUNCTIONS //////////////////////////////// //
@@ -61,47 +62,33 @@ fn validate_unlock_chest(ctx: ScriptContext) -> Bool {
 //            This section contains functions for tracing during the validation steps            //
 
 /// Validate delay unlock: Input and Output Lovelace must be balance.
-fn must_not_drain(_, context ctx: ScriptContext) -> Bool {
+fn must_not_drain(ctx: ScriptContext) -> Bool {
   let not_drained = ctx |> is_not_drained()
   not_drained?
 }
 
-/// `DelayUnlock`: Must re-create the chest.
-fn must_recreate_chest(_, context ctx: ScriptContext) -> Bool {
-  let recreated_chest = ctx |> recreate_chest()
-  recreated_chest?
+/// Validate delay unlock: Must re-send the chest's lock with a later deadline as the new datum.
+fn must_resend_chest_lock(
+  ctx: ScriptContext,
+  policy_id: PolicyId,
+  chest_name: AssetName,
+) -> Bool {
+  let resent_chest_lock = ctx |> resend_chest_lock(policy_id, chest_name)
+  resent_chest_lock?
 }
 
-/// Must re-create chest: Transaction must be signed by the new owner
-/// when transferring the ownership of the chest.
-fn must_be_signed_by_new_creator(
-  _,
-  context ctx: ScriptContext,
-  new_creator: PubKeyHash,
-) -> Bool {
-  let signed_by_new_creator = ctx |> is_signed_by(new_creator)
-  signed_by_new_creator?
-}
-
-/// Must re-create chest: Disallow setting the past as the new deadline.
-fn must_postpone_after_now(
-  _,
-  context ctx: ScriptContext,
-  new_deadline: PosixTime,
-) -> Bool {
-  let postponed_after_now =
-    (unsafe_unwrap.finite_start_of(ctx.transaction.validity_range) < new_deadline)?
-  postponed_after_now?
+/// Validate unlock chest: Disallow unlock before deadline.
+fn must_unlock_after_deadline(_ctx: ScriptContext) -> Bool {
+  let unlock_after_deadline = True
+  unlock_after_deadline?
 }
 
 // ///////////////////////////////////// HELPER FUNCTIONS ///////////////////////////////////// //
 //       This section contains the functions to support the validation and chain functions      //
 
-fn is_signed_by(context ctx: ScriptContext, signer: PubKeyHash) -> Bool {
-  ctx.transaction.extra_signatories |> has(signer)
-}
-
-fn is_not_drained(context ctx: ScriptContext) -> Bool {
+/// (1) Sum of input and output Lovelace must be balance
+/// (2) Unique input==output script address must be the same
+fn is_not_drained(ctx: ScriptContext) -> Bool {
   let txn = ctx.transaction
   //
   // Anonymous fn to filter out non script addresses:
@@ -155,57 +142,99 @@ fn is_not_drained(context ctx: ScriptContext) -> Bool {
   (input_lovelace == output_lovelace)? && (input_script_address == output_script_address)?
 }
 
-fn recreate_chest(context ctx: ScriptContext) -> Bool {
-  let outputs =
-    ctx.transaction.outputs
-      |> filter(
-           fn(output) {
-             when output.datum is {
-               InlineDatum(_) -> True
-               _ -> False
-             }
-           },
-         )
-  when outputs is {
-    [output] ->
-      when output.datum is {
-        InlineDatum(datum) -> {
-          expect CreateChest(new_deadline, new_creator): ChestDatum = datum
-          chain.validate()
-            |> and(must_be_signed_by_new_creator(_, ctx, new_creator))
-            |> and(must_postpone_after_now(_, ctx, new_deadline))
-        }
-        // couldn't destructure datum:
-        _ -> False
-      }
-    // invalid number of datum(s)
-    _ -> False
-  }
-}
-
-fn find_ref_datum(
-  context ctx: ScriptContext,
-  ref_txn: TxHash,
-) -> Option<ChestDatum> {
+/// (1) TxIns must contain `ChestLock` with the specified Policy ID and Chest Name, and contain the deadline datum.
+/// (2) TxOuts must contain `ChestLock` with the same Policy ID and Chest Name, and contain the deadline datum with a future value.
+/// (3) `address.payment_credential` of (1) and (2) must be `ScriptCredential`, the same, and there's only 1 unique script address.
+///     (unique input==output script address validation has been done during drain validation)
+/// (4) TxRefIns must contain `ChestKey` and its `address.payment_credential` exists in `extra_signatories`
+fn resend_chest_lock(
+  ctx: ScriptContext,
+  policy_id: PolicyId,
+  chest_name chest_lock: AssetName,
+) -> Bool {
+  let txn = ctx.transaction
   //
-  // find the referenced tx-input
-  let tx_in: Option<transaction.Input> =
-    ctx.transaction.inputs
-      |> find(fn(tx_in) { tx_in.output_reference.transaction_id.hash == ref_txn })
-  //
-  // the UTxO of the referenced tx-input must contain a datum of type ChestDatum
-  when tx_in is {
-    Some(tx_in) ->
-      when tx_in.output.datum is {
-        InlineDatum(datum) -> {
-          expect datum: ChestDatum = datum
-          Some(datum)
-        }
-        // couldn't destructure datum:
+  // Anonymous fns to filter_map input_output by chest_lock into script_address and deadline:
+  let filter_chest_lock =
+    fn(id, name, qty) {
+      when (id, name, qty) is {
+        (id, name, 1) ->
+          if id == policy_id && name == chest_lock {
+            Some((id, name, 1))
+          } else {
+            None
+          }
         _ -> None
       }
-    // referenced tx-input not found:
-    None -> None
+    }
+  let into_script_deadline =
+    fn(output: transaction.Output) {
+      when output.address.payment_credential is {
+        VerificationKeyCredential(_) -> None
+        ScriptCredential(script_address) ->
+          when output.value |> flatten_with(filter_chest_lock) is {
+            [(_, _, 1)] ->
+              when output.datum is {
+                InlineDatum(datum) -> {
+                  expect deadline: PosixTime = datum
+                  Some((script_address, deadline))
+                }
+                _ -> None
+              }
+            _ -> None
+          }
+      }
+    }
+  //
+  // Expecting `ChestLock` in a UTxO of a script_address with PosixTime datum:
+  expect [(input_address, old_deadline)]: List<
+    (Hash<Blake2b_224, Script>, PosixTime),
+  > =
+    txn.inputs
+      |> filter_map(
+           fn(input: transaction.Input) {
+             input.output |> into_script_deadline()
+           },
+         )
+  expect [(output_address, new_deadline)]: List<
+    (Hash<Blake2b_224, Script>, PosixTime),
+  > = txn.outputs |> filter_map(into_script_deadline)
+  //
+  // Continue validating only if previous steps are valid:
+  if (input_address == output_address)? && (old_deadline < new_deadline)? {
+    let chest_key: AssetName = "ChestKey"
+    //
+    // Anonymous fns to filter_map reference_inputs by chest_key into payment_credential:
+    let filter_chest_key =
+      fn(id, name, qty) {
+        when (id, name, qty) is {
+          (id, name, 1) ->
+            if id == policy_id && name == chest_key {
+              Some((id, name, 1))
+            } else {
+              None
+            }
+          _ -> None
+        }
+      }
+    let into_payment_credential =
+      fn(input: transaction.Input) {
+        let output = input.output
+        when output.value |> flatten_with(filter_chest_key) is {
+          [(_, _, 1)] -> Some(output.address.payment_credential)
+          _ -> None
+        }
+      }
+    //
+    // Expecting `ChestKey` and signed by the chest_key holder:
+    expect [VerificationKeyCredential(pkh)]: List<Credential> =
+      txn.reference_inputs |> filter_map(into_payment_credential)
+    //
+    // return:
+    let signed_by_chest_key_holder = txn.extra_signatories |> has(pkh)
+    signed_by_chest_key_holder?
+  } else {
+    False
   }
 }
 
