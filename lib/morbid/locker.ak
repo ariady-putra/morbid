@@ -16,7 +16,6 @@ use morbid/action.{Action, DelayUnlock, UnlockChest}
 use morbid/chain.{and}
 use morbid/constant.{chest_key}
 
-// use time_util/cheap/posixtime.{is_after}
 // use time_util/unsafe/bound as unsafe_unwrap
 
 /// When delaying unlock of a UTxO, the transaction must include a `ChestKey` NFT
@@ -26,7 +25,7 @@ use morbid/constant.{chest_key}
 /// When unlocking the chest of a UTxO, the transaction validity range must be
 /// after the deadline.
 pub fn validate(
-  chest_name: AssetName,
+  chest_name chest_lock: AssetName,
   policy_id: PolicyId,
   datum _maybe_deadline: Data,
   redeemer action: Action,
@@ -34,19 +33,19 @@ pub fn validate(
 ) -> Bool {
   expect Spend(_): ScriptPurpose = ctx.purpose
   when action is {
-    DelayUnlock -> ctx |> validate_delay_unlock(policy_id, chest_name)
-    UnlockChest -> ctx |> validate_unlock_chest()
+    DelayUnlock -> ctx |> validate_delay_unlock(policy_id, chest_lock)
+    UnlockChest -> ctx |> validate_unlock_chest(policy_id, chest_lock)
   }
 }
 
 pub fn mint_chest(
-  chest_name: AssetName,
+  chest_name chest_lock: AssetName,
   utxo_ref: OutputReference,
   _redeemer: Void,
   context ctx: ScriptContext,
 ) {
   expect Mint(policy_id): ScriptPurpose = ctx.purpose
-  ctx |> validate_mint_chest(utxo_ref, policy_id, chest_name)
+  ctx |> validate_mint_chest(utxo_ref, policy_id, chest_lock)
 }
 
 // //////////////////////////////// VALIDATOR HELPER FUNCTIONS //////////////////////////////// //
@@ -56,7 +55,7 @@ fn validate_mint_chest(
   ctx: ScriptContext,
   utxo_ref: OutputReference,
   policy_id: PolicyId,
-  chest_name chest_lock: AssetName,
+  chest_lock: AssetName,
 ) -> Bool {
   when ctx |> minted_values_of(policy_id) is {
     // [ChestLock, ChestKey] or [ChestKey, ChestLock]
@@ -73,15 +72,19 @@ fn validate_mint_chest(
 fn validate_delay_unlock(
   ctx: ScriptContext,
   policy_id: PolicyId,
-  chest_name: AssetName,
+  chest_lock: AssetName,
 ) -> Bool {
   chain.validate()
     |> and(must_not_drain(_, ctx))
-    |> and(must_resend_chest_lock(_, ctx, policy_id, chest_name))
+    |> and(must_resend_chest_lock(_, ctx, policy_id, chest_lock))
 }
 
-fn validate_unlock_chest(ctx: ScriptContext) -> Bool {
-  ctx |> must_unlock_after_deadline()
+fn validate_unlock_chest(
+  ctx: ScriptContext,
+  policy_id: PolicyId,
+  chest_lock: AssetName,
+) -> Bool {
+  ctx |> must_unlock_after_deadline(policy_id, chest_lock)
 }
 
 // ////////////////////////////////////// TRACE FUNCTIONS ////////////////////////////////////// //
@@ -122,15 +125,21 @@ fn must_resend_chest_lock(
   _,
   ctx: ScriptContext,
   policy_id: PolicyId,
-  chest_name: AssetName,
+  chest_lock: AssetName,
 ) -> Bool {
-  let resent_chest_lock = ctx |> resend_chest_lock(policy_id, chest_name)
+  let resent_chest_lock = ctx |> resend_chest_lock(policy_id, chest_lock)
   resent_chest_lock?
 }
 
 /// Validate unlock chest: Disallow unlock before deadline.
-fn must_unlock_after_deadline(_ctx: ScriptContext) -> Bool {
+fn must_unlock_after_deadline(
+  _ctx: ScriptContext,
+  _policy_id: PolicyId,
+  _chest_lock: AssetName,
+) -> Bool {
   let unlock_after_deadline = True
+  // TODO: Find a UTxO from ctx.transaction.inputs where its output.value has (policy_id, chest_lock, 1)
+  // That UTxO must have an InlineDatum(PosixTime) where unsafe_unwrap.finite_start_of(ctx.transaction.validity_range) > PosixTime
   unlock_after_deadline?
 }
 
@@ -208,7 +217,7 @@ fn is_not_drained(ctx: ScriptContext) -> Bool {
 fn resend_chest_lock(
   ctx: ScriptContext,
   policy_id: PolicyId,
-  chest_name chest_lock: AssetName,
+  chest_lock: AssetName,
 ) -> Bool {
   let txn = ctx.transaction
   //
