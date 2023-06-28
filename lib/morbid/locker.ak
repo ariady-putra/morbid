@@ -1,15 +1,20 @@
 use aiken/builtin.{add_integer}
+use aiken/dict
 use aiken/hash.{Blake2b_224, Hash}
-use aiken/list.{filter, filter_map, has, map, reduce, unique, unzip}
+use aiken/list.{any, filter, filter_map, has, map, reduce, unique, unzip}
 use aiken/time.{PosixTime}
 use aiken/transaction.{
-  InlineDatum, OutputReference, ScriptContext, ScriptPurpose, Spend,
+  InlineDatum, Mint, OutputReference, ScriptContext, ScriptPurpose, Spend,
 }
 use aiken/transaction/credential.{
   Address, Credential, Script, ScriptCredential, VerificationKeyCredential,
 }
-use aiken/transaction/value.{AssetName, PolicyId, flatten_with, lovelace_of}
+use aiken/transaction/value.{
+  AssetName, PolicyId, flatten_with, from_minted_value, lovelace_of, tokens,
+}
 use morbid/action.{Action, DelayUnlock, UnlockChest}
+use morbid/chain.{and}
+use morbid/constant.{chest_key}
 
 // use time_util/cheap/posixtime.{is_after}
 // use time_util/unsafe/bound as unsafe_unwrap
@@ -35,40 +40,86 @@ pub fn validate(
 }
 
 pub fn mint_chest(
-  _chest_name: AssetName,
-  _utxo_ref: OutputReference,
+  chest_name: AssetName,
+  utxo_ref: OutputReference,
   _redeemer: Void,
-  context _ctx: ScriptContext,
+  context ctx: ScriptContext,
 ) {
-  True
+  expect Mint(policy_id): ScriptPurpose = ctx.purpose
+  ctx |> validate_mint_chest(utxo_ref, policy_id, chest_name)
 }
 
 // //////////////////////////////// VALIDATOR HELPER FUNCTIONS //////////////////////////////// //
-//      This section contains high-level validation requirements for each type of redeemer      //
+//       This section contains high-level validation requirements for each type of action       //
+
+fn validate_mint_chest(
+  ctx: ScriptContext,
+  utxo_ref: OutputReference,
+  policy_id: PolicyId,
+  chest_name chest_lock: AssetName,
+) -> Bool {
+  when ctx |> minted_values_of(policy_id) is {
+    // [ChestLock, ChestKey] or [ChestKey, ChestLock]
+    [(asset_1, 1), (asset_2, 1)] ->
+      chain.validate()
+        |> and(must_mint_once(_, ctx, utxo_ref))
+        |> and(must_mint_chest_lock(_, [asset_1, asset_2], chest_lock))
+        |> and(must_mint_chest_key(_, [asset_1, asset_2], chest_key))
+    // invalid number of asset(s)
+    _ -> False
+  }
+}
 
 fn validate_delay_unlock(
   ctx: ScriptContext,
   policy_id: PolicyId,
   chest_name: AssetName,
 ) -> Bool {
-  must_not_drain(ctx) && must_resend_chest_lock(ctx, policy_id, chest_name)
+  chain.validate()
+    |> and(must_not_drain(_, ctx))
+    |> and(must_resend_chest_lock(_, ctx, policy_id, chest_name))
 }
 
 fn validate_unlock_chest(ctx: ScriptContext) -> Bool {
-  must_unlock_after_deadline(ctx)
+  ctx |> must_unlock_after_deadline()
 }
 
 // ////////////////////////////////////// TRACE FUNCTIONS ////////////////////////////////////// //
 //            This section contains functions for tracing during the validation steps            //
 
+/// Validate mint chest: Must mint once only.
+fn must_mint_once(_, ctx: ScriptContext, utxo_ref: OutputReference) -> Bool {
+  let one_shot_minting =
+    ctx.transaction.inputs
+      |> any(fn(input) { input.output_reference == utxo_ref })
+  one_shot_minting?
+}
+
+// Validate mint chest: Must mint `ChestLock`
+fn must_mint_chest_lock(
+  _,
+  assets: List<AssetName>,
+  chest_lock: AssetName,
+) -> Bool {
+  let minted_chest_lock = assets |> has(chest_lock)
+  minted_chest_lock?
+}
+
+// Validate mint chest: Must mint `ChestKey`
+fn must_mint_chest_key(_, assets: List<AssetName>, chest_key: AssetName) -> Bool {
+  let minted_chest_key = assets |> has(chest_key)
+  minted_chest_key?
+}
+
 /// Validate delay unlock: Input and Output Lovelace must be balance.
-fn must_not_drain(ctx: ScriptContext) -> Bool {
+fn must_not_drain(_, ctx: ScriptContext) -> Bool {
   let not_drained = ctx |> is_not_drained()
   not_drained?
 }
 
 /// Validate delay unlock: Must re-send the chest's lock with a later deadline as the new datum.
 fn must_resend_chest_lock(
+  _,
   ctx: ScriptContext,
   policy_id: PolicyId,
   chest_name: AssetName,
@@ -85,6 +136,13 @@ fn must_unlock_after_deadline(_ctx: ScriptContext) -> Bool {
 
 // ///////////////////////////////////// HELPER FUNCTIONS ///////////////////////////////////// //
 //       This section contains the functions to support the validation and chain functions      //
+
+fn minted_values_of(context ctx: ScriptContext, policy_id: PolicyId) {
+  ctx.transaction.mint
+    |> from_minted_value()
+    |> tokens(policy_id)
+    |> dict.to_list()
+}
 
 /// (1) Sum of input and output Lovelace must be balance
 /// (2) Unique input==output script address must be the same
@@ -202,7 +260,6 @@ fn resend_chest_lock(
   //
   // Continue validating only if previous steps are valid:
   if (input_address == output_address)? && (old_deadline < new_deadline)? {
-    let chest_key: AssetName = "ChestKey"
     //
     // Anonymous fns to filter_map reference_inputs by chest_key into payment_credential:
     let filter_chest_key =
