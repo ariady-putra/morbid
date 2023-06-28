@@ -1,18 +1,18 @@
 use aiken/builtin.{add_integer}
 use aiken/dict
-use aiken/hash.{Blake2b_224, Hash}
 use aiken/list.{any, filter, filter_map, has, map, reduce, unique, unzip}
 use aiken/time.{PosixTime}
 use aiken/transaction.{
   InlineDatum, Mint, OutputReference, ScriptContext, ScriptPurpose, Spend,
 }
 use aiken/transaction/credential.{
-  Address, Credential, Script, ScriptCredential, VerificationKeyCredential,
+  Address, Credential, ScriptCredential, VerificationKeyCredential,
 }
 use aiken/transaction/value.{
   AssetName, PolicyId, flatten_with, from_minted_value, lovelace_of, tokens,
 }
 use morbid/action.{Action, DelayUnlock, UnlockChest}
+use morbid/alias.{ValidatorHash}
 use morbid/chain.{and}
 use morbid/constant.{chest_key}
 
@@ -254,18 +254,15 @@ fn resend_chest_lock(
     }
   //
   // Expecting `ChestLock` in a UTxO of a script_address with PosixTime datum:
-  expect [(input_address, old_deadline)]: List<
-    (Hash<Blake2b_224, Script>, PosixTime),
-  > =
+  expect [(input_address, old_deadline)]: List<(ValidatorHash, PosixTime)> =
     txn.inputs
       |> filter_map(
            fn(input: transaction.Input) {
              input.output |> into_script_deadline()
            },
          )
-  expect [(output_address, new_deadline)]: List<
-    (Hash<Blake2b_224, Script>, PosixTime),
-  > = txn.outputs |> filter_map(into_script_deadline)
+  expect [(output_address, new_deadline)]: List<(ValidatorHash, PosixTime)> =
+    txn.outputs |> filter_map(into_script_deadline)
   //
   // Continue validating only if previous steps are valid:
   if (input_address == output_address)? && (old_deadline < new_deadline)? {
