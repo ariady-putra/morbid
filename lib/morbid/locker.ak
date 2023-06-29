@@ -1,22 +1,24 @@
+//// TODO: test Mint, DelayUnlock, UnlockChest
+
 use aiken/builtin.{add_integer}
 use aiken/dict
-use aiken/list.{any, filter, filter_map, has, map, reduce, unique, unzip}
+use aiken/list.{any, filter, filter_map, find, has, map, reduce, unique, unzip}
 use aiken/time.{PosixTime}
 use aiken/transaction.{
-  InlineDatum, Mint, OutputReference, ScriptContext, ScriptPurpose, Spend,
+  Datum, InlineDatum, Mint, OutputReference, ScriptContext, ScriptPurpose, Spend,
 }
 use aiken/transaction/credential.{
   Address, Credential, ScriptCredential, VerificationKeyCredential,
 }
 use aiken/transaction/value.{
-  AssetName, PolicyId, flatten_with, from_minted_value, lovelace_of, tokens,
+  AssetName, PolicyId, flatten_with, from_minted_value, lovelace_of, quantity_of,
+  tokens,
 }
 use morbid/action.{Action, DelayUnlock, UnlockChest}
 use morbid/alias.{ValidatorHash}
 use morbid/chain.{and}
 use morbid/constant.{chest_key}
-
-// use time_util/unsafe/bound as unsafe_unwrap
+use time_util/unsafe/bound as unsafe_unwrap
 
 /// When delaying unlock of a UTxO, the transaction must include a `ChestKey` NFT
 /// (it will be used to be matched against the `ChestLock`), the sum of input and
@@ -133,13 +135,12 @@ fn must_resend_chest_lock(
 
 /// Validate unlock chest: Disallow unlock before deadline.
 fn must_unlock_after_deadline(
-  _ctx: ScriptContext,
-  _policy_id: PolicyId,
-  _chest_lock: AssetName,
+  ctx: ScriptContext,
+  policy_id: PolicyId,
+  chest_lock: AssetName,
 ) -> Bool {
-  let unlock_after_deadline = True
-  // TODO: Find a UTxO from ctx.transaction.inputs where its output.value has (policy_id, chest_lock, 1)
-  // That UTxO must have an InlineDatum(PosixTime) where unsafe_unwrap.finite_start_of(ctx.transaction.validity_range) > PosixTime
+  let unlock_after_deadline =
+    ctx |> unlock_after_deadline(policy_id, chest_lock)
   unlock_after_deadline?
 }
 
@@ -299,6 +300,26 @@ fn resend_chest_lock(
   } else {
     False
   }
+}
+
+/// (1) Find a UTxO from ctx.transaction.inputs where its output.value has (policy_id, chest_lock, 1)
+/// (2) That UTxO must have an InlineDatum(PosixTime) where unsafe_unwrap.finite_start_of(ctx.transaction.validity_range) > PosixTime
+fn unlock_after_deadline(
+  ctx: ScriptContext,
+  policy_id: PolicyId,
+  chest_lock: AssetName,
+) -> Bool {
+  let txn = ctx.transaction
+  expect Some(input): Option<transaction.Input> =
+    txn.inputs
+      |> find(
+           fn(input) {
+             quantity_of(input.output.value, policy_id, chest_lock) == 1
+           },
+         )
+  expect InlineDatum(datum): Datum = input.output.datum
+  expect deadline: PosixTime = datum
+  (unsafe_unwrap.finite_start_of(txn.validity_range) > deadline)?
 }
 
 // ///////////////////////////////////// UTILITY FUNCTIONS ///////////////////////////////////// //
