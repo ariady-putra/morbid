@@ -1,6 +1,4 @@
-//// TODO: test Mint, DelayUnlock, UnlockChest
-
-use aiken/builtin.{add_integer}
+use aiken/builtin.{add_integer, fst_pair}
 use aiken/dict
 use aiken/list.{any, filter, filter_map, find, has, map, reduce, unique, unzip}
 use aiken/time.{PosixTime}
@@ -61,11 +59,12 @@ fn validate_mint_chest(
 ) -> Bool {
   when ctx |> minted_values_of(policy_id) is {
     // [ChestLock, ChestKey] or [ChestKey, ChestLock]
-    [(asset_1, 1), (asset_2, 1)] ->
+    [asset_1, asset_2] ->
       chain.validate()
         |> and(must_mint_once(_, ctx, utxo_ref))
         |> and(must_mint_chest_lock(_, [asset_1, asset_2], chest_lock))
         |> and(must_mint_chest_key(_, [asset_1, asset_2], chest_key))
+        |> and(must_send_chest_lock(_, ctx, policy_id, chest_lock))
     // invalid number of asset(s)
     _ -> False
   }
@@ -100,20 +99,36 @@ fn must_mint_once(_, ctx: ScriptContext, utxo_ref: OutputReference) -> Bool {
   one_shot_minting?
 }
 
-// Validate mint chest: Must mint `ChestLock`
+/// Validate mint chest: Must mint exactly one `ChestLock`
 fn must_mint_chest_lock(
   _,
-  assets: List<AssetName>,
+  assets: List<(AssetName, Int)>,
   chest_lock: AssetName,
 ) -> Bool {
-  let minted_chest_lock = assets |> has(chest_lock)
+  let minted_chest_lock = assets |> has((chest_lock, 1))
   minted_chest_lock?
 }
 
-// Validate mint chest: Must mint `ChestKey`
-fn must_mint_chest_key(_, assets: List<AssetName>, chest_key: AssetName) -> Bool {
-  let minted_chest_key = assets |> has(chest_key)
+/// Validate mint chest: Must mint `ChestKey` of any qty.
+fn must_mint_chest_key(
+  _,
+  assets: List<(AssetName, Int)>,
+  chest_key: AssetName,
+) -> Bool {
+  let minted_chest_key =
+    assets |> any(fn(asset) { fst_pair(asset) == chest_key })
   minted_chest_key?
+}
+
+/// Validate mint chest: Must send the `ChestLock`
+fn must_send_chest_lock(
+  _,
+  ctx: ScriptContext,
+  policy_id: PolicyId,
+  chest_lock: AssetName,
+) -> Bool {
+  let sent_chest_lock = ctx |> send_chest_lock(policy_id, chest_lock)
+  sent_chest_lock?
 }
 
 /// Validate delay unlock: Input and Output Lovelace must be balance.
@@ -147,11 +162,31 @@ fn must_unlock_after_deadline(
 // ///////////////////////////////////// HELPER FUNCTIONS ///////////////////////////////////// //
 //       This section contains the functions to support the validation and chain functions      //
 
-fn minted_values_of(context ctx: ScriptContext, policy_id: PolicyId) {
+fn minted_values_of(
+  context ctx: ScriptContext,
+  policy_id: PolicyId,
+) -> List<(AssetName, Int)> {
   ctx.transaction.mint
     |> from_minted_value()
     |> tokens(policy_id)
     |> dict.to_list()
+}
+
+/// (1) TxOuts must contain `ChestLock` with the specified Policy ID and Chest Name and its
+///     `address.payment_credential` must be of type `ScriptCredential`, and contain the
+///     deadline datum with a future value.
+/// PS: It is, however, possible that the script address of the output (destination) is not
+///     the address of the chest. Since there is no way of knowing the runtime value of the
+///     chest address beforehand. But there is no incentive for the chest creator to do so.
+fn send_chest_lock(
+  ctx: ScriptContext,
+  policy_id: PolicyId,
+  chest_lock: AssetName,
+) -> Bool {
+  let txn = ctx.transaction
+  expect [(_, deadline)]: List<(ValidatorHash, PosixTime)> =
+    txn.outputs |> filter_map(into_script_deadline(_, policy_id, chest_lock))
+  (unsafe_unwrap.finite_start_of(txn.validity_range) < deadline)?
 }
 
 /// (1) Sum of input and output Lovelace must be balance
@@ -210,6 +245,41 @@ fn is_not_drained(ctx: ScriptContext) -> Bool {
   (input_lovelace == output_lovelace)? && (input_script_address == output_script_address)?
 }
 
+/// A function to help filter_map transaction.Outputs by the existence of `ChestLock`
+/// into (script_address, deadline)
+fn into_script_deadline(
+  output: transaction.Output,
+  policy_id: PolicyId,
+  chest_lock: AssetName,
+) -> Option<(ValidatorHash, PosixTime)> {
+  let filter_chest_lock =
+    fn(id, name, qty) {
+      if id == policy_id && name == chest_lock && qty == 1 {
+        Some((id, name, 1))
+      } else {
+        None
+      }
+    }
+  when output.address.payment_credential is {
+    VerificationKeyCredential(_) -> None
+    ScriptCredential(script_address) ->
+      when output.value |> flatten_with(filter_chest_lock) is {
+        // there must be at max 1 Chest Lock:
+        [_] ->
+          when output.datum is {
+            InlineDatum(datum) -> {
+              expect deadline: PosixTime = datum
+              Some((script_address, deadline))
+            }
+            // invalid datum or no datum:
+            _ -> None
+          }
+        // does not contain the Chest Lock:
+        _ -> None
+      }
+  }
+}
+
 /// (1) TxIns must contain `ChestLock` with the specified Policy ID and Chest Name, and contain the deadline datum.
 /// (2) TxOuts must contain `ChestLock` with the same Policy ID and Chest Name, and contain the deadline datum with a future value.
 /// (3) `address.payment_credential` of (1) and (2) must be `ScriptCredential`, the same, and there's only 1 unique script address.
@@ -222,48 +292,16 @@ fn resend_chest_lock(
 ) -> Bool {
   let txn = ctx.transaction
   //
-  // Anonymous fns to filter_map input_output by chest_lock into script_address and deadline:
-  let filter_chest_lock =
-    fn(id, name, qty) {
-      when (id, name, qty) is {
-        (id, name, 1) ->
-          if id == policy_id && name == chest_lock {
-            Some((id, name, 1))
-          } else {
-            None
-          }
-        _ -> None
-      }
-    }
-  let into_script_deadline =
-    fn(output: transaction.Output) {
-      when output.address.payment_credential is {
-        VerificationKeyCredential(_) -> None
-        ScriptCredential(script_address) ->
-          when output.value |> flatten_with(filter_chest_lock) is {
-            [(_, _, 1)] ->
-              when output.datum is {
-                InlineDatum(datum) -> {
-                  expect deadline: PosixTime = datum
-                  Some((script_address, deadline))
-                }
-                _ -> None
-              }
-            _ -> None
-          }
-      }
-    }
-  //
   // Expecting `ChestLock` in a UTxO of a script_address with PosixTime datum:
   expect [(input_address, old_deadline)]: List<(ValidatorHash, PosixTime)> =
     txn.inputs
       |> filter_map(
            fn(input: transaction.Input) {
-             input.output |> into_script_deadline()
+             input.output |> into_script_deadline(policy_id, chest_lock)
            },
          )
   expect [(output_address, new_deadline)]: List<(ValidatorHash, PosixTime)> =
-    txn.outputs |> filter_map(into_script_deadline)
+    txn.outputs |> filter_map(into_script_deadline(_, policy_id, chest_lock))
   //
   // Continue validating only if previous steps are valid:
   if (input_address == output_address)? && (old_deadline < new_deadline)? {
