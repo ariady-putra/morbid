@@ -18,10 +18,10 @@ use morbid/chain.{and}
 use morbid/constant.{chest_key}
 use time_util/unsafe/bound as unsafe_unwrap
 
-/// When delaying unlock of a UTxO, the transaction must include a `ChestKey` NFT
+/// When delaying unlock of a UTxO, the transaction must include a `ChestKey` token
 /// (it will be used to be matched against the `ChestLock`), the sum of input and
-/// output ADA must be balance, and it must re-send the `ChestLock` NFT with a
-/// later deadline as the datum.
+/// output ADA must be balance, and it must re-send the `ChestLock` NFT with a later
+/// deadline as the datum.
 /// When unlocking the chest of a UTxO, the transaction validity range must be
 /// after the deadline.
 pub fn validate(
@@ -306,37 +306,53 @@ fn resend_chest_lock(
   // Continue validating only if previous steps are valid:
   if (input_address == output_address)? && (old_deadline < new_deadline)? {
     //
-    // Anonymous fns to filter_map reference_inputs by chest_key into payment_credential:
+    // Anonymous fns to filter_map reference_inputs by chest_key into signed_by_chest_key_holder:
     let filter_chest_key =
       fn(id, name, qty) {
-        when (id, name, qty) is {
-          (id, name, 1) ->
-            if id == policy_id && name == chest_key {
-              Some((id, name, 1))
-            } else {
-              None
-            }
-          _ -> None
+        if id == policy_id && name == chest_key {
+          Some((id, name, qty))
+        } else {
+          None
         }
       }
-    let into_payment_credential =
+    let into_signed_by_chest_key_holder =
       fn(input: transaction.Input) {
         let output = input.output
         when output.value |> flatten_with(filter_chest_key) is {
-          [(_, _, 1)] -> Some(output.address.payment_credential)
-          _ -> None
+          //
+          // value does not contain chest_key:
+          [] -> None
+          //
+          // value contains chest_key:
+          _ ->
+            Some(
+              txn.extra_signatories
+                |> has(output.address.payment_credential |> unwrap_credential),
+            )
         }
       }
     //
-    // Expecting `ChestKey` and signed by the chest_key holder:
-    expect [VerificationKeyCredential(pkh)]: List<Credential> =
-      txn.reference_inputs |> filter_map(into_payment_credential)
-    //
     // return:
-    let signed_by_chest_key_holder = txn.extra_signatories |> has(pkh)
-    signed_by_chest_key_holder?
+    when
+      txn.reference_inputs |> filter_map(into_signed_by_chest_key_holder)
+    is {
+      //
+      // found no chest_key in reference_inputs:
+      [] -> False
+      //
+      // found chest_key in reference_inputs:
+      signed_by_all_chest_key_holder ->
+        list.and(signed_by_all_chest_key_holder)?
+    }
   } else {
     False
+  }
+}
+
+fn unwrap_credential(credential: Credential) -> ByteArray {
+  when credential is {
+    VerificationKeyCredential(pub_key_hash) -> pub_key_hash
+    ScriptCredential(validator_hash) -> validator_hash
   }
 }
 

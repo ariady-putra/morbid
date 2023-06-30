@@ -24,7 +24,7 @@ test mint_chest() {
   let policy_id = "PolicyID"
   let chest_name = "ChestLock"
   let chest_lock = policy_id |> from_asset(chest_name, 1)
-  let chest_key = policy_id |> from_asset(constant.chest_key, 1)
+  let chest_key = policy_id |> from_asset(constant.chest_key, 10)
   let minted_assets = merge(chest_lock, chest_key) |> to_minted_value()
   let tx_hash = "TxHash"
   let utxo_ref = OutputReference(TransactionId(tx_hash), 0)
