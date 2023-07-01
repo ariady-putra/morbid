@@ -6,8 +6,8 @@
 //// chest. Anyone can redeem the treasure when the deadline
 //// has passed.
 ////
-//// `v0.2`: Now uses a pair of NFTs with the same Policy ID,
-//// `ChestLock` and `ChestKey`, to validate `DelayUnlock`.
+//// `v0.2`: Now uses `ChestLock` and `ChestKey` mechanism
+//// to validate actions.
 ////
 //// ```
 //// author      :   Kiki Ariady Putra

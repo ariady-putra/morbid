@@ -16,22 +16,24 @@ use morbid/action.{Action, DelayUnlock, UnlockChest}
 use morbid/alias.{ValidatorHash}
 use morbid/chain.{and}
 use morbid/constant.{chest_key}
+use string_util/cbor.{print}
 use time_util/unsafe/bound as unsafe_unwrap
 
-/// When delaying unlock of a UTxO, the transaction must include a `ChestKey` token
-/// (it will be used to be matched against the `ChestLock`), the sum of input and
-/// output ADA must be balance, and it must re-send the `ChestLock` NFT with a later
-/// deadline as the datum.
+/// When delaying unlock of a UTxO, the transaction must include the `ChestKey`
+/// token(s) signed by all holder(s) (it will be used to be matched against the
+/// `ChestLock`), the sum of input and output ADA must be balance,
+/// and it must re-send the `ChestLock` NFT with a later deadline as the datum.
 /// When unlocking the chest of a UTxO, the transaction validity range must be
 /// after the deadline.
 pub fn validate(
   chest_name chest_lock: AssetName,
   policy_id: PolicyId,
-  datum _maybe_deadline: Data,
+  datum maybe_deadline: Data,
   redeemer action: Action,
   context ctx: ScriptContext,
 ) -> Bool {
   expect Spend(_): ScriptPurpose = ctx.purpose
+  trace "MaybeDeadline" |> print(maybe_deadline)
   when action is {
     DelayUnlock -> ctx |> validate_delay_unlock(policy_id, chest_lock)
     UnlockChest -> ctx |> validate_unlock_chest(policy_id, chest_lock)
@@ -41,10 +43,11 @@ pub fn validate(
 pub fn mint_chest(
   chest_name chest_lock: AssetName,
   utxo_ref: OutputReference,
-  _redeemer: Void,
+  redeemer action: Void,
   context ctx: ScriptContext,
 ) {
   expect Mint(policy_id): ScriptPurpose = ctx.purpose
+  trace "Redeemer" |> print(action)
   ctx |> validate_mint_chest(utxo_ref, policy_id, chest_lock)
 }
 
@@ -65,8 +68,10 @@ fn validate_mint_chest(
         |> and(must_mint_chest_lock(_, [asset_1, asset_2], chest_lock))
         |> and(must_mint_chest_key(_, [asset_1, asset_2], chest_key))
         |> and(must_send_chest_lock(_, ctx, policy_id, chest_lock))
-    // invalid number of asset(s)
-    _ -> False
+    _ -> {
+      let valid_number_of_asset = False
+      valid_number_of_asset?
+    }
   }
 }
 
@@ -336,11 +341,10 @@ fn resend_chest_lock(
     when
       txn.reference_inputs |> filter_map(into_signed_by_chest_key_holder)
     is {
-      //
-      // found no chest_key in reference_inputs:
-      [] -> False
-      //
-      // found chest_key in reference_inputs:
+      [] -> {
+        let found_chest_key_in_ref_inputs = False
+        found_chest_key_in_ref_inputs?
+      }
       signed_by_all_chest_key_holder ->
         list.and(signed_by_all_chest_key_holder)?
     }

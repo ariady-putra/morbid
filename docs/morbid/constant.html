@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <title>morbid/locker - ariady-putra/morbid</title>
+    <title>morbid/constant - ariady-putra/morbid</title>
     <meta name="theme-color" content="#eff1f5" media="(prefers-color-scheme: light)"/>
     <meta name="theme-color" content="#1e1e2e" media="(prefers-color-scheme: dark)"/>
     <link rel="icon" type="image/svg+xml" sizes="any" href="../favicon.svg"/>
@@ -216,13 +216,13 @@
         
 	  <li><a href="../morbid/constant.html">
 	  
-	  morbid/constant
+	  <strong>morbid/constant</strong>
 	  
 	  </a></li>
         
 	  <li><a href="../morbid/locker.html">
 	  
-	  <strong>morbid/locker</strong>
+	  morbid/locker
 	  
 	  </a></li>
         
@@ -238,16 +238,14 @@
 
 
 
-
-
-<h2>Functions</h2>
+<h2>Constants</h2>
 <ul>
   
-  <li><a href="#mint_chest">mint_chest</a></li>
-  
-  <li><a href="#validate">validate</a></li>
+  <li><a href="#chest_key">chest_key</a></li>
   
 </ul>
+
+
 
 
       </nav>
@@ -255,28 +253,22 @@
       <main class="content">
         
 <h1 id="module-name" class="module-name">
-  <a href="#module-name">morbid/locker</a>
+  <a href="#module-name">morbid/constant</a>
 </h1>
 
 
 
 
 
-
-
 <section class="module-members">
-  <h1 id="module-functions" class="module-member-kind">
-    <a href="#module-functions">Functions</a>
+  <h1 id="module-constants" class="module-member-kind">
+    <a href="#module-constants">Constants</a>
   </h1>
+
   
   <div class="member">
     <div class="member-name">
-      <h2 id="mint_chest"><pre class="hljs language-aiken">mint_chest(
-  chest_name: AssetName,
-  utxo_ref: OutputReference,
-  redeemer: Void,
-  context: ScriptContext,
-) -&gt; Bool</pre></h2>
+      <h2 id="chest_key"><pre class="hljs language-aiken">chest_key: ByteArray = &quot;ChestKey&quot;</pre></h2>
       
       <!-- TODO: support source linking
       <a class="member-source" alt="View Source" title="View Source" href="#todo">
@@ -285,36 +277,14 @@
       -->
       
     </div>
-    <div class="rendered-markdown"></div>
-  </div>
-  
-  <div class="member">
-    <div class="member-name">
-      <h2 id="validate"><pre class="hljs language-aiken">validate(
-  chest_name: AssetName,
-  policy_id: PolicyId,
-  datum: Data,
-  redeemer: Action,
-  context: ScriptContext,
-) -&gt; Bool</pre></h2>
-      
-      <!-- TODO: support source linking
-      <a class="member-source" alt="View Source" title="View Source" href="#todo">
-        &lt;/&gt;
-      </a>
-      -->
-      
-    </div>
-    <div class="rendered-markdown"><p>When delaying unlock of a UTxO, the transaction must include the <code>ChestKey</code>
-token(s) signed by all holder(s) (it will be used to be matched against the
-<code>ChestLock</code>), the sum of input and output ADA must be balance,
-and it must re-send the <code>ChestLock</code> NFT with a later deadline as the datum.
-When unlocking the chest of a UTxO, the transaction validity range must be
-after the deadline.</p>
+    <div class="rendered-markdown"><p>Used as the token name. Attach metadata when minting
+to keep details such as chest name and address.</p>
 </div>
   </div>
   
 </section>
+
+
 
 
       </main>

@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <title>morbid/locker - ariady-putra/morbid</title>
+    <title>morbid/action - ariady-putra/morbid</title>
     <meta name="theme-color" content="#eff1f5" media="(prefers-color-scheme: light)"/>
     <meta name="theme-color" content="#1e1e2e" media="(prefers-color-scheme: dark)"/>
     <link rel="icon" type="image/svg+xml" sizes="any" href="../favicon.svg"/>
@@ -198,7 +198,7 @@
         
 	  <li><a href="../morbid/action.html">
 	  
-	  morbid/action
+	  <strong>morbid/action</strong>
 	  
 	  </a></li>
         
@@ -222,7 +222,7 @@
         
 	  <li><a href="../morbid/locker.html">
 	  
-	  <strong>morbid/locker</strong>
+	  morbid/locker
 	  
 	  </a></li>
         
@@ -236,18 +236,16 @@
 
         
 
-
-
-
-
-<h2>Functions</h2>
+<h2>Types</h2>
 <ul>
   
-  <li><a href="#mint_chest">mint_chest</a></li>
-  
-  <li><a href="#validate">validate</a></li>
+  <li><a href="#Action">Action</a></li>
   
 </ul>
+
+
+
+
 
 
       </nav>
@@ -255,28 +253,24 @@
       <main class="content">
         
 <h1 id="module-name" class="module-name">
-  <a href="#module-name">morbid/locker</a>
+  <a href="#module-name">morbid/action</a>
 </h1>
 
 
 
-
-
-
-
 <section class="module-members">
-  <h1 id="module-functions" class="module-member-kind">
-    <a href="#module-functions">Functions</a>
+  <h1 id="module-types" class="module-member-kind">
+    <a href="#module-types">Types</a>
   </h1>
+
   
   <div class="member">
     <div class="member-name">
-      <h2 id="mint_chest"><pre class="hljs language-aiken">mint_chest(
-  chest_name: AssetName,
-  utxo_ref: OutputReference,
-  redeemer: Void,
-  context: ScriptContext,
-) -&gt; Bool</pre></h2>
+      <h2 id="Action">
+        <a href="#Action">
+	  Action
+        </a>
+      </h2>
       
       <!-- TODO: support source linking
       <a class="member-source" alt="View Source" title="View Source" href="#todo">
@@ -285,36 +279,48 @@
       -->
       
     </div>
-    <div class="rendered-markdown"></div>
-  </div>
-  
-  <div class="member">
-    <div class="member-name">
-      <h2 id="validate"><pre class="hljs language-aiken">validate(
-  chest_name: AssetName,
-  policy_id: PolicyId,
-  datum: Data,
-  redeemer: Action,
-  context: ScriptContext,
-) -&gt; Bool</pre></h2>
+    <div class="custom-type-constructors">
+      <div class="rendered-markdown"></div>
       
-      <!-- TODO: support source linking
-      <a class="member-source" alt="View Source" title="View Source" href="#todo">
-        &lt;/&gt;
-      </a>
-      -->
+      <h3>Constructors</h3>
+      <ul class="constructor-list">
+        
+        <li class="constructor-item">
+          <div class="constructor-row">
+            <svg class="icon icon-box"><use xlink:href="#icon-box"></use></svg>
+            <pre class="constructor-name"><code class="hljs aiken">DelayUnlock</code></pre>
+          </div>
+	  
+          <div class="constructor-item-docs">
+            <p>Delay chest unlocking deadline by showing the <code>ChestKey</code> token(s)</p>
+
+          </div>
+	  
+        </li>
+        
+        <li class="constructor-item">
+          <div class="constructor-row">
+            <svg class="icon icon-box"><use xlink:href="#icon-box"></use></svg>
+            <pre class="constructor-name"><code class="hljs aiken">UnlockChest</code></pre>
+          </div>
+	  
+          <div class="constructor-item-docs">
+            <p>Anyone can unlock the chest when the deadline has passed.</p>
+
+          </div>
+	  
+        </li>
+        
+      </ul>
       
     </div>
-    <div class="rendered-markdown"><p>When delaying unlock of a UTxO, the transaction must include the <code>ChestKey</code>
-token(s) signed by all holder(s) (it will be used to be matched against the
-<code>ChestLock</code>), the sum of input and output ADA must be balance,
-and it must re-send the <code>ChestLock</code> NFT with a later deadline as the datum.
-When unlocking the chest of a UTxO, the transaction validity range must be
-after the deadline.</p>
-</div>
   </div>
   
 </section>
+
+
+
+
 
 
       </main>
