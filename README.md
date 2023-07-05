@@ -59,11 +59,11 @@ View it in action on
 <br/>Postpone chest unlocking deadline.
 
 - **Unlock Chest**<br/>
-  `https://preview.cexplorer.io/tx/6f13814c90d127a8140be2ab40242ef51d216f9af5a4f47e55341a7e296ae46b`
+  `https://preview.cexplorer.io/tx/91de67cfc1077c56c22696c5efbf41bf19744ef9ea2495969ca36a78f13d6c29`
 <br/>Redeem all ADA + **ChestLock** NFT (named as **Dead Man's Chest**) from the chest.
 
 - **Resend Chest**<br/>
-  `https://preview.cexplorer.io/tx/c647e986e243ff6c5cd92982536b223a010948e21da45c22531783b1d2a0ae15`
+  `https://preview.cexplorer.io/tx/6f13814c90d127a8140be2ab40242ef51d216f9af5a4f47e55341a7e296ae46b`
 <br/>Resend **ChestLock** to the chest address.
 
 - **Share Access**<br/>
