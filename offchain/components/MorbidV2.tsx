@@ -19,6 +19,7 @@ import {
 } from "../utils/blockfrost";
 
 declare type TokenUTxO = {
+  utxo: UTxO;
   initial_mint_tx_hash: string;
   policyID: string;
   assetName: string;
@@ -34,7 +35,8 @@ const MorbidV2 = (props: {
 
   const [loaded, setLoaded] = useState(false);
   const [chestAddress, setChestAddress] = useState("");
-  const [resendableChest, setResendableChest] = useState<TokenUTxO>();
+  const [resendableChest, setResendableChest] = useState<TokenUTxO>(); // for resending chest lock
+  const [keyTokenUTxO, setKeyTokenUTxO] = useState<TokenUTxO>(); // for delaying chest deadline
 
   useEffect(() => {
     lookForChestAddress();
@@ -44,6 +46,7 @@ const MorbidV2 = (props: {
 
   const lookForChestAddress = async () => {
     const key = await lookForToken(chestKey.name);
+    setKeyTokenUTxO(key);
     setChestAddress(key?.metadata["chest_address"]);
   };
 
@@ -93,6 +96,7 @@ const MorbidV2 = (props: {
               ][assetName];
             console.log({ onchainMetadata: onchainMetadata });
             result = {
+              utxo: utxo,
               initial_mint_tx_hash: initial_mint_tx_hash,
               policyID: policyID,
               assetName: assetName,
@@ -284,115 +288,91 @@ const MorbidV2 = (props: {
   const delayUnlock = async () => {
     try {
       console.log(`DelayUnlock(${chestAddress}):`);
-      if (lucid) {
-        // const block = await getLatestBlockInfo();
-        // const time = block["time"] * 1_000; // ms
-        // console.log({ time: time });
-        // const userAddress = await lucid.wallet.address();
-        // console.log({ userAddress: userAddress });
-        // const morbidAddress = lucid.utils.validatorToAddress(morbidScript);
-        // console.log({ scriptAddress: morbidAddress });
-        // const utxos = await lucid.utxosAt(morbidAddress);
-        // console.log({ utxos: utxos });
-        // if (!utxos?.length) {
-        //   throw { emptyScriptAddress: "No UTxO to redeem." };
-        // }
-        // let treasure = 0;
-        // const chestUTxOs: UTxO[] = [];
-        // const refScript: UTxO[] = [];
-        // const forEachAsync = async (
-        //   utxos: UTxO[],
-        //   callback: { (utxo: UTxO): Promise<void>; (arg0: any): any }
-        // ) => {
-        //   for (const utxo of utxos) {
-        //     await callback(utxo);
-        //   }
-        // };
-        // const myAsyncCallback = async (utxo: UTxO) => {
-        //   if (!utxo.datum) return;
-        //   const datumFields = await getDatumFields(hashDatum(utxo.datum));
-        //   switch (datumFields.length) {
-        //     case 2: // CreateChest
-        //       if (utxo.txHash === chest.txHash) {
-        //         const deadline = datumFields[0];
-        //         const deadlineValue = deadline["int"];
-        //         if (deadlineValue < time) {
-        //           refScript.push(utxo);
-        //           chestUTxOs.push(utxo);
-        //           treasure += Number.parseInt(
-        //             assetsToValue(utxo.assets).to_js_value()["coin"]
-        //           );
-        //         }
-        //       }
-        //       return;
-        //     case 1: // AddTreasure
-        //       const refTxn = datumFields[0];
-        //       const refTxnValue = refTxn["bytes"];
-        //       if (refTxnValue === chest.txHash) {
-        //         chestUTxOs.push(utxo);
-        //         treasure += Number.parseInt(
-        //           assetsToValue(utxo.assets).to_js_value()["coin"]
-        //         );
-        //       }
-        //       return;
-        //     default:
-        //       return;
-        //   }
-        // };
-        // await forEachAsync(utxos, myAsyncCallback);
-        // console.log({ chestUTxOs: chestUTxOs });
-        // if (!chestUTxOs.length) {
-        //   throw { nothingToUnlock: "No valid UTxO to redeem." };
-        // }
-        // console.log({ refScript: refScript });
-        // if (!refScript.length) {
-        //   throw { refScriptNotFound: "No reference script found." };
-        // }
-        // const delayUnlock = Data.to(new Constr(0, [])); // redeemer
-        // console.log({ redeemer: delayUnlock }); // DelayUnlock
-        // const deadline = time + 1_000; // +1sec
-        // const creator =
-        //   lucid.utils.getAddressDetails(userAddress).paymentCredential?.hash;
-        // const createChest = Data.to(
-        //   new Constr(0, [BigInt(deadline), String(creator)])
-        // );
-        // console.log({ datum: createChest });
-        // console.log({ treasure: treasure });
-        // const tx = await lucid
-        //   .newTx()
-        //   .collectFrom(chestUTxOs, delayUnlock)
-        //   .readFrom(refScript) // reference script
-        //   .addSigner(userAddress)
-        //   // normal case:
-        //   .payToContract(
-        //     morbidAddress, // re-create chest
-        //     { inline: createChest, scriptRef: morbidScript },
-        //     { lovelace: BigInt(treasure) }
-        //   )
-        //   // drain by recreate chest to another address:
-        //   //   .payToAddressWithData(
-        //   //     userAddress, // drain to any address
-        //   //     { inline: createChest },
-        //   //     { lovelace: BigInt(treasure) }
-        //   //   )
-        //   // drain by recreate chest to another address with multiple txOuts:
-        //   //   .payToContract(
-        //   //     morbidAddress, // re-create chest
-        //   //     { inline: createChest, scriptRef: morbidScript },
-        //   //     { lovelace: BigInt(0) }
-        //   //   )
-        //   //   .payToAddress(
-        //   //     userAddress, // drain to any address
-        //   //     { lovelace: BigInt(treasure) }
-        //   //   )
-        //   .validFrom(time)
-        //   .complete();
-        // const signedTx = await tx.sign().complete();
-        // const txHash = await signedTx.submit();
-        // console.log({ txHash: txHash });
-        // setActionResult(`TxHash: ${txHash}`);
-        // setChest({ txHash: txHash });
-        // return txHash;
+      if (lucid && keyTokenUTxO) {
+        const userAddress = await lucid.wallet.address();
+        console.log({ userAddress: userAddress });
+
+        const lock = (await lucid.utxosAt(chestAddress)).find(
+          (utxo) => utxo.datum && utxo.scriptRef
+        );
+        console.log({ lock: lock });
+        if (!lock) {
+          throw { noChestLock: "No ChestLock was found." };
+        }
+
+        const block = await getLatestBlockInfo();
+        const time = block["time"] * 1_000; // ms
+        console.log({ time: time });
+
+        const deadline = BigInt(time + 60_000); // +1min
+        const datum = Data.to(deadline);
+        console.log({ datum: datum });
+
+        const lockName = `${keyTokenUTxO.policyID}${fromText(chestLock.name)}`;
+        console.log({
+          [`${chestLock.name} - ChestLock`]: {
+            lovelace: lock.assets["lovelace"],
+            [lockName]: lock.assets[lockName],
+          },
+        });
+
+        const tx = await lucid
+          .newTx()
+          .readFrom([lock, keyTokenUTxO.utxo])
+          .collectFrom([lock], action.delayUnlock)
+
+          // normal case:
+          .payToContract(
+            chestAddress,
+            { inline: datum, scriptRef: lock.scriptRef! },
+            lock.assets
+          )
+
+          // invalid datum:
+          //   .payToContract(
+          //     chestAddress,
+          //     { inline: voidData, scriptRef: lock.scriptRef! },
+          //     lock.assets
+          //   )
+
+          // drain by resend chest to another address:
+          //   .payToAddressWithData(
+          //     userAddress, // drain to any address
+          //     { inline: datum, scriptRef: lock.scriptRef! },
+          //     lock.assets
+          //   )
+
+          // drain `ChestLock` UTxO:
+          //   .payToContract(
+          //     chestAddress, // just resend the lock only
+          //     { inline: datum, scriptRef: lock.scriptRef! },
+          //     { [lockName]: BigInt(lock.assets[lockName]) }
+          //   )
+          //   .payToAddress(
+          //     userAddress, // drain ADA to any address
+          //     { lovelace: BigInt(lock.assets["lovelace"]) }
+          //   )
+
+          // take-out chest lock:
+          //   .payToContract(
+          //     chestAddress,
+          //     { inline: datum, scriptRef: lock.scriptRef! },
+          //     { lovelace: BigInt(lock.assets["lovelace"]) }
+          //   )
+          //   .payToAddress(
+          //     userAddress, // take-out the lock to any address
+          //     { [lockName]: BigInt(lock.assets[lockName]) }
+          //   )
+
+          .addSigner(userAddress)
+          .complete();
+
+        const signedTx = await tx.sign().complete();
+        const txHash = await signedTx.submit();
+        console.log({ txHash: txHash });
+
+        setActionResult(`TxHash: ${txHash}`);
+        return txHash;
       }
       throw { error: "Invalid Lucid State!" };
     } catch (x) {
@@ -434,7 +414,6 @@ const MorbidV2 = (props: {
         console.log({ txHash: txHash });
 
         setActionResult(`TxHash: ${txHash}`);
-        // setChestAddress("");
         return txHash;
       }
       throw { error: "Invalid Lucid State!" };
@@ -513,10 +492,16 @@ const MorbidV2 = (props: {
             Add Treasure
           </button>
 
-          {/* DelayUnlock */}
-          <button className="btn btn-secondary m-5" onClick={delayUnlock}>
-            Delay Unlock
-          </button>
+          {keyTokenUTxO ? (
+            <>
+              {/* DelayUnlock */}
+              <button className="btn btn-secondary m-5" onClick={delayUnlock}>
+                Delay Unlock
+              </button>
+            </>
+          ) : (
+            <></>
+          )}
 
           {/* UnlockChest */}
           <button className="btn btn-secondary m-5" onClick={unlockChest}>
