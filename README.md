@@ -33,8 +33,8 @@ Redeem all ADA from the chest when the deadline has passed. You will also receiv
 `ChestLock` NFT.
 
 ## Resend Chest
-Resend `ChestLock` to the chest address. Similar to `CreateChest` but done by the chest
-unlocker. There is no real benefit to do this, but it's possible.
+Resend `ChestLock` to the chest address. Similar to `CreateChest` but it's done by the
+chest unlocker. There is no real benefit to do this, but it's possible.
 
 ---
 <br/><div align="center">
