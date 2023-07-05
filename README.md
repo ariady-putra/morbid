@@ -45,6 +45,35 @@ addr_test1wr702hq6tnejc2gw35tl7q58u20klq5390fzyqzt7ns5hhgq2lcex
 View it in action on
 [CExplorer](https://preview.cexplorer.io/address/addr_test1wr702hq6tnejc2gw35tl7q58u20klq5390fzyqzt7ns5hhgq2lcex/tx#data).
 
+#### Timeline
+- **Create Chest**<br/>
+  `https://preview.cexplorer.io/tx/306eeab001b20cd84fe0069197816672972b07696e1c46c6901e94e39f900c75`
+<br/>Mints **2 ChestKey** tokens.
+
+- **Add Treasure**<br/>
+  `https://preview.cexplorer.io/tx/8bbf6796b0191370c1fff44c1e2f7b4176ef4b0baccc8de654c3696fcbe21605`
+<br/>Put an arbitrary **inline datum**.
+
+- **Delay Unlock**<br/>
+  `https://preview.cexplorer.io/tx/910d0c912413ede206548f22dc0e606893263e8f9ab45164004289c75985b570`
+<br/>Postpone chest unlocking deadline.
+
+- **Unlock Chest**<br/>
+  `https://preview.cexplorer.io/tx/6f13814c90d127a8140be2ab40242ef51d216f9af5a4f47e55341a7e296ae46b`
+<br/>Redeem all ADA + **ChestLock** NFT (named as **Dead Man's Chest**) from the chest.
+
+- **Resend Chest**<br/>
+  `https://preview.cexplorer.io/tx/c647e986e243ff6c5cd92982536b223a010948e21da45c22531783b1d2a0ae15`
+<br/>Resend **ChestLock** to the chest address.
+
+- **Share Access**<br/>
+  `https://preview.cexplorer.io/tx/24a05669a6048ffa278fcea3d73bcf04a82ac20736609063d13d3c4425ef6e46`
+<br/>Share **1 ChestKey** token to another address.
+
+- **Delay Unlock** (by another address)<br/>
+  `https://preview.cexplorer.io/tx/975238029fec63bd43ce206ecf6cb13fa4ad86d87423e56ffb76633aa984838c`
+<br/>Using the shared **ChestKey** token.
+
 ---
 
 <br/><div align="center">
