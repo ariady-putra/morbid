@@ -18,7 +18,7 @@ This is a dead-man's switch contract where you can:
 Mints `ChestLock` and `ChestKey`(s). Send `ChestLock` while depositing initial ADA.
 Keep `ChestKey` token(s) in your wallet, you will need to show it when `DelayUnlock`.
 
-Share access for delaying the chest unlocking deadline to anyone by sending them the
+Give access for delaying the chest unlocking deadline to anyone by sending them the
 `ChestKey` token.
 
 ## Add Treasure
