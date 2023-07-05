@@ -276,6 +276,44 @@ chest unlocker. There is no real benefit to do this, but it’s possible.</p>
 </code></pre>
 <p>View it in action on
 <a href="https://preview.cexplorer.io/address/addr_test1wr702hq6tnejc2gw35tl7q58u20klq5390fzyqzt7ns5hhgq2lcex/tx#data">CExplorer</a>.</p>
+<h4>Timeline</h4>
+<ul>
+<li>
+<p><strong>Create Chest</strong><br/>
+<code>https://preview.cexplorer.io/tx/306eeab001b20cd84fe0069197816672972b07696e1c46c6901e94e39f900c75</code>
+<br/>Mints <strong>2 ChestKey</strong> tokens.</p>
+</li>
+<li>
+<p><strong>Add Treasure</strong><br/>
+<code>https://preview.cexplorer.io/tx/8bbf6796b0191370c1fff44c1e2f7b4176ef4b0baccc8de654c3696fcbe21605</code>
+<br/>Put an arbitrary <strong>inline datum</strong>.</p>
+</li>
+<li>
+<p><strong>Delay Unlock</strong><br/>
+<code>https://preview.cexplorer.io/tx/910d0c912413ede206548f22dc0e606893263e8f9ab45164004289c75985b570</code>
+<br/>Postpone chest unlocking deadline.</p>
+</li>
+<li>
+<p><strong>Unlock Chest</strong><br/>
+<code>https://preview.cexplorer.io/tx/6f13814c90d127a8140be2ab40242ef51d216f9af5a4f47e55341a7e296ae46b</code>
+<br/>Redeem all ADA + <strong>ChestLock</strong> NFT (named as <strong>Dead Man’s Chest</strong>) from the chest.</p>
+</li>
+<li>
+<p><strong>Resend Chest</strong><br/>
+<code>https://preview.cexplorer.io/tx/c647e986e243ff6c5cd92982536b223a010948e21da45c22531783b1d2a0ae15</code>
+<br/>Resend <strong>ChestLock</strong> to the chest address.</p>
+</li>
+<li>
+<p><strong>Share Access</strong><br/>
+<code>https://preview.cexplorer.io/tx/24a05669a6048ffa278fcea3d73bcf04a82ac20736609063d13d3c4425ef6e46</code>
+<br/>Share <strong>1 ChestKey</strong> token to another address.</p>
+</li>
+<li>
+<p><strong>Delay Unlock</strong> (by another address)<br/>
+<code>https://preview.cexplorer.io/tx/975238029fec63bd43ce206ecf6cb13fa4ad86d87423e56ffb76633aa984838c</code>
+<br/>Using the shared <strong>ChestKey</strong> token.</p>
+</li>
+</ul>
 <hr />
 <p><br/><div align="center">
 <img src="https://images5.alphacoders.com/641/641119.jpg"/>
@@ -354,8 +392,8 @@ chest unlocker. There is no real benefit to do this, but it’s possible.</p>
       });
     </script>
     <script src="./js/lunr.min.js?v=1.0.11-alpha"></script>
-    <script src="./js/index.js?v=1688571897"></script>
+    <script src="./js/index.js?v=1688573843"></script>
     <!-- Load the search index using JSONP to avoid CORS issues -->
-    <script src="./search-data.js?v=1688571897"></script>
+    <script src="./search-data.js?v=1688573843"></script>
   </body>
 </html>
