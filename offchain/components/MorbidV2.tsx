@@ -232,8 +232,8 @@ const MorbidV2 = (props: {
                 name: `${chestLock.name} - ${chestKey.name}`,
                 image: chestKey.image,
                 chest_address: chestAddress,
-                ref_hash: utxos[0].txHash,
-                ref_index: utxos[0].outputIndex,
+                // ref_hash: utxos[0].txHash, // not needed
+                // ref_index: utxos[0].outputIndex,
               },
             },
           })
