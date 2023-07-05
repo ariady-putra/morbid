@@ -37,6 +37,16 @@ Resend `ChestLock` to the chest address. Similar to `CreateChest` but it's done 
 chest unlocker. There is no real benefit to do this, but it's possible.
 
 ---
+
+### Chest Address Sample
+```
+addr_test1wr702hq6tnejc2gw35tl7q58u20klq5390fzyqzt7ns5hhgq2lcex
+```
+View it in action on
+[CExplorer](https://preview.cexplorer.io/address/addr_test1wr702hq6tnejc2gw35tl7q58u20klq5390fzyqzt7ns5hhgq2lcex/tx#data).
+
+---
+
 <br/><div align="center">
   <img src="https://images5.alphacoders.com/641/641119.jpg"/>
   >_But one man of her crew alive,_<br/>
