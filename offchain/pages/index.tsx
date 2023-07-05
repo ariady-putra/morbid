@@ -29,6 +29,16 @@ const Home: NextPage = () => {
             Enter Davy Jone's Locker
           </button>
         </Link>
+        <Link href="/morbidV2">
+          <button className="btn btn-primary m-5">
+            v0.2
+          </button>
+        </Link>
+        <Link href="/morbidV1">
+          <button className="btn btn-primary m-5">
+            v0.1
+          </button>
+        </Link>
       </div>
     </div>
   );

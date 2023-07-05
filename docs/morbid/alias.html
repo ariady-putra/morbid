@@ -120,13 +120,13 @@
       <h2>
         <a href="../">morbid</a>
         <span id="project-version">
-          <span>v0.0.0 </span>
+          <span>v0.2.0 </span>
         </span>
         <script>
           "use strict";
 
           if ("undefined" !== typeof versionNodes) {
-            const currentVersion = "v0.0.0";
+            const currentVersion = "v0.2.0";
             if (! versionNodes.find(element => element.version === currentVersion)) {
               versionNodes.unshift({ version: currentVersion, url: "#" });
             }
@@ -196,6 +196,12 @@
 	  
 	  </a></li>
         
+	  <li><a href="../morbid/action.html">
+	  
+	  morbid/action
+	  
+	  </a></li>
+        
 	  <li><a href="../morbid/alias.html">
 	  
 	  <strong>morbid/alias</strong>
@@ -208,21 +214,15 @@
 	  
 	  </a></li>
         
+	  <li><a href="../morbid/constant.html">
+	  
+	  morbid/constant
+	  
+	  </a></li>
+        
 	  <li><a href="../morbid/locker.html">
 	  
 	  morbid/locker
-	  
-	  </a></li>
-        
-	  <li><a href="../morbid/struct/datum.html">
-	  
-	  morbid/struct/datum
-	  
-	  </a></li>
-        
-	  <li><a href="../morbid/struct/redeemer.html">
-	  
-	  morbid/struct/redeemer
 	  
 	  </a></li>
         
@@ -242,6 +242,8 @@
   <li><a href="#PubKeyHash">PubKeyHash</a></li>
   
   <li><a href="#TxHash">TxHash</a></li>
+  
+  <li><a href="#ValidatorHash">ValidatorHash</a></li>
   
 </ul>
 
@@ -315,6 +317,33 @@
       <div class="constructor-row">
         <svg class="icon icon-at"><use xlink:href="#icon-at"></use></svg>
         <pre class="constructor-name"><code class="hljs aiken">TxHash = Hash&lt;Blake2b_256, Transaction&gt;</code></pre>
+      </div>
+      
+    </div>
+  </div>
+  
+  <div class="member">
+    <div class="member-name">
+      <h2 id="ValidatorHash">
+        <a href="#ValidatorHash">
+	  ValidatorHash
+        </a>
+      </h2>
+      
+      <!-- TODO: support source linking
+      <a class="member-source" alt="View Source" title="View Source" href="#todo">
+        &lt;/&gt;
+      </a>
+      -->
+      
+    </div>
+    <div class="custom-type-constructors">
+      <div class="rendered-markdown"></div>
+      
+      <h3>Alias</h3>
+      <div class="constructor-row">
+        <svg class="icon icon-at"><use xlink:href="#icon-at"></use></svg>
+        <pre class="constructor-name"><code class="hljs aiken">ValidatorHash = Hash&lt;Blake2b_224, Script&gt;</code></pre>
       </div>
       
     </div>
@@ -397,8 +426,8 @@
       });
     </script>
     <script src="../js/lunr.min.js?v=1.0.11-alpha"></script>
-    <script src="../js/index.js?v=1687686691"></script>
+    <script src="../js/index.js?v=1688492129"></script>
     <!-- Load the search index using JSONP to avoid CORS issues -->
-    <script src="../search-data.js?v=1687686691"></script>
+    <script src="../search-data.js?v=1688492129"></script>
   </body>
 </html>

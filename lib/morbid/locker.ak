@@ -1,150 +1,202 @@
-use aiken/builtin.{add_integer}
-use aiken/list.{filter, find, has, map, reduce, unique, unzip}
+use aiken/builtin.{add_integer, fst_pair}
+use aiken/dict
+use aiken/list.{any, filter, filter_map, find, has, map, reduce, unique, unzip}
 use aiken/time.{PosixTime}
-use aiken/transaction.{InlineDatum, ScriptContext, Spend}
-use aiken/transaction/credential.{
-  Address, ScriptCredential, VerificationKeyCredential,
+use aiken/transaction.{
+  Datum, InlineDatum, Mint, OutputReference, ScriptContext, ScriptPurpose, Spend,
 }
-use aiken/transaction/value.{lovelace_of}
-use morbid/alias.{PubKeyHash, TxHash}
+use aiken/transaction/credential.{
+  Address, Credential, ScriptCredential, VerificationKeyCredential,
+}
+use aiken/transaction/value.{
+  AssetName, PolicyId, flatten_with, from_minted_value, lovelace_of, quantity_of,
+  tokens,
+}
+use morbid/action.{Action, DelayUnlock, UnlockChest}
+use morbid/alias.{ValidatorHash}
 use morbid/chain.{and}
-use morbid/struct/datum.{AddTreasure, ChestDatum, CreateChest}
-use morbid/struct/redeemer.{ChestRedeemer, DelayUnlock, UnlockChest}
-use time_util/cheap/posixtime.{is_after}
+use morbid/constant.{chest_key}
+use string_util/cbor.{print}
 use time_util/unsafe/bound as unsafe_unwrap
 
-/// Depending on the `ChestDatum`, either `CreateChest` or `AddTreasure`,
-/// the validator may need to search for the referenced `TxHash`.
-/// `ChestRedeemer` determines what action is to be done to the UTxO(s),
-/// either `DelayUnlock` or `UnlockChest`.
-/// When delaying unlock of a UTxO, the transaction must be signed by the
-/// chest creator, the sum of input and output ADA must be balance,
-/// and it must re-create a `CreateChest` datum with a later deadline.
-/// When unlocking the chest of a UTxO, the transaction validity range
-/// must be after the deadline.
+/// When delaying unlock of a UTxO, the transaction must include the `ChestKey`
+/// token(s) signed by all holder(s) (it will be used to be matched against the
+/// `ChestLock`), the sum of input and output ADA must be balance,
+/// and it must re-send the `ChestLock` NFT with a later deadline as the datum.
+/// When unlocking the chest of a UTxO, the transaction validity range must be
+/// after the deadline.
 pub fn validate(
-  datum: ChestDatum,
-  redeemer action: ChestRedeemer,
+  chest_name chest_lock: AssetName,
+  policy_id: PolicyId,
+  datum maybe_deadline: Data,
+  redeemer action: Action,
   context ctx: ScriptContext,
 ) -> Bool {
-  when (action, datum, ctx.purpose) is {
-    //
-    // When delaying unlock for a UTxO with the datum of type CreateChest:
-    (DelayUnlock, CreateChest(_, creator), Spend(_)) ->
-      ctx |> validate_delay_unlock(creator)
-    //
-    // When delaying unlock for a UTxO with the datum of type AddTreasure:
-    (DelayUnlock, AddTreasure(ref_txn), Spend(_)) ->
-      //
-      // ref_txn must refer to a UTxO with the datum of type CreateChest
-      when ctx |> find_ref_datum(ref_txn) is {
-        //
-        // referenced-datum found:
-        Some(CreateChest(_, creator)) -> ctx |> validate_delay_unlock(creator)
-        //
-        // referenced-datum not found:
-        _ -> False
-      }
-    //
-    // When unlocking the chest for a UTxO with the datum of type CreateChest:
-    (UnlockChest, CreateChest(deadline, _), Spend(_)) ->
-      ctx |> validate_unlock_chest(deadline)
-    //
-    // When unlocking the chest for a UTxO with the datum of type AddTreasure:
-    (UnlockChest, AddTreasure(ref_txn), Spend(_)) ->
-      //
-      // ref_txn must refer to a UTxO with the datum of type CreateChest
-      when ctx |> find_ref_datum(ref_txn) is {
-        //
-        // referenced-datum found:
-        Some(CreateChest(deadline, _)) -> ctx |> validate_unlock_chest(deadline)
-        //
-        // referenced-datum not found:
-        _ -> False
-      }
-    //
-    // Any other actions/purpose:
-    _ -> False
+  expect Spend(_): ScriptPurpose = ctx.purpose
+  trace "MaybeDeadline" |> print(maybe_deadline)
+  when action is {
+    DelayUnlock -> ctx |> validate_delay_unlock(policy_id, chest_lock)
+    UnlockChest -> ctx |> validate_unlock_chest(policy_id, chest_lock)
   }
 }
 
+pub fn mint_chest(
+  chest_name chest_lock: AssetName,
+  utxo_ref: OutputReference,
+  redeemer action: Void,
+  context ctx: ScriptContext,
+) {
+  expect Mint(policy_id): ScriptPurpose = ctx.purpose
+  trace "Redeemer" |> print(action)
+  ctx |> validate_mint_chest(utxo_ref, policy_id, chest_lock)
+}
+
 // //////////////////////////////// VALIDATOR HELPER FUNCTIONS //////////////////////////////// //
-//      This section contains high-level validation requirements for each type of redeemer      //
+//       This section contains high-level validation requirements for each type of action       //
+
+fn validate_mint_chest(
+  ctx: ScriptContext,
+  utxo_ref: OutputReference,
+  policy_id: PolicyId,
+  chest_lock: AssetName,
+) -> Bool {
+  when ctx |> minted_values_of(policy_id) is {
+    // [ChestLock, ChestKey] or [ChestKey, ChestLock]
+    [asset_1, asset_2] ->
+      chain.validate()
+        |> and(must_mint_once(_, ctx, utxo_ref))
+        |> and(must_mint_chest_lock(_, [asset_1, asset_2], chest_lock))
+        |> and(must_mint_chest_key(_, [asset_1, asset_2], chest_key))
+        |> and(must_send_chest_lock(_, ctx, policy_id, chest_lock))
+    _ -> {
+      let valid_number_of_asset = False
+      valid_number_of_asset?
+    }
+  }
+}
 
 fn validate_delay_unlock(
-  context ctx: ScriptContext,
-  creator: PubKeyHash,
+  ctx: ScriptContext,
+  policy_id: PolicyId,
+  chest_lock: AssetName,
 ) -> Bool {
   chain.validate()
-    |> and(must_be_signed_by_creator(_, ctx, creator))
     |> and(must_not_drain(_, ctx))
-    |> and(must_recreate_chest(_, ctx))
+    |> and(must_resend_chest_lock(_, ctx, policy_id, chest_lock))
 }
 
 fn validate_unlock_chest(
-  context ctx: ScriptContext,
-  deadline: PosixTime,
+  ctx: ScriptContext,
+  policy_id: PolicyId,
+  chest_lock: AssetName,
 ) -> Bool {
-  //
-  // anyone can unlock after deadline
-  ctx.transaction.validity_range |> is_after(deadline)
+  ctx |> must_unlock_after_deadline(policy_id, chest_lock)
 }
 
-// ////////////////////////////////////// CHAIN FUNCTIONS ////////////////////////////////////// //
-//             This section contains functions to be chained using `chain.validate()`            //
+// ////////////////////////////////////// TRACE FUNCTIONS ////////////////////////////////////// //
+//            This section contains functions for tracing during the validation steps            //
 
-/// `DelayUnlock`: Transaction must be signed by the creator.
-fn must_be_signed_by_creator(
+/// Validate mint chest: Must mint once only.
+fn must_mint_once(_, ctx: ScriptContext, utxo_ref: OutputReference) -> Bool {
+  let one_shot_minting =
+    ctx.transaction.inputs
+      |> any(fn(input) { input.output_reference == utxo_ref })
+  one_shot_minting?
+}
+
+/// Validate mint chest: Must mint exactly one `ChestLock`
+fn must_mint_chest_lock(
   _,
-  context ctx: ScriptContext,
-  creator: PubKeyHash,
+  assets: List<(AssetName, Int)>,
+  chest_lock: AssetName,
 ) -> Bool {
-  let signed_by_creator = ctx |> is_signed_by(creator)
-  signed_by_creator?
+  let minted_chest_lock = assets |> has((chest_lock, 1))
+  minted_chest_lock?
 }
 
-/// `DelayUnlock`: Input and Output Lovelace must be balance.
-fn must_not_drain(_, context ctx: ScriptContext) -> Bool {
+/// Validate mint chest: Must mint `ChestKey` of any qty.
+fn must_mint_chest_key(
+  _,
+  assets: List<(AssetName, Int)>,
+  chest_key: AssetName,
+) -> Bool {
+  let minted_chest_key =
+    assets |> any(fn(asset) { fst_pair(asset) == chest_key })
+  minted_chest_key?
+}
+
+/// Validate mint chest: Must send the `ChestLock`
+fn must_send_chest_lock(
+  _,
+  ctx: ScriptContext,
+  policy_id: PolicyId,
+  chest_lock: AssetName,
+) -> Bool {
+  let sent_chest_lock = ctx |> send_chest_lock(policy_id, chest_lock)
+  sent_chest_lock?
+}
+
+/// Validate delay unlock: Input and Output Lovelace must be balance.
+fn must_not_drain(_, ctx: ScriptContext) -> Bool {
   let not_drained = ctx |> is_not_drained()
   not_drained?
 }
 
-/// `DelayUnlock`: Must re-create the chest.
-fn must_recreate_chest(_, context ctx: ScriptContext) -> Bool {
-  let recreated_chest = ctx |> recreate_chest()
-  recreated_chest?
+/// Validate delay unlock: Must re-send the chest's lock with a later deadline as the new datum.
+fn must_resend_chest_lock(
+  _,
+  ctx: ScriptContext,
+  policy_id: PolicyId,
+  chest_lock: AssetName,
+) -> Bool {
+  let resent_chest_lock = ctx |> resend_chest_lock(policy_id, chest_lock)
+  resent_chest_lock?
 }
 
-/// Must re-create chest: Transaction must be signed by the new owner
-/// when transferring the ownership of the chest.
-fn must_be_signed_by_new_creator(
-  _,
-  context ctx: ScriptContext,
-  new_creator: PubKeyHash,
+/// Validate unlock chest: Disallow unlock before deadline.
+fn must_unlock_after_deadline(
+  ctx: ScriptContext,
+  policy_id: PolicyId,
+  chest_lock: AssetName,
 ) -> Bool {
-  let signed_by_new_creator = ctx |> is_signed_by(new_creator)
-  signed_by_new_creator?
-}
-
-/// Must re-create chest: Disallow setting the past as the new deadline.
-fn must_postpone_after_now(
-  _,
-  context ctx: ScriptContext,
-  new_deadline: PosixTime,
-) -> Bool {
-  let postponed_after_now =
-    (unsafe_unwrap.finite_start_of(ctx.transaction.validity_range) < new_deadline)?
-  postponed_after_now?
+  let unlock_after_deadline =
+    ctx |> unlock_after_deadline(policy_id, chest_lock)
+  unlock_after_deadline?
 }
 
 // ///////////////////////////////////// HELPER FUNCTIONS ///////////////////////////////////// //
 //       This section contains the functions to support the validation and chain functions      //
 
-fn is_signed_by(context ctx: ScriptContext, signer: PubKeyHash) -> Bool {
-  ctx.transaction.extra_signatories |> has(signer)
+fn minted_values_of(
+  context ctx: ScriptContext,
+  policy_id: PolicyId,
+) -> List<(AssetName, Int)> {
+  ctx.transaction.mint
+    |> from_minted_value()
+    |> tokens(policy_id)
+    |> dict.to_list()
 }
 
-fn is_not_drained(context ctx: ScriptContext) -> Bool {
+/// (1) TxOuts must contain `ChestLock` with the specified Policy ID and Chest Name and its
+///     `address.payment_credential` must be of type `ScriptCredential`, and contain the
+///     deadline datum with a future value.
+/// PS: It is, however, possible that the script address of the output (destination) is not
+///     the address of the chest. Since there is no way of knowing the runtime value of the
+///     chest address beforehand. But there is no incentive for the chest creator to do so.
+fn send_chest_lock(
+  ctx: ScriptContext,
+  policy_id: PolicyId,
+  chest_lock: AssetName,
+) -> Bool {
+  let txn = ctx.transaction
+  expect [(_, deadline)]: List<(ValidatorHash, PosixTime)> =
+    txn.outputs |> filter_map(into_script_deadline(_, policy_id, chest_lock))
+  (unsafe_unwrap.finite_start_of(txn.validity_range) < deadline)?
+}
+
+/// (1) Sum of input and output Lovelace must be balance
+/// (2) Unique input==output script address must be the same
+fn is_not_drained(ctx: ScriptContext) -> Bool {
   let txn = ctx.transaction
   //
   // Anonymous fn to filter out non script addresses:
@@ -198,58 +250,134 @@ fn is_not_drained(context ctx: ScriptContext) -> Bool {
   (input_lovelace == output_lovelace)? && (input_script_address == output_script_address)?
 }
 
-fn recreate_chest(context ctx: ScriptContext) -> Bool {
-  let outputs =
-    ctx.transaction.outputs
-      |> filter(
-           fn(output) {
-             when output.datum is {
-               InlineDatum(_) -> True
-               _ -> False
-             }
-           },
-         )
-  when outputs is {
-    [output] ->
-      when output.datum is {
-        InlineDatum(datum) -> {
-          expect CreateChest(new_deadline, new_creator): ChestDatum = datum
-          chain.validate()
-            |> and(must_be_signed_by_new_creator(_, ctx, new_creator))
-            |> and(must_postpone_after_now(_, ctx, new_deadline))
-        }
-        // couldn't destructure datum:
-        _ -> False
+/// A function to help filter_map transaction.Outputs by the existence of `ChestLock`
+/// into (script_address, deadline)
+fn into_script_deadline(
+  output: transaction.Output,
+  policy_id: PolicyId,
+  chest_lock: AssetName,
+) -> Option<(ValidatorHash, PosixTime)> {
+  let filter_chest_lock =
+    fn(id, name, qty) {
+      if id == policy_id && name == chest_lock && qty == 1 {
+        Some((id, name, 1))
+      } else {
+        None
       }
-    // invalid number of datum(s)
-    _ -> False
+    }
+  when output.address.payment_credential is {
+    VerificationKeyCredential(_) -> None
+    ScriptCredential(script_address) ->
+      when output.value |> flatten_with(filter_chest_lock) is {
+        // there must be at max 1 Chest Lock:
+        [_] ->
+          when output.datum is {
+            InlineDatum(datum) -> {
+              expect deadline: PosixTime = datum
+              Some((script_address, deadline))
+            }
+            // invalid datum or no datum:
+            _ -> None
+          }
+        // does not contain the Chest Lock:
+        _ -> None
+      }
   }
 }
 
-fn find_ref_datum(
-  context ctx: ScriptContext,
-  ref_txn: TxHash,
-) -> Option<ChestDatum> {
+/// (1) TxIns must contain `ChestLock` with the specified Policy ID and Chest Name, and contain the deadline datum.
+/// (2) TxOuts must contain `ChestLock` with the same Policy ID and Chest Name, and contain the deadline datum with a newer value.
+/// (3) `address.payment_credential` of (1) and (2) must be `ScriptCredential`, same value, and there's only 1 unique script address.
+///     (unique input==output script address validation has been done during drain validation)
+/// (4) TxRefIns must contain `ChestKey` and its `address.payment_credential` must exist in `extra_signatories`
+fn resend_chest_lock(
+  ctx: ScriptContext,
+  policy_id: PolicyId,
+  chest_lock: AssetName,
+) -> Bool {
+  let txn = ctx.transaction
   //
-  // find the referenced tx-input
-  let tx_in: Option<transaction.Input> =
-    ctx.transaction.inputs
-      |> find(fn(tx_in) { tx_in.output_reference.transaction_id.hash == ref_txn })
+  // Expecting `ChestLock` in a UTxO of a script_address with PosixTime datum:
+  expect [(input_address, old_deadline)]: List<(ValidatorHash, PosixTime)> =
+    txn.inputs
+      |> filter_map(
+           fn(input: transaction.Input) {
+             input.output |> into_script_deadline(policy_id, chest_lock)
+           },
+         )
+  expect [(output_address, new_deadline)]: List<(ValidatorHash, PosixTime)> =
+    txn.outputs |> filter_map(into_script_deadline(_, policy_id, chest_lock))
   //
-  // the UTxO of the referenced tx-input must contain a datum of type ChestDatum
-  when tx_in is {
-    Some(tx_in) ->
-      when tx_in.output.datum is {
-        InlineDatum(datum) -> {
-          expect datum: ChestDatum = datum
-          Some(datum)
+  // Continue validating only if previous steps are valid:
+  if (input_address == output_address)? && (old_deadline < new_deadline)? {
+    //
+    // Anonymous fns to filter_map reference_inputs by chest_key into signed_by_chest_key_holder:
+    let filter_chest_key =
+      fn(id, name, qty) {
+        if id == policy_id && name == chest_key {
+          Some((id, name, qty))
+        } else {
+          None
         }
-        // couldn't destructure datum:
-        _ -> None
       }
-    // referenced tx-input not found:
-    None -> None
+    let into_signed_by_chest_key_holder =
+      fn(input: transaction.Input) {
+        let output = input.output
+        when output.value |> flatten_with(filter_chest_key) is {
+          //
+          // value does not contain chest_key:
+          [] -> None
+          //
+          // value contains chest_key:
+          _ ->
+            Some(
+              txn.extra_signatories
+                |> has(output.address.payment_credential |> unwrap_credential),
+            )
+        }
+      }
+    //
+    // return:
+    when
+      txn.reference_inputs |> filter_map(into_signed_by_chest_key_holder)
+    is {
+      [] -> {
+        let found_chest_key_in_ref_inputs = False
+        found_chest_key_in_ref_inputs?
+      }
+      signed_by_all_chest_key_holder ->
+        list.and(signed_by_all_chest_key_holder)?
+    }
+  } else {
+    False
   }
+}
+
+fn unwrap_credential(credential: Credential) -> ByteArray {
+  when credential is {
+    VerificationKeyCredential(pub_key_hash) -> pub_key_hash
+    ScriptCredential(validator_hash) -> validator_hash
+  }
+}
+
+/// (1) Find a UTxO from ctx.transaction.inputs where its output.value has (policy_id, chest_lock, 1)
+/// (2) That UTxO must have an InlineDatum(PosixTime) where unsafe_unwrap.finite_start_of(ctx.transaction.validity_range) > PosixTime
+fn unlock_after_deadline(
+  ctx: ScriptContext,
+  policy_id: PolicyId,
+  chest_lock: AssetName,
+) -> Bool {
+  let txn = ctx.transaction
+  expect Some(input): Option<transaction.Input> =
+    txn.inputs
+      |> find(
+           fn(input) {
+             quantity_of(input.output.value, policy_id, chest_lock) == 1
+           },
+         )
+  expect InlineDatum(datum): Datum = input.output.datum
+  expect deadline: PosixTime = datum
+  (unsafe_unwrap.finite_start_of(txn.validity_range) > deadline)?
 }
 
 // ///////////////////////////////////// UTILITY FUNCTIONS ///////////////////////////////////// //

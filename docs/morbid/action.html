@@ -3,17 +3,17 @@
   <head>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <title>ariady-putra/morbid</title>
+    <title>morbid/action - ariady-putra/morbid</title>
     <meta name="theme-color" content="#eff1f5" media="(prefers-color-scheme: light)"/>
     <meta name="theme-color" content="#1e1e2e" media="(prefers-color-scheme: dark)"/>
-    <link rel="icon" type="image/svg+xml" sizes="any" href="./favicon.svg"/>
-    <link rel="stylesheet" href="./css/index.css?v=1.0.11-alpha" type="text/css"/>
-    <link id="syntax-theme" rel="stylesheet" href="./css/atom-one-light.min.css?v=1.0.11-alpha"/>
+    <link rel="icon" type="image/svg+xml" sizes="any" href="../favicon.svg"/>
+    <link rel="stylesheet" href="../css/index.css?v=1.0.11-alpha" type="text/css"/>
+    <link id="syntax-theme" rel="stylesheet" href="../css/atom-one-light.min.css?v=1.0.11-alpha"/>
   </head>
   <body class="prewrap-off theme-light drawer-closed">
     <script>
       "use strict";
-      window.breadcrumbs = '.';
+      window.breadcrumbs = '..';
       const aikenConfig = {
         theme: {
           values: (() => {
@@ -118,7 +118,7 @@
       </button>
 
       <h2>
-        <a href="./">morbid</a>
+        <a href="../">morbid</a>
         <span id="project-version">
           <span>v0.2.0 </span>
         </span>
@@ -190,43 +190,43 @@
 	
         <ul>
         
-	  <li><a href="./morbid.html">
+	  <li><a href="../morbid.html">
 	  
 	  morbid
 	  
 	  </a></li>
         
-	  <li><a href="./morbid/action.html">
+	  <li><a href="../morbid/action.html">
 	  
-	  morbid/action
+	  <strong>morbid/action</strong>
 	  
 	  </a></li>
         
-	  <li><a href="./morbid/alias.html">
+	  <li><a href="../morbid/alias.html">
 	  
 	  morbid/alias
 	  
 	  </a></li>
         
-	  <li><a href="./morbid/chain.html">
+	  <li><a href="../morbid/chain.html">
 	  
 	  morbid/chain
 	  
 	  </a></li>
         
-	  <li><a href="./morbid/constant.html">
+	  <li><a href="../morbid/constant.html">
 	  
 	  morbid/constant
 	  
 	  </a></li>
         
-	  <li><a href="./morbid/locker.html">
+	  <li><a href="../morbid/locker.html">
 	  
 	  morbid/locker
 	  
 	  </a></li>
         
-	  <li><a href="./morbid/tests.html">
+	  <li><a href="../morbid/tests.html">
 	  
 	  morbid/tests
 	  
@@ -235,47 +235,92 @@
         </ul>
 
         
+
+<h2>Types</h2>
+<ul>
+  
+  <li><a href="#Action">Action</a></li>
+  
+</ul>
+
+
+
+
+
+
       </nav>
 
       <main class="content">
         
-<h1>Davy Jones’ Locker</h1>
-<p><br/><div align="center">
-&gt;<em>Fifteen men on the dead man’s chest—</em><br/>
-&gt;<em>…Yo-ho-ho, and a bottle of rum!</em><br/>
-&gt;<em>Drink and the devil had done for the rest—</em><br/>
-&gt;<em>…Yo-ho-ho, and a bottle of rum!</em><br/></p>
-</div><br/>
-<p>This is a dead-man’s switch contract where you can:</p>
-<ul>
-<li>Create Chest</li>
-<li>Add Treasure</li>
-<li>Delay Unlock</li>
-<li>Unlock Chest</li>
-<li>Resend Chest</li>
-</ul>
-<h2>Create Chest</h2>
-<p>Mints <code>ChestLock</code> and <code>ChestKey</code>(s). Send <code>ChestLock</code> while depositing initial ADA.
-Keep <code>ChestKey</code> token(s) in your wallet, you will need to show it when <code>DelayUnlock</code>.</p>
-<p>Give access for delaying the chest unlocking deadline to anyone by sending them the
-<code>ChestKey</code> token.</p>
-<h2>Add Treasure</h2>
-<p>Anyone can deposit more ADA to the chest. Don’t forget to include an arbitrary inline
-datum to be redeemable.</p>
-<h2>Delay Unlock</h2>
-<p>Show the matching <code>ChestKey</code> token to postpone the chest unlocking deadline.</p>
-<h2>Unlock Chest</h2>
-<p>Redeem all ADA from the chest when the deadline has passed. You will also receive the
-<code>ChestLock</code> NFT.</p>
-<h2>Resend Chest</h2>
-<p>Resend <code>ChestLock</code> to the chest address. Similar to <code>CreateChest</code> but done by the chest
-unlocker. There is no real benefit to do this, but it’s possible.</p>
-<hr />
-<p><br/><div align="center">
-<img src="https://images5.alphacoders.com/641/641119.jpg"/>
-&gt;<em>But one man of her crew alive,</em><br/>
-&gt;<em>What put to sea with seventy-five.</em><br/></p>
-</div><br/>
+<h1 id="module-name" class="module-name">
+  <a href="#module-name">morbid/action</a>
+</h1>
+
+
+
+<section class="module-members">
+  <h1 id="module-types" class="module-member-kind">
+    <a href="#module-types">Types</a>
+  </h1>
+
+  
+  <div class="member">
+    <div class="member-name">
+      <h2 id="Action">
+        <a href="#Action">
+	  Action
+        </a>
+      </h2>
+      
+      <!-- TODO: support source linking
+      <a class="member-source" alt="View Source" title="View Source" href="#todo">
+        &lt;/&gt;
+      </a>
+      -->
+      
+    </div>
+    <div class="custom-type-constructors">
+      <div class="rendered-markdown"></div>
+      
+      <h3>Constructors</h3>
+      <ul class="constructor-list">
+        
+        <li class="constructor-item">
+          <div class="constructor-row">
+            <svg class="icon icon-box"><use xlink:href="#icon-box"></use></svg>
+            <pre class="constructor-name"><code class="hljs aiken">DelayUnlock</code></pre>
+          </div>
+	  
+          <div class="constructor-item-docs">
+            <p>Delay chest unlocking deadline by showing the <code>ChestKey</code> token(s)</p>
+
+          </div>
+	  
+        </li>
+        
+        <li class="constructor-item">
+          <div class="constructor-row">
+            <svg class="icon icon-box"><use xlink:href="#icon-box"></use></svg>
+            <pre class="constructor-name"><code class="hljs aiken">UnlockChest</code></pre>
+          </div>
+	  
+          <div class="constructor-item-docs">
+            <p>Anyone can unlock the chest when the deadline has passed.</p>
+
+          </div>
+	  
+        </li>
+        
+      </ul>
+      
+    </div>
+  </div>
+  
+</section>
+
+
+
+
 
 
       </main>
@@ -327,8 +372,8 @@ unlocker. There is no real benefit to do this, but it’s possible.</p>
       </defs>
     </svg>
 
-    <script src="./js/highlight.min.js?v=1.0.11-alpha"></script>
-    <script src="./js/highlightjs-aiken.js?v=1.0.11-alpha"></script>
+    <script src="../js/highlight.min.js?v=1.0.11-alpha"></script>
+    <script src="../js/highlightjs-aiken.js?v=1.0.11-alpha"></script>
     <script>
       document.querySelectorAll("pre code").forEach((elem) => {
         if (elem.className === "") {
@@ -347,9 +392,9 @@ unlocker. There is no real benefit to do this, but it’s possible.</p>
 	el.prepend(a);
       });
     </script>
-    <script src="./js/lunr.min.js?v=1.0.11-alpha"></script>
-    <script src="./js/index.js?v=1688492129"></script>
+    <script src="../js/lunr.min.js?v=1.0.11-alpha"></script>
+    <script src="../js/index.js?v=1688492129"></script>
     <!-- Load the search index using JSONP to avoid CORS issues -->
-    <script src="./search-data.js?v=1688492129"></script>
+    <script src="../search-data.js?v=1688492129"></script>
   </body>
 </html>

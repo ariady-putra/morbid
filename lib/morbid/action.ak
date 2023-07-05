@@ -1,5 +1,5 @@
-pub type ChestRedeemer {
-  /// Only the chest creator is allowed to delay-unlock.
+pub type Action {
+  /// Delay chest unlocking deadline by showing the `ChestKey` token(s)
   DelayUnlock
   /// Anyone can unlock the chest when the deadline has passed.
   UnlockChest

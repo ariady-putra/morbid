@@ -12,18 +12,29 @@ This is a dead-man's switch contract where you can:
 - Add Treasure
 - Delay Unlock
 - Unlock Chest
+- Resend Chest
 
 ## Create Chest
-Deposit initial ADA
+Mints `ChestLock` and `ChestKey`(s). Send `ChestLock` while depositing initial ADA.
+Keep `ChestKey` token(s) in your wallet, you will need to show it when `DelayUnlock`.
+
+Give access for delaying the chest unlocking deadline to anyone by sending them the
+`ChestKey` token.
 
 ## Add Treasure
-Deposit more ADA to the chest
+Anyone can deposit more ADA to the chest. Don't forget to include an arbitrary inline
+datum to be redeemable.
 
 ## Delay Unlock
-Postpone chest unlocking deadline
+Show the matching `ChestKey` token to postpone the chest unlocking deadline.
 
 ## Unlock Chest
-Redeem all ADA from the chest
+Redeem all ADA from the chest when the deadline has passed. You will also receive the
+`ChestLock` NFT.
+
+## Resend Chest
+Resend `ChestLock` to the chest address. Similar to `CreateChest` but done by the chest
+unlocker. There is no real benefit to do this, but it's possible.
 
 ---
 <br/><div align="center">

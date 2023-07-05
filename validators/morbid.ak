@@ -6,6 +6,9 @@
 //// chest. Anyone can redeem the treasure when the deadline
 //// has passed.
 ////
+//// `v0.2`: Now uses `ChestLock` and `ChestKey` mechanism
+//// to validate actions.
+////
 //// ```
 //// author      :   Kiki Ariady Putra
 //// maintainer  :   aurodeus@gmail.com
@@ -13,19 +16,21 @@
 ////
 //// Jakarta 2023
 ////
-//// _(built using Aiken v1.0.10-alpha)_
+//// _(re-built using Aiken v1.0.11-alpha)_
 
-use aiken/transaction.{ScriptContext}
+use aiken/transaction.{OutputReference, ScriptContext}
+use aiken/transaction/value.{AssetName, PolicyId}
+use morbid/action.{Action}
 use morbid/locker
-use morbid/struct/datum.{ChestDatum}
-use morbid/struct/redeemer.{ChestRedeemer}
 
-validator {
-  fn validate(
-    datum: ChestDatum,
-    redeemer: ChestRedeemer,
-    context: ScriptContext,
-  ) -> Bool {
-    locker.validate(datum, redeemer, context)
+validator(utxo_ref: OutputReference, chest_name: AssetName) {
+  fn mint_chest(redeemer: Void, context: ScriptContext) {
+    chest_name |> locker.mint_chest(utxo_ref, redeemer, context)
+  }
+}
+
+validator(policy_id: PolicyId, chest_name: AssetName) {
+  fn validate(datum: Data, redeemer: Action, context: ScriptContext) -> Bool {
+    chest_name |> locker.validate(policy_id, datum, redeemer, context)
   }
 }
