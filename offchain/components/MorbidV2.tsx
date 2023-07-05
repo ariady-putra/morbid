@@ -133,7 +133,7 @@ const MorbidV2 = (props: {
   };
 
   const chestLock = {
-    name: "MyChest",
+    name: "Dead Man's Chest",
     image: "ipfs://QmavSMgKNtRFu4wXCucUbC4dNDqwN4TDfBoW6sk7kxj9tE",
   };
 
@@ -210,7 +210,7 @@ const MorbidV2 = (props: {
           .collectFrom(utxos)
           .attachMintingPolicy(mintChestScript)
           .mintAssets(
-            { [mintedLockName]: BigInt(1), [mintedKeyName]: BigInt(1) },
+            { [mintedLockName]: BigInt(1), [mintedKeyName]: BigInt(2) },
             voidData
           )
           .payToContract(
@@ -225,7 +225,7 @@ const MorbidV2 = (props: {
                 image: chestLock.image,
               },
               [chestKeyHexName]: {
-                name: `${chestKey.name}1`,
+                name: `${chestLock.name} - ${chestKey.name}`,
                 image: chestKey.image,
                 chest_address: chestAddress,
                 ref_hash: utxos[0].txHash,
