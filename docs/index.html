@@ -252,16 +252,24 @@
 <li>Add Treasure</li>
 <li>Delay Unlock</li>
 <li>Unlock Chest</li>
+<li>Resend Chest</li>
 </ul>
 <h2>Create Chest</h2>
 <p>Mints <code>ChestLock</code> and <code>ChestKey</code>(s). Send <code>ChestLock</code> while depositing initial ADA.
 Keep <code>ChestKey</code> token(s) in your wallet, you will need to show it when <code>DelayUnlock</code>.</p>
+<p>Give access for delaying the chest unlocking deadline to anyone by sending them the
+<code>ChestKey</code> token.</p>
 <h2>Add Treasure</h2>
-<p>Anyone can deposit more ADA to the chest.</p>
+<p>Anyone can deposit more ADA to the chest. Don’t forget to include an arbitrary inline
+datum to be redeemable.</p>
 <h2>Delay Unlock</h2>
-<p>Show the matching <code>ChestKey</code> token to postpone chest unlocking deadline.</p>
+<p>Show the matching <code>ChestKey</code> token to postpone the chest unlocking deadline.</p>
 <h2>Unlock Chest</h2>
-<p>Redeem all ADA from the chest when the deadline has passed.</p>
+<p>Redeem all ADA from the chest when the deadline has passed. You will also receive the
+<code>ChestLock</code> NFT.</p>
+<h2>Resend Chest</h2>
+<p>Resend <code>ChestLock</code> to the chest address. Similar to <code>CreateChest</code> but done by the chest
+unlocker. There is no real benefit to do this, but it’s possible.</p>
 <hr />
 <p><br/><div align="center">
 <img src="https://images5.alphacoders.com/641/641119.jpg"/>
@@ -340,8 +348,8 @@ Keep <code>ChestKey</code> token(s) in your wallet, you will need to show it whe
       });
     </script>
     <script src="./js/lunr.min.js?v=1.0.11-alpha"></script>
-    <script src="./js/index.js?v=1688191627"></script>
+    <script src="./js/index.js?v=1688492129"></script>
     <!-- Load the search index using JSONP to avoid CORS issues -->
-    <script src="./search-data.js?v=1688191627"></script>
+    <script src="./search-data.js?v=1688492129"></script>
   </body>
 </html>

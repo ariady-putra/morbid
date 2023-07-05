@@ -286,10 +286,10 @@ fn into_script_deadline(
 }
 
 /// (1) TxIns must contain `ChestLock` with the specified Policy ID and Chest Name, and contain the deadline datum.
-/// (2) TxOuts must contain `ChestLock` with the same Policy ID and Chest Name, and contain the deadline datum with a future value.
-/// (3) `address.payment_credential` of (1) and (2) must be `ScriptCredential`, the same, and there's only 1 unique script address.
+/// (2) TxOuts must contain `ChestLock` with the same Policy ID and Chest Name, and contain the deadline datum with a newer value.
+/// (3) `address.payment_credential` of (1) and (2) must be `ScriptCredential`, same value, and there's only 1 unique script address.
 ///     (unique input==output script address validation has been done during drain validation)
-/// (4) TxRefIns must contain `ChestKey` and its `address.payment_credential` exists in `extra_signatories`
+/// (4) TxRefIns must contain `ChestKey` and its `address.payment_credential` must exist in `extra_signatories`
 fn resend_chest_lock(
   ctx: ScriptContext,
   policy_id: PolicyId,
