@@ -19,10 +19,10 @@ use morbid/constant.{chest_key}
 use string_util/cbor.{print}
 use time_util/unsafe/bound as unsafe_unwrap
 
-/// When delaying unlock of a UTxO, the transaction must include the `ChestKey`
-/// token(s) signed by all holder(s) (it will be used to be matched against the
+/// When delaying unlock of a UTxO, the transaction must include any `ChestKey`
+/// token(s) signed by the holder(s) (it will be used to be matched against the
 /// `ChestLock`), the sum of input and output ADA must be balance,
-/// and it must re-send the `ChestLock` NFT with a later deadline as the datum.
+/// and it must re-send the `ChestLock` NFT with a new deadline as the datum.
 /// When unlocking the chest of a UTxO, the transaction validity range must be
 /// after the deadline.
 pub fn validate(

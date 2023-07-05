@@ -305,10 +305,10 @@
       -->
       
     </div>
-    <div class="rendered-markdown"><p>When delaying unlock of a UTxO, the transaction must include the <code>ChestKey</code>
-token(s) signed by all holder(s) (it will be used to be matched against the
+    <div class="rendered-markdown"><p>When delaying unlock of a UTxO, the transaction must include any <code>ChestKey</code>
+token(s) signed by the holder(s) (it will be used to be matched against the
 <code>ChestLock</code>), the sum of input and output ADA must be balance,
-and it must re-send the <code>ChestLock</code> NFT with a later deadline as the datum.
+and it must re-send the <code>ChestLock</code> NFT with a new deadline as the datum.
 When unlocking the chest of a UTxO, the transaction validity range must be
 after the deadline.</p>
 </div>
@@ -387,8 +387,8 @@ after the deadline.</p>
       });
     </script>
     <script src="../js/lunr.min.js?v=1.0.11-alpha"></script>
-    <script src="../js/index.js?v=1688548510"></script>
+    <script src="../js/index.js?v=1688549540"></script>
     <!-- Load the search index using JSONP to avoid CORS issues -->
-    <script src="../search-data.js?v=1688548510"></script>
+    <script src="../search-data.js?v=1688549540"></script>
   </body>
 </html>
