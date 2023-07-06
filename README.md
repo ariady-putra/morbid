@@ -15,8 +15,9 @@ This is a dead-man's switch contract where you can:
 - Resend Chest
 
 ## Create Chest
-Mints `ChestLock` and `ChestKey`(s). Send `ChestLock` while depositing initial ADA.
-Keep `ChestKey` token(s) in your wallet, you will need to show it when `DelayUnlock`.
+Mints `ChestLock` and `ChestKey`(s), a new address will be generated. Send `ChestLock`
+while depositing initial ADA. Keep `ChestKey` token(s) in your wallet, you will need
+to show it when `DelayUnlock`.
 
 Give access for delaying the chest unlocking deadline to anyone by sending them the
 `ChestKey` token.
