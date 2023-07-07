@@ -126,7 +126,9 @@ use aiken/transaction.{
 use aiken/transaction/credential.{
   Address, Script, VerificationKey, from_script, from_verification_key,
 }
-use aiken/transaction/value.{from_lovelace, to_minted_value, zero}
+use aiken/transaction/value.{
+  Value, from_asset, from_lovelace, merge, to_minted_value, zero,
+}
 use morbid/alias.{PubKeyHash, TxHash}
 use morbid/locker.{validate}
 use morbid/struct/datum.{AddTreasure, CreateChest}
@@ -217,6 +219,22 @@ fn new_tx_input(
   )
 }
 
+fn with_asset_of_tx_input(
+  input: transaction.Input,
+  asset: Value,
+) -> transaction.Input {
+  transaction.Input(
+    input.output_reference,
+    Output {
+      address: input.output.address,
+      value: input.output.value
+        |> merge(asset),
+      datum: input.output.datum,
+      reference_script: input.output.reference_script,
+    },
+  )
+}
+
 fn add_tx_output(
   context: ScriptContext,
   tx_out: transaction.Output,
@@ -251,6 +269,19 @@ fn new_tx_output(
     value: lovelace |> from_lovelace,
     datum,
     reference_script: None,
+  }
+}
+
+fn add_asset_to_tx_output(
+  output: transaction.Output,
+  asset: Value,
+) -> transaction.Output {
+  transaction.Output {
+    address: output.address,
+    value: output.value
+      |> merge(asset),
+    datum: output.datum,
+    reference_script: output.reference_script,
   }
 }
 
@@ -430,6 +461,7 @@ test disallow_delay_by_draining_ada_to_another_script_address() {
 test disallow_delay_by_imbalance_assets() {
   //
   // arrange:
+  let nft = from_asset("PolicyId", "AssetName", 1)
   let datum = CreateChest(deadline, chest_creator)
   // re-create chest:
   let new_datum = CreateChest(deadline + 1, chest_creator)
@@ -441,20 +473,22 @@ test disallow_delay_by_imbalance_assets() {
            lovelace: 10_000_000,
            datum: InlineDatum(datum),
          )
+      |> with_asset_of_tx_input(nft)
   // re-create chest
   let tx_out_1 =
     new_tx_output(
       address: from_script(script_address_1),
-      lovelace: 0,
+      lovelace: 10_000_000,
       datum: InlineDatum(new_datum),
     )
   // drain to another address
   let tx_out_2 =
     new_tx_output(
       address: from_verification_key(user_address),
-      lovelace: 10_000_000,
+      lovelace: 0,
       datum: NoDatum,
     )
+      |> add_asset_to_tx_output(nft)
   let context =
     after(deadline)
       |> build_txn_context()
