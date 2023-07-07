@@ -427,6 +427,54 @@ test disallow_delay_by_draining_ada_to_another_script_address() {
   !validate(datum, redeemer, context)
 }
 
+test disallow_delay_by_imbalance_assets() {
+  //
+  // arrange:
+  let datum = CreateChest(deadline, chest_creator)
+  // re-create chest:
+  let new_datum = CreateChest(deadline + 1, chest_creator)
+  let redeemer = DelayUnlock
+  let tx_in =
+    create_chest_tx_hash
+      |> new_tx_input(
+           address: from_script(script_address_1),
+           lovelace: 10_000_000,
+           datum: InlineDatum(datum),
+         )
+  // re-create chest
+  let tx_out_1 =
+    new_tx_output(
+      address: from_script(script_address_1),
+      lovelace: 0,
+      datum: InlineDatum(new_datum),
+    )
+  // drain to another address
+  let tx_out_2 =
+    new_tx_output(
+      address: from_verification_key(user_address),
+      lovelace: 10_000_000,
+      datum: NoDatum,
+    )
+  let context =
+    after(deadline)
+      |> build_txn_context()
+      |> add_signatory(chest_creator)
+      |> add_tx_input(tx_in)
+      |> add_tx_output(tx_out_1)
+      |> add_tx_output(tx_out_2)
+  //
+  // trace:
+  trace "Datum"
+    |> print(datum)
+  trace "Redeemer"
+    |> print(redeemer)
+  trace "ScriptContext"
+    |> print(context)
+  //
+  // assert:
+  !validate(datum, redeemer, context)
+}
+
 test disallow_delay_by_draining_ada_with_multiple_tx_outs() {
   //
   // arrange:

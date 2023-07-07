@@ -1,12 +1,12 @@
-use aiken/builtin.{add_integer}
-use aiken/list.{filter, find, has, map, reduce, unique, unzip}
+// use aiken/builtin.{add_integer}
+use aiken/list.{all, filter, find, has, map, reduce, unique, unzip}
 use aiken/time.{PosixTime}
 use aiken/transaction.{InlineDatum, ScriptContext, Spend}
 use aiken/transaction/credential.{
   Address, ScriptCredential, VerificationKeyCredential,
 }
-use aiken/transaction/value.{lovelace_of}
-use morbid/alias.{PubKeyHash, TxHash}
+use aiken/transaction/value.{flatten, merge, zero}
+use morbid/alias.{FlattenValues, PubKeyHash, TxHash}
 use morbid/chain.{and}
 use morbid/struct/datum.{AddTreasure, ChestDatum, CreateChest}
 use morbid/struct/redeemer.{ChestRedeemer, DelayUnlock, UnlockChest}
@@ -137,6 +137,22 @@ fn must_postpone_after_now(
   postponed_after_now?
 }
 
+/// Must not drain: All values has value.
+fn all_values_has_value(
+  _,
+  l_values: FlattenValues,
+  r_values: FlattenValues,
+) -> Bool {
+  let all_values_has_value =
+    l_values |> all(fn(l_value) { r_values |> has(l_value) })
+  all_values_has_value?
+}
+
+/// Must not drain: Must be equal.
+fn must_be_equal(_, l, r) {
+  (l == r)?
+}
+
 // ///////////////////////////////////// HELPER FUNCTIONS ///////////////////////////////////// //
 //       This section contains the functions to support the validation and chain functions      //
 
@@ -157,45 +173,54 @@ fn is_not_drained(context ctx: ScriptContext) -> Bool {
     }
   //
   // Anonymous fn to collect values only from script address:
-  let lovelace_of_script_address =
+  let value_of_script_address =
     fn(output: transaction.Output) {
       if output.address |> script_address() {
-        lovelace_of(output.value)
+        output.value
       } else {
-        0
+        zero()
       }
     }
   //
-  // Anonymous fn to map `transaction.Output` to (lovelace, address):
-  let lovelace_address =
+  // Anonymous fn to map `transaction.Output` to (value, address):
+  let value_address =
     fn(output: transaction.Output) {
-      (output |> lovelace_of_script_address(), output.address)
+      (output |> value_of_script_address(), output.address)
     }
   //
-  // Sum Input Lovelace, Validate Input Address:
-  let (input_lovelace, input_address) =
+  // (Input Values, Input Address):
+  let (input_value, input_address) =
     txn.inputs
-      |> map(fn(input) { input.output |> lovelace_address() })
+      |> map(fn(input) { input.output |> value_address() })
       |> unzip()
   expect [input_script_address] =
     input_address
       |> filter(script_address)
       |> unique()
-  let input_lovelace = input_lovelace |> sum_ints()
+  let input_value =
+    input_value
+      |> reduce(zero(), merge)
+      |> flatten()
   //
-  // Sum Output Lovelace, Validate Output Address:
-  let (output_lovelace, output_address) =
+  // (Output Values, Output Address):
+  let (output_value, output_address) =
     txn.outputs
-      |> map(lovelace_address)
+      |> map(value_address)
       |> unzip()
   expect [output_script_address] =
     output_address
       |> filter(script_address)
       |> unique()
-  let output_lovelace = output_lovelace |> sum_ints()
+  let output_value =
+    output_value
+      |> reduce(zero(), merge)
+      |> flatten()
   //
   // Return:
-  (input_lovelace == output_lovelace)? && (input_script_address == output_script_address)?
+  chain.validate()
+    |> and(all_values_has_value(_, input_value, output_value))
+    |> and(all_values_has_value(_, output_value, input_value))
+    |> and(must_be_equal(_, input_script_address, output_script_address))
 }
 
 fn recreate_chest(context ctx: ScriptContext) -> Bool {
@@ -251,10 +276,10 @@ fn find_ref_datum(
     None -> None
   }
 }
-
 // ///////////////////////////////////// UTILITY FUNCTIONS ///////////////////////////////////// //
 //            This section contains support function(s) not specific to the contract             //
 
-fn sum_ints(ints: List<Int>) -> Int {
-  ints |> reduce(0, add_integer)
-}
+// /// Deprecated
+// fn sum_ints(ints: List<Int>) -> Int {
+//   ints |> reduce(0, add_integer)
+// }
