@@ -1,4 +1,5 @@
 import {
+  Assets,
   Constr,
   Data,
   Lucid,
@@ -6,6 +7,7 @@ import {
   SpendingValidator,
   UTxO,
   assetsToValue,
+  fromText,
 } from "lucid-cardano";
 import { useEffect, useState } from "react";
 import { getDatumFields, getLatestBlockInfo } from "../utils/blockfrost";
@@ -39,7 +41,7 @@ const Morbid = (props: {
     script:
       "58635861010000323232323232322253330053370e900018031baa001153330054a22930b09912999803a51149858c020c01cdd500099800800a40004444666600a66e1c00400c0208cccc014014cdc0002240046014002004004ae6955ceaab9e5742ae89",
   };
-  
+
   const createChest = async () => {
     try {
       console.log("CreateChest():");
@@ -64,13 +66,20 @@ const Morbid = (props: {
 
         const tx = await lucid
           .newTx()
-          
+
           .attachMintingPolicy(alwaysTrue)
-          
+          .mintAssets(
+            {
+              [`${alwaysTrue}${fromText("NFT")}`]: BigInt(1),
+              [`${alwaysTrue}${fromText("Token")}`]: BigInt(2),
+            },
+            Data.to(new Constr(0, []))
+          )
+
           .payToContract(
             morbidAddress,
             { inline: createChest, scriptRef: morbidScript },
-            { lovelace: BigInt(42_000000) }
+            { lovelace: BigInt(42_000000), nft: BigInt(1) }
           )
           .complete();
 
@@ -107,7 +116,10 @@ const Morbid = (props: {
           .payToContract(
             morbidAddress,
             { inline: addTreasure },
-            { lovelace: BigInt(42_000000) }
+            {
+              lovelace: BigInt(42_000000),
+              [`${alwaysTrue}${fromText("Token")}`]: BigInt(1),
+            }
           )
           .complete();
 
@@ -144,9 +156,10 @@ const Morbid = (props: {
           throw { emptyScriptAddress: "No UTxO to redeem." };
         }
 
-        let treasure = 0;
+        // let treasure = 0;
         const chestUTxOs: UTxO[] = [];
         const refScript: UTxO[] = [];
+        let assets: Assets = {};
 
         const forEachAsync = async (
           utxos: UTxO[],
@@ -170,9 +183,7 @@ const Morbid = (props: {
                 if (deadlineValue < time) {
                   refScript.push(utxo);
                   chestUTxOs.push(utxo);
-                  treasure += Number.parseInt(
-                    assetsToValue(utxo.assets).to_js_value()["coin"]
-                  );
+                  assets = { ...assets, ...utxo.assets };
                 }
               }
               return;
@@ -182,9 +193,7 @@ const Morbid = (props: {
               const refTxnValue = refTxn["bytes"];
               if (refTxnValue === chest.txHash) {
                 chestUTxOs.push(utxo);
-                treasure += Number.parseInt(
-                  assetsToValue(utxo.assets).to_js_value()["coin"]
-                );
+                assets = { ...assets, ...utxo.assets };
               }
               return;
 
@@ -215,7 +224,7 @@ const Morbid = (props: {
         );
         console.log({ datum: createChest });
 
-        console.log({ treasure: treasure });
+        console.log({ assets: assets });
         const tx = await lucid
           .newTx()
           .collectFrom(chestUTxOs, delayUnlock)
@@ -226,7 +235,7 @@ const Morbid = (props: {
           .payToContract(
             morbidAddress, // re-create chest
             { inline: createChest, scriptRef: morbidScript },
-            { lovelace: BigInt(treasure) }
+            assets
           )
 
           // drain by recreate chest to another address:
