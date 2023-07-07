@@ -6,6 +6,8 @@
 //// chest. Anyone can redeem the treasure when the deadline
 //// has passed.
 ////
+//// `v0.1`: Accounts for NFT and tokens as well, not just ADA.
+////
 //// ```
 //// author      :   Kiki Ariady Putra
 //// maintainer  :   aurodeus@gmail.com
