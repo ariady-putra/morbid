@@ -15,7 +15,7 @@
 ////
 //// Jakarta 2023
 ////
-//// _(built using Aiken v1.0.10-alpha)_
+//// _(re-built using Aiken v1.0.11-alpha)_
 
 use aiken/transaction.{ScriptContext}
 use morbid/locker

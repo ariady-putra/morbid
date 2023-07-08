@@ -120,13 +120,13 @@
       <h2>
         <a href="../">morbid</a>
         <span id="project-version">
-          <span>v0.0.0 </span>
+          <span>v0.1.0 </span>
         </span>
         <script>
           "use strict";
 
           if ("undefined" !== typeof versionNodes) {
-            const currentVersion = "v0.0.0";
+            const currentVersion = "v0.1.0";
             if (! versionNodes.find(element => element.version === currentVersion)) {
               versionNodes.unshift({ version: currentVersion, url: "#" });
             }
@@ -239,7 +239,13 @@
 <h2>Types</h2>
 <ul>
   
+  <li><a href="#FlattenValue">FlattenValue</a></li>
+  
+  <li><a href="#FlattenValues">FlattenValues</a></li>
+  
   <li><a href="#PubKeyHash">PubKeyHash</a></li>
+  
+  <li><a href="#Qty">Qty</a></li>
   
   <li><a href="#TxHash">TxHash</a></li>
   
@@ -268,6 +274,60 @@
   
   <div class="member">
     <div class="member-name">
+      <h2 id="FlattenValue">
+        <a href="#FlattenValue">
+	  FlattenValue
+        </a>
+      </h2>
+      
+      <!-- TODO: support source linking
+      <a class="member-source" alt="View Source" title="View Source" href="#todo">
+        &lt;/&gt;
+      </a>
+      -->
+      
+    </div>
+    <div class="custom-type-constructors">
+      <div class="rendered-markdown"></div>
+      
+      <h3>Alias</h3>
+      <div class="constructor-row">
+        <svg class="icon icon-at"><use xlink:href="#icon-at"></use></svg>
+        <pre class="constructor-name"><code class="hljs aiken">FlattenValue = (PolicyId, AssetName, Qty)</code></pre>
+      </div>
+      
+    </div>
+  </div>
+  
+  <div class="member">
+    <div class="member-name">
+      <h2 id="FlattenValues">
+        <a href="#FlattenValues">
+	  FlattenValues
+        </a>
+      </h2>
+      
+      <!-- TODO: support source linking
+      <a class="member-source" alt="View Source" title="View Source" href="#todo">
+        &lt;/&gt;
+      </a>
+      -->
+      
+    </div>
+    <div class="custom-type-constructors">
+      <div class="rendered-markdown"></div>
+      
+      <h3>Alias</h3>
+      <div class="constructor-row">
+        <svg class="icon icon-at"><use xlink:href="#icon-at"></use></svg>
+        <pre class="constructor-name"><code class="hljs aiken">FlattenValues = List&lt;FlattenValue&gt;</code></pre>
+      </div>
+      
+    </div>
+  </div>
+  
+  <div class="member">
+    <div class="member-name">
       <h2 id="PubKeyHash">
         <a href="#PubKeyHash">
 	  PubKeyHash
@@ -288,6 +348,33 @@
       <div class="constructor-row">
         <svg class="icon icon-at"><use xlink:href="#icon-at"></use></svg>
         <pre class="constructor-name"><code class="hljs aiken">PubKeyHash = Hash&lt;Blake2b_224, VerificationKey&gt;</code></pre>
+      </div>
+      
+    </div>
+  </div>
+  
+  <div class="member">
+    <div class="member-name">
+      <h2 id="Qty">
+        <a href="#Qty">
+	  Qty
+        </a>
+      </h2>
+      
+      <!-- TODO: support source linking
+      <a class="member-source" alt="View Source" title="View Source" href="#todo">
+        &lt;/&gt;
+      </a>
+      -->
+      
+    </div>
+    <div class="custom-type-constructors">
+      <div class="rendered-markdown"></div>
+      
+      <h3>Alias</h3>
+      <div class="constructor-row">
+        <svg class="icon icon-at"><use xlink:href="#icon-at"></use></svg>
+        <pre class="constructor-name"><code class="hljs aiken">Qty = Int</code></pre>
       </div>
       
     </div>
@@ -397,8 +484,8 @@
       });
     </script>
     <script src="../js/lunr.min.js?v=1.0.11-alpha"></script>
-    <script src="../js/index.js?v=1687686691"></script>
+    <script src="../js/index.js?v=1688830492"></script>
     <!-- Load the search index using JSONP to avoid CORS issues -->
-    <script src="../search-data.js?v=1687686691"></script>
+    <script src="../search-data.js?v=1688830492"></script>
   </body>
 </html>
