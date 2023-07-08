@@ -41,6 +41,10 @@ const Morbid = (props: {
     script:
       "58635861010000323232323232322253330053370e900018031baa001153330054a22930b09912999803a51149858c020c01cdd500099800800a40004444666600a66e1c00400c0208cccc014014cdc0002240046014002004004ae6955ceaab9e5742ae89",
   };
+  const alwaysTruePolicy = lucid.utils.validatorToScriptHash(alwaysTrue);
+  const alwaysTrueToken1 = `${alwaysTruePolicy}${fromText("Token1")}`;
+  const alwaysTrueToken2 = `${alwaysTruePolicy}${fromText("Token2")}`;
+  const voidData = Data.to(new Constr(0, []));
 
   const createChest = async () => {
     try {
@@ -70,16 +74,20 @@ const Morbid = (props: {
           .attachMintingPolicy(alwaysTrue)
           .mintAssets(
             {
-              [`${alwaysTrue}${fromText("NFT")}`]: BigInt(1),
-              [`${alwaysTrue}${fromText("Token")}`]: BigInt(2),
+              [alwaysTrueToken1]: BigInt(3),
+              [alwaysTrueToken2]: BigInt(4),
             },
-            Data.to(new Constr(0, []))
+            voidData
           )
 
           .payToContract(
             morbidAddress,
             { inline: createChest, scriptRef: morbidScript },
-            { lovelace: BigInt(42_000000), nft: BigInt(1) }
+            {
+              lovelace: BigInt(42_000000),
+              [alwaysTrueToken1]: BigInt(1),
+              [alwaysTrueToken2]: BigInt(1),
+            }
           )
           .complete();
 
@@ -118,7 +126,8 @@ const Morbid = (props: {
             { inline: addTreasure },
             {
               lovelace: BigInt(42_000000),
-              [`${alwaysTrue}${fromText("Token")}`]: BigInt(1),
+              [alwaysTrueToken1]: BigInt(1),
+              [alwaysTrueToken2]: BigInt(1),
             }
           )
           .complete();
@@ -183,7 +192,13 @@ const Morbid = (props: {
                 if (deadlineValue < time) {
                   refScript.push(utxo);
                   chestUTxOs.push(utxo);
-                  assets = { ...assets, ...utxo.assets };
+                  for (const asset in utxo.assets) {
+                    if (assets[asset]) {
+                      assets[asset] += utxo.assets[asset];
+                    } else {
+                      assets[asset] = utxo.assets[asset];
+                    }
+                  }
                 }
               }
               return;
@@ -193,7 +208,13 @@ const Morbid = (props: {
               const refTxnValue = refTxn["bytes"];
               if (refTxnValue === chest.txHash) {
                 chestUTxOs.push(utxo);
-                assets = { ...assets, ...utxo.assets };
+                for (const asset in utxo.assets) {
+                  if (assets[asset]) {
+                    assets[asset] += utxo.assets[asset];
+                  } else {
+                    assets[asset] = utxo.assets[asset];
+                  }
+                }
               }
               return;
 
@@ -242,7 +263,7 @@ const Morbid = (props: {
           //   .payToAddressWithData(
           //     userAddress, // drain to any address
           //     { inline: createChest },
-          //     { lovelace: BigInt(treasure) }
+          //     assets
           //   )
 
           // drain by recreate chest to another address with multiple txOuts:
@@ -253,7 +274,7 @@ const Morbid = (props: {
           //   )
           //   .payToAddress(
           //     userAddress, // drain to any address
-          //     { lovelace: BigInt(treasure) }
+          //     assets
           //   )
 
           .validFrom(time)
