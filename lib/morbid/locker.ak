@@ -18,7 +18,7 @@ use time_util/unsafe/bound as unsafe_unwrap
 /// `ChestRedeemer` determines what action is to be done to the UTxO(s),
 /// either `DelayUnlock` or `UnlockChest`.
 /// When delaying unlock of a UTxO, the transaction must be signed by the
-/// chest creator, the sum of input and output ADA must be balance,
+/// chest creator, the sum of input and output assets must be balance,
 /// and it must re-create a `CreateChest` datum with a later deadline.
 /// When unlocking the chest of a UTxO, the transaction validity range
 /// must be after the deadline.

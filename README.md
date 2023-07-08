@@ -14,16 +14,16 @@ This is a dead-man's switch contract where you can:
 - Unlock Chest
 
 ## Create Chest
-Deposit initial ADA
+Deposit initial assets
 
 ## Add Treasure
-Deposit more ADA to the chest
+Deposit more assets to the chest
 
 ## Delay Unlock
 Postpone chest unlocking deadline
 
 ## Unlock Chest
-Redeem all ADA from the chest
+Redeem all assets from the chest
 
 ---
 <br/><div align="center">
