@@ -6,15 +6,15 @@
 //// │ PASS [mem: 5640967, cpu: 2958891359] validate_delay_unlock
 //// │ ↳ ScriptContext: "d8799fd8799f9fd8799fd8799fd8799f58284368657374416464726573735f4f6c6443686573744c6f636b446561646c696e655f547848617368ff00ffd8799fd8799fd87a9f4c436865737441646472657373ffd87a80ffa240a1401a016e360048506f6c6963794944a14943686573744c6f636b01d87b9f05ffd87a80ffffff9fd8799fd8799fd8799f5543686573744b6579486f6c6465725f547848617368ff00ffd8799fd8799fd8799f4e43686573744b6579486f6c646572ffd87a80ffa240a1401a0280de8048506f6c6963794944a14843686573744b65790ad87980d87a80ffffff9fd8799fd8799fd87a9f4c436865737441646472657373ffd87a80ffa240a1401a016e360048506f6c6963794944a14943686573744c6f636b01d87b9f0affd87a80ffffa140a1401a001e8480a080a0d8799fd8799fd87a9f02ffd87a80ffd8799fd87b80d87a80ffff9f4e43686573744b6579486f6c646572ffa0a0d8799f40ffffd87a9fd8799fd8799f40ff00ffffff"
 //// │ ↳ MaybeDeadline: "d87980"
-//// │ PASS [mem: 8955072, cpu: 4783784852] invalidate_delay_unlock_with_imbalance_assets
-//// │ ↳ ScriptContext: "d8799fd8799f9fd8799fd8799fd8799f58234368657374416464726573735f4f6c644164645472656173757265325f547848617368ff00ffd8799fd8799fd87a9f4c436865737441646472657373ffd87a80ffa240a1401a016e360049547265617375726532a145546f6b656e1864d87b9fd87980ffd87a80ffffd8799fd8799fd8799f58234368657374416464726573735f4f6c644164645472656173757265315f547848617368ff00ffd8799fd8799fd87a9f4c436865737441646472657373ffd87a80ffa240a1401a0280de8049547265617375726531a1434e465401d87b9fd87980ffd87a80ffffd8799fd8799fd8799f58284368657374416464726573735f4f6c6443686573744c6f636b446561646c696e655f547848617368ff00ffd8799fd8799fd87a9f4c436865737441646472657373ffd87a80ffa240a1401a016e360048506f6c6963794944a14943686573744c6f636b01d87b9f05ffd87a80ffffff9fd8799fd8799fd8799f5543686573744b6579486f6c6465725f547848617368ff00ffd8799fd8799fd8799f4e43686573744b6579486f6c646572ffd87a80ffa240a1401a0280de8048506f6c6963794944a14843686573744b65790ad87980d87a80ffffff9fd8799fd8799fd87a9f4c436865737441646472657373ffd87a80ffa440a1401a055d4a8048506f6c6963794944a14943686573744c6f636b0149547265617375726531a1434e46540149547265617375726532a145546f6b656e184bd87b9f0affd87a80ffffa140a1401a001e8480a080a0d8799fd8799fd87b80d87a80ffd8799fd87980d87a80ffff9f4e43686573744b6579486f6c646572ffa0a0d8799f40ffffd87a9fd8799fd8799f40ff00ffffff"
+//// │ PASS [mem: 6445812, cpu: 3428394224] invalidate_delay_unlock_with_imbalance_assets
+//// │ ↳ ScriptContext: "d8799fd8799f9fd8799fd8799fd8799f58284368657374416464726573735f4f6c6443686573744c6f636b446561646c696e655f547848617368ff00ffd8799fd8799fd87a9f4c436865737441646472657373ffd87a80ffa440a1401a016e360048506f6c6963794944a14943686573744c6f636b0149547265617375726531a1434e46540149547265617375726532a145546f6b656e1864d87b9f05ffd87a80ffffff9fd8799fd8799fd8799f5543686573744b6579486f6c6465725f547848617368ff00ffd8799fd8799fd8799f4e43686573744b6579486f6c646572ffd87a80ffa240a1401a0280de8048506f6c6963794944a14843686573744b65790ad87980d87a80ffffff9fd8799fd8799fd87a9f4c436865737441646472657373ffd87a80ffa440a1401a016e360048506f6c6963794944a14943686573744c6f636b0149547265617375726531a1434e46540149547265617375726532a145546f6b656e184bd87b9f0affd87a80ffffa140a1401a001e8480a080a0d8799fd8799fd87b80d87a80ffd8799fd87980d87a80ffff9f4e43686573744b6579486f6c646572ffa0a0d8799f40ffffd87a9fd8799fd8799f40ff00ffffff"
 //// │ ↳ MaybeDeadline: "d87980"
 //// │ ↳ all_values_has_value ? False
 //// │ ↳ not_drained ? False
 //// │ PASS [mem: 2954740, cpu: 1618306575] validate_unlock_chest
 //// │ ↳ ScriptContext: "d8799fd8799f9fd8799fd8799fd8799f534368657374416464726573735f547848617368ff00ffd8799fd8799fd87a9f4c436865737441646472657373ffd87a80ffa240a1401a016e360048506f6c6963794944a14943686573744c6f636b01d87b9f0affd87a80ffffff809fd8799fd8799fd8799f4d4368657374556e6c6f636b6572ffd87a80ffa140a1401a016e3600d87980d87a80ffffa140a1401a001e8480a080a0d8799fd8799fd87a9f14ffd87a80ffd8799fd87b80d87a80ffff80a0a0d8799f40ffffd87a9fd8799fd8799f40ff00ffffff"
 //// │ ↳ MaybeDeadline: "d87980"
-//// ┕━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4 tests | 4 passed | 0 failed
+//// ┕━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4 tests | 4 passed | 0 failed
 //// ```
 
 use aiken/dict
@@ -106,7 +106,9 @@ test validate_delay_unlock() {
   let tx_out =
     new_tx_output(
       from_script("ChestAddress"),
+      //   from_script("ChestAddress2"),
       24_000_000,
+      //   0,
       InlineDatum(new_deadline),
     )
       |> add_asset_to_tx_output(chest_lock)
@@ -138,10 +140,6 @@ test invalidate_delay_unlock_with_imbalance_assets() {
   let treasure_1 = "Treasure1" |> from_asset("NFT", 1)
   let treasure_2 = "Treasure2" |> from_asset("Token", 100)
   let treasure_2_partial = "Treasure2" |> from_asset("Token", 75)
-  let in_lovelace_1 = 24_000_000
-  let in_lovelace_2 = 42_000_000
-  let in_lovelace_3 = 24_000_000
-  let out_lovelace = in_lovelace_1 + in_lovelace_2 + in_lovelace_3
   let tx_ref_in =
     new_tx_input(
       "ChestKeyHolder_TxHash",
@@ -150,48 +148,32 @@ test invalidate_delay_unlock_with_imbalance_assets() {
       NoDatum,
     )
       |> with_asset_of_tx_input(chest_key)
-  let tx_in_1 =
+  let tx_in =
     new_tx_input(
       "ChestAddress_OldChestLockDeadline_TxHash",
       from_script("ChestAddress"),
-      in_lovelace_1,
+      24_000_000,
       InlineDatum(deadline),
     )
       |> with_asset_of_tx_input(chest_lock)
-  let tx_in_2 =
-    new_tx_input(
-      "ChestAddress_OldAddTreasure1_TxHash",
-      from_script("ChestAddress"),
-      in_lovelace_2,
-      InlineDatum(Void),
-    )
       |> with_asset_of_tx_input(treasure_1)
-  let tx_in_3 =
-    new_tx_input(
-      "ChestAddress_OldAddTreasure2_TxHash",
-      from_script("ChestAddress"),
-      in_lovelace_3,
-      InlineDatum(Void),
-    )
       |> with_asset_of_tx_input(treasure_2)
   let tx_out =
     new_tx_output(
       from_script("ChestAddress"),
-      out_lovelace,
+      //   from_script("ChestAddress2"),
+      24_000_000,
+      //   0,
       InlineDatum(new_deadline),
     )
-      |> add_asset_to_tx_output(
-           chest_lock
-             |> merge(treasure_1) //  |> merge(treasure_2)
-             |> merge(treasure_2_partial),
-         )
+      |> add_asset_to_tx_output(chest_lock)
+      |> add_asset_to_tx_output(treasure_1) //   |> add_asset_to_tx_output(treasure_2)
+      |> add_asset_to_tx_output(treasure_2_partial)
   let tx =
     empty()
       |> build_txn_context()
       |> add_tx_ref_input(tx_ref_in)
-      |> add_tx_input(tx_in_1)
-      |> add_tx_input(tx_in_2)
-      |> add_tx_input(tx_in_3)
+      |> add_tx_input(tx_in)
       |> add_tx_output(tx_out)
       |> add_signatory("ChestKeyHolder")
   //
