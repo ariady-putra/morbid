@@ -16,21 +16,21 @@ This is a dead-man's switch contract where you can:
 
 ## Create Chest
 Mints `ChestLock` and `ChestKey`(s), a new address will be generated. Send `ChestLock`
-while depositing initial ADA. Keep `ChestKey` token(s) in your wallet, you will need
+while depositing initial assets. Keep `ChestKey` token(s) in your wallet, you will need
 to show it when `DelayUnlock`.
 
 Give access for delaying the chest unlocking deadline to anyone by sending them the
 `ChestKey` token.
 
 ## Add Treasure
-Anyone can deposit more ADA to the chest. Don't forget to include an arbitrary inline
+Anyone can deposit more assets to the chest. Don't forget to include an arbitrary inline
 datum to be redeemable.
 
 ## Delay Unlock
 Show the matching `ChestKey` token to postpone the chest unlocking deadline.
 
 ## Unlock Chest
-Redeem all ADA from the chest when the deadline has passed. You will also receive the
+Redeem all assets from the chest when the deadline has passed. You will also receive the
 `ChestLock` NFT.
 
 ## Resend Chest
@@ -41,38 +41,38 @@ the chest unlocker. There is no real benefit to do this, but it's possible.
 
 ### Chest Address Sample
 ```
-addr_test1wr702hq6tnejc2gw35tl7q58u20klq5390fzyqzt7ns5hhgq2lcex
+addr_test1wrwc5pcsuhn759uqc5s2k8ffhfnddfdqsun8xy2da454zng8nltwz
 ```
 View it in action on
-[CExplorer](https://preview.cexplorer.io/address/addr_test1wr702hq6tnejc2gw35tl7q58u20klq5390fzyqzt7ns5hhgq2lcex/tx#data).
+[CExplorer](https://preview.cexplorer.io/address/addr_test1wrwc5pcsuhn759uqc5s2k8ffhfnddfdqsun8xy2da454zng8nltwz/tx#data).
 
 #### Timeline
 - **Create Chest**<br/>
-  `https://preview.cexplorer.io/tx/306eeab001b20cd84fe0069197816672972b07696e1c46c6901e94e39f900c75`
-<br/>Mints **2 ChestKey** tokens.
+  `https://preview.cexplorer.io/tx/e4a4626022f83ca1db7bf745fc91f91cf1094465de4609bcb5abed7943d6d045`
+<br/>Mints **2 ChestKey** tokens. Sends some arbitrary tokens as well.
 
 - **Add Treasure**<br/>
-  `https://preview.cexplorer.io/tx/8bbf6796b0191370c1fff44c1e2f7b4176ef4b0baccc8de654c3696fcbe21605`
-<br/>Put an arbitrary **inline datum**.
+  `https://preview.cexplorer.io/tx/b10bd3b4abd1e8791bd1709d89581e8352b02789112bcbd9ea62c75bfe71d91b`
+<br/>Put an arbitrary **inline datum** and send some arbitrary tokens.
 
 - **Delay Unlock**<br/>
-  `https://preview.cexplorer.io/tx/910d0c912413ede206548f22dc0e606893263e8f9ab45164004289c75985b570`
+  `https://preview.cexplorer.io/tx/d4ea27ec7a64ab21c5a2c4e8d2b2b837003c36426d514575afb6570257594b6a`
 <br/>Postpone chest unlocking deadline.
 
 - **Unlock Chest**<br/>
-  `https://preview.cexplorer.io/tx/91de67cfc1077c56c22696c5efbf41bf19744ef9ea2495969ca36a78f13d6c29`
-<br/>Redeem all ADA + **ChestLock** NFT (named as **Dead Man's Chest**) from the chest.
+  `https://preview.cexplorer.io/tx/35cc3aed97346411a35092b5cc1559501d911b7e732faf1fb194587b65abfb6f`
+<br/>Redeem all assets including **ChestLock** NFT (named as **Dead Man's Chest**) from the chest.
 
 - **Resend Chest**<br/>
-  `https://preview.cexplorer.io/tx/6f13814c90d127a8140be2ab40242ef51d216f9af5a4f47e55341a7e296ae46b`
-<br/>Resend **ChestLock** to the chest address.
+  `https://preview.cexplorer.io/tx/eb71011020e13853e23a1e24f2e467c8f3841912b300b1ba0bbc1102df395573`
+<br/>Resend **ChestLock** to the chest address and some arbitrary tokens.
 
 - **Share Access**<br/>
-  `https://preview.cexplorer.io/tx/24a05669a6048ffa278fcea3d73bcf04a82ac20736609063d13d3c4425ef6e46`
+  `https://preview.cexplorer.io/tx/864e6891df746aae55a97b73bf12058ef905123f6b83ebe073cfba449f53ad54`
 <br/>Share **1 ChestKey** token to another address.
 
 - **Delay Unlock** (by another address)<br/>
-  `https://preview.cexplorer.io/tx/975238029fec63bd43ce206ecf6cb13fa4ad86d87423e56ffb76633aa984838c`
+  `https://preview.cexplorer.io/tx/5b1cb9457236a341ac68c6f4a80f3e7c7f0f932a7f58db8025e8b4aba80dd731`
 <br/>Using the shared **ChestKey** token.
 
 ---

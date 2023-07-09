@@ -1,6 +1,8 @@
-use aiken/builtin.{add_integer, fst_pair}
+use aiken/builtin.{fst_pair}
 use aiken/dict
-use aiken/list.{any, filter, filter_map, find, has, map, reduce, unique, unzip}
+use aiken/list.{
+  all, any, filter, filter_map, find, has, map, reduce, unique, unzip,
+}
 use aiken/time.{PosixTime}
 use aiken/transaction.{
   Datum, InlineDatum, Mint, OutputReference, ScriptContext, ScriptPurpose, Spend,
@@ -9,11 +11,11 @@ use aiken/transaction/credential.{
   Address, Credential, ScriptCredential, VerificationKeyCredential,
 }
 use aiken/transaction/value.{
-  AssetName, PolicyId, flatten_with, from_minted_value, lovelace_of, quantity_of,
-  tokens,
+  AssetName, PolicyId, flatten, flatten_with, from_minted_value, merge,
+  quantity_of, tokens, zero,
 }
 use morbid/action.{Action, DelayUnlock, UnlockChest}
-use morbid/alias.{ValidatorHash}
+use morbid/alias.{FlattenValues, ValidatorHash}
 use morbid/chain.{and}
 use morbid/constant.{chest_key}
 use string_util/cbor.{print}
@@ -21,7 +23,7 @@ use time_util/unsafe/bound as unsafe_unwrap
 
 /// When delaying unlock of a UTxO, the transaction must include any `ChestKey`
 /// token(s) signed by the holder(s) (it will be used to be matched against the
-/// `ChestLock`), the sum of input and output ADA must be balance,
+/// `ChestLock`), the sum of input and output assets must be balance,
 /// and it must re-send the `ChestLock` NFT with a new deadline as the datum.
 /// When unlocking the chest of a UTxO, the transaction validity range must be
 /// after the deadline.
@@ -136,7 +138,7 @@ fn must_send_chest_lock(
   sent_chest_lock?
 }
 
-/// Validate delay unlock: Input and Output Lovelace must be balance.
+/// Validate delay unlock: Input and Output assets must be balance.
 fn must_not_drain(_, ctx: ScriptContext) -> Bool {
   let not_drained = ctx |> is_not_drained()
   not_drained?
@@ -162,6 +164,22 @@ fn must_unlock_after_deadline(
   let unlock_after_deadline =
     ctx |> unlock_after_deadline(policy_id, chest_lock)
   unlock_after_deadline?
+}
+
+/// Must not drain: All values has value.
+fn all_values_has_value(
+  _,
+  l_values: FlattenValues,
+  r_values: FlattenValues,
+) -> Bool {
+  let all_values_has_value =
+    l_values |> all(fn(l_value) { r_values |> has(l_value) })
+  all_values_has_value?
+}
+
+/// Must not drain: Must be equal.
+fn must_be_equal(_, l, r) {
+  (l == r)?
 }
 
 // ///////////////////////////////////// HELPER FUNCTIONS ///////////////////////////////////// //
@@ -194,7 +212,7 @@ fn send_chest_lock(
   (unsafe_unwrap.finite_start_of(txn.validity_range) < deadline)?
 }
 
-/// (1) Sum of input and output Lovelace must be balance
+/// (1) Sum of input and output assets must be balance
 /// (2) Unique input==output script address must be the same
 fn is_not_drained(ctx: ScriptContext) -> Bool {
   let txn = ctx.transaction
@@ -209,45 +227,54 @@ fn is_not_drained(ctx: ScriptContext) -> Bool {
     }
   //
   // Anonymous fn to collect values only from script address:
-  let lovelace_of_script_address =
+  let value_of_script_address =
     fn(output: transaction.Output) {
       if output.address |> script_address() {
-        lovelace_of(output.value)
+        output.value
       } else {
-        0
+        zero()
       }
     }
   //
-  // Anonymous fn to map `transaction.Output` to (lovelace, address):
-  let lovelace_address =
+  // Anonymous fn to map `transaction.Output` to (value, address):
+  let value_address =
     fn(output: transaction.Output) {
-      (output |> lovelace_of_script_address(), output.address)
+      (output |> value_of_script_address(), output.address)
     }
   //
-  // Sum Input Lovelace, Validate Input Address:
-  let (input_lovelace, input_address) =
+  // (Input Values, Input Address):
+  let (input_value, input_address) =
     txn.inputs
-      |> map(fn(input) { input.output |> lovelace_address() })
+      |> map(fn(input) { input.output |> value_address() })
       |> unzip()
   expect [input_script_address] =
     input_address
       |> filter(script_address)
       |> unique()
-  let input_lovelace = input_lovelace |> sum_ints()
+  let input_value =
+    input_value
+      |> reduce(zero(), merge)
+      |> flatten()
   //
-  // Sum Output Lovelace, Validate Output Address:
-  let (output_lovelace, output_address) =
+  // (Output Values, Output Address):
+  let (output_value, output_address) =
     txn.outputs
-      |> map(lovelace_address)
+      |> map(value_address)
       |> unzip()
   expect [output_script_address] =
     output_address
       |> filter(script_address)
       |> unique()
-  let output_lovelace = output_lovelace |> sum_ints()
+  let output_value =
+    output_value
+      |> reduce(zero(), merge)
+      |> flatten()
   //
   // Return:
-  (input_lovelace == output_lovelace)? && (input_script_address == output_script_address)?
+  chain.validate()
+    |> and(all_values_has_value(_, input_value, output_value))
+    |> and(all_values_has_value(_, output_value, input_value))
+    |> and(must_be_equal(_, input_script_address, output_script_address))
 }
 
 /// A function to help filter_map transaction.Outputs by the existence of `ChestLock`
@@ -379,10 +406,10 @@ fn unlock_after_deadline(
   expect deadline: PosixTime = datum
   (unsafe_unwrap.finite_start_of(txn.validity_range) > deadline)?
 }
-
 // ///////////////////////////////////// UTILITY FUNCTIONS ///////////////////////////////////// //
 //            This section contains support function(s) not specific to the contract             //
 
-fn sum_ints(ints: List<Int>) -> Int {
-  ints |> reduce(0, add_integer)
-}
+// /// Deprecated
+// fn sum_ints(ints: List<Int>) -> Int {
+//   ints |> reduce(0, builtin.add_integer)
+// }

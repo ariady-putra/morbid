@@ -6,7 +6,9 @@
 //// chest. Anyone can redeem the treasure when the deadline
 //// has passed.
 ////
-//// `v0.2`: Now uses `ChestLock` and `ChestKey` mechanism
+//// `v0.2.1`: Accounts for NFT and tokens as well,
+//// not just ADA.
+//// `v0.2.0`: Now uses `ChestLock` and `ChestKey` mechanism
 //// to validate actions.
 ////
 //// ```
