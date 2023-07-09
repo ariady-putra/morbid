@@ -120,13 +120,13 @@
       <h2>
         <a href="./">morbid</a>
         <span id="project-version">
-          <span>v0.2.0 </span>
+          <span>v0.2.1 </span>
         </span>
         <script>
           "use strict";
 
           if ("undefined" !== typeof versionNodes) {
-            const currentVersion = "v0.2.0";
+            const currentVersion = "v0.2.1";
             if (! versionNodes.find(element => element.version === currentVersion)) {
               versionNodes.unshift({ version: currentVersion, url: "#" });
             }
@@ -256,62 +256,62 @@
 </ul>
 <h2>Create Chest</h2>
 <p>Mints <code>ChestLock</code> and <code>ChestKey</code>(s), a new address will be generated. Send <code>ChestLock</code>
-while depositing initial ADA. Keep <code>ChestKey</code> token(s) in your wallet, you will need
+while depositing initial assets. Keep <code>ChestKey</code> token(s) in your wallet, you will need
 to show it when <code>DelayUnlock</code>.</p>
 <p>Give access for delaying the chest unlocking deadline to anyone by sending them the
 <code>ChestKey</code> token.</p>
 <h2>Add Treasure</h2>
-<p>Anyone can deposit more ADA to the chest. Don’t forget to include an arbitrary inline
+<p>Anyone can deposit more assets to the chest. Don’t forget to include an arbitrary inline
 datum to be redeemable.</p>
 <h2>Delay Unlock</h2>
 <p>Show the matching <code>ChestKey</code> token to postpone the chest unlocking deadline.</p>
 <h2>Unlock Chest</h2>
-<p>Redeem all ADA from the chest when the deadline has passed. You will also receive the
+<p>Redeem all assets from the chest when the deadline has passed. You will also receive the
 <code>ChestLock</code> NFT.</p>
 <h2>Resend Chest</h2>
 <p>Resend <code>ChestLock</code> to the chest address. Similar to <code>CreateChest</code> but it is done by
 the chest unlocker. There is no real benefit to do this, but it’s possible.</p>
 <hr />
 <h3>Chest Address Sample</h3>
-<pre><code>addr_test1wr702hq6tnejc2gw35tl7q58u20klq5390fzyqzt7ns5hhgq2lcex
+<pre><code>addr_test1wrwc5pcsuhn759uqc5s2k8ffhfnddfdqsun8xy2da454zng8nltwz
 </code></pre>
 <p>View it in action on
-<a href="https://preview.cexplorer.io/address/addr_test1wr702hq6tnejc2gw35tl7q58u20klq5390fzyqzt7ns5hhgq2lcex/tx#data">CExplorer</a>.</p>
+<a href="https://preview.cexplorer.io/address/addr_test1wrwc5pcsuhn759uqc5s2k8ffhfnddfdqsun8xy2da454zng8nltwz/tx#data">CExplorer</a>.</p>
 <h4>Timeline</h4>
 <ul>
 <li>
 <p><strong>Create Chest</strong><br/>
-<code>https://preview.cexplorer.io/tx/306eeab001b20cd84fe0069197816672972b07696e1c46c6901e94e39f900c75</code>
-<br/>Mints <strong>2 ChestKey</strong> tokens.</p>
+<code>https://preview.cexplorer.io/tx/e4a4626022f83ca1db7bf745fc91f91cf1094465de4609bcb5abed7943d6d045</code>
+<br/>Mints <strong>2 ChestKey</strong> tokens. Sends some arbitrary tokens as well.</p>
 </li>
 <li>
 <p><strong>Add Treasure</strong><br/>
-<code>https://preview.cexplorer.io/tx/8bbf6796b0191370c1fff44c1e2f7b4176ef4b0baccc8de654c3696fcbe21605</code>
-<br/>Put an arbitrary <strong>inline datum</strong>.</p>
+<code>https://preview.cexplorer.io/tx/b10bd3b4abd1e8791bd1709d89581e8352b02789112bcbd9ea62c75bfe71d91b</code>
+<br/>Put an arbitrary <strong>inline datum</strong> and send some arbitrary tokens.</p>
 </li>
 <li>
 <p><strong>Delay Unlock</strong><br/>
-<code>https://preview.cexplorer.io/tx/910d0c912413ede206548f22dc0e606893263e8f9ab45164004289c75985b570</code>
+<code>https://preview.cexplorer.io/tx/d4ea27ec7a64ab21c5a2c4e8d2b2b837003c36426d514575afb6570257594b6a</code>
 <br/>Postpone chest unlocking deadline.</p>
 </li>
 <li>
 <p><strong>Unlock Chest</strong><br/>
-<code>https://preview.cexplorer.io/tx/91de67cfc1077c56c22696c5efbf41bf19744ef9ea2495969ca36a78f13d6c29</code>
-<br/>Redeem all ADA + <strong>ChestLock</strong> NFT (named as <strong>Dead Man’s Chest</strong>) from the chest.</p>
+<code>https://preview.cexplorer.io/tx/35cc3aed97346411a35092b5cc1559501d911b7e732faf1fb194587b65abfb6f</code>
+<br/>Redeem all assets including <strong>ChestLock</strong> NFT (named as <strong>Dead Man’s Chest</strong>) from the chest.</p>
 </li>
 <li>
 <p><strong>Resend Chest</strong><br/>
-<code>https://preview.cexplorer.io/tx/6f13814c90d127a8140be2ab40242ef51d216f9af5a4f47e55341a7e296ae46b</code>
-<br/>Resend <strong>ChestLock</strong> to the chest address.</p>
+<code>https://preview.cexplorer.io/tx/eb71011020e13853e23a1e24f2e467c8f3841912b300b1ba0bbc1102df395573</code>
+<br/>Resend <strong>ChestLock</strong> to the chest address and some arbitrary tokens.</p>
 </li>
 <li>
 <p><strong>Share Access</strong><br/>
-<code>https://preview.cexplorer.io/tx/24a05669a6048ffa278fcea3d73bcf04a82ac20736609063d13d3c4425ef6e46</code>
+<code>https://preview.cexplorer.io/tx/864e6891df746aae55a97b73bf12058ef905123f6b83ebe073cfba449f53ad54</code>
 <br/>Share <strong>1 ChestKey</strong> token to another address.</p>
 </li>
 <li>
 <p><strong>Delay Unlock</strong> (by another address)<br/>
-<code>https://preview.cexplorer.io/tx/975238029fec63bd43ce206ecf6cb13fa4ad86d87423e56ffb76633aa984838c</code>
+<code>https://preview.cexplorer.io/tx/5b1cb9457236a341ac68c6f4a80f3e7c7f0f932a7f58db8025e8b4aba80dd731</code>
 <br/>Using the shared <strong>ChestKey</strong> token.</p>
 </li>
 </ul>
@@ -393,8 +393,8 @@ the chest unlocker. There is no real benefit to do this, but it’s possible.</p
       });
     </script>
     <script src="./js/lunr.min.js?v=1.0.11-alpha"></script>
-    <script src="./js/index.js?v=1688613775"></script>
+    <script src="./js/index.js?v=1688889718"></script>
     <!-- Load the search index using JSONP to avoid CORS issues -->
-    <script src="./search-data.js?v=1688613775"></script>
+    <script src="./search-data.js?v=1688889718"></script>
   </body>
 </html>
