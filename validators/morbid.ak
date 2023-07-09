@@ -8,6 +8,7 @@
 ////
 //// `v0.2.1`: Accounts for NFT and tokens as well,
 //// not just ADA.
+////
 //// `v0.2.0`: Now uses `ChestLock` and `ChestKey` mechanism
 //// to validate actions.
 ////
