@@ -15,7 +15,7 @@ use aiken/transaction/value.{
   quantity_of, tokens, zero,
 }
 use morbid/action.{Action, DelayUnlock, UnlockChest}
-use morbid/alias.{FlattenValues, ValidatorHash}
+use morbid/alias.{FlattenValues, Qty, ValidatorHash}
 use morbid/chain.{and}
 use morbid/constant.{chest_key}
 use string_util/cbor.{print}
@@ -109,7 +109,7 @@ fn must_mint_once(_, ctx: ScriptContext, utxo_ref: OutputReference) -> Bool {
 /// Validate mint chest: Must mint exactly one `ChestLock`
 fn must_mint_chest_lock(
   _,
-  assets: List<(AssetName, Int)>,
+  assets: List<(AssetName, Qty)>,
   chest_lock: AssetName,
 ) -> Bool {
   let minted_chest_lock = assets |> has((chest_lock, 1))
@@ -119,7 +119,7 @@ fn must_mint_chest_lock(
 /// Validate mint chest: Must mint `ChestKey` of any qty.
 fn must_mint_chest_key(
   _,
-  assets: List<(AssetName, Int)>,
+  assets: List<(AssetName, Qty)>,
   chest_key: AssetName,
 ) -> Bool {
   let minted_chest_key =
@@ -183,12 +183,12 @@ fn must_be_equal(_, l, r) {
 }
 
 // ///////////////////////////////////// HELPER FUNCTIONS ///////////////////////////////////// //
-//       This section contains the functions to support the validation and chain functions      //
+//           This section contains the functions to support the validation functions            //
 
 fn minted_values_of(
   context ctx: ScriptContext,
   policy_id: PolicyId,
-) -> List<(AssetName, Int)> {
+) -> List<(AssetName, Qty)> {
   ctx.transaction.mint
     |> from_minted_value()
     |> tokens(policy_id)
