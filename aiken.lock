@@ -7,7 +7,7 @@ version = "main"
 source = "github"
 
 [[requirements]]
-name = "ariady-putra/time_util"
+name = "aiken-extra/time_util"
 version = "main"
 source = "github"
 
@@ -23,7 +23,7 @@ requirements = []
 source = "github"
 
 [[packages]]
-name = "ariady-putra/time_util"
+name = "aiken-extra/time_util"
 version = "main"
 requirements = []
 source = "github"

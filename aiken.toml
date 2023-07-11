@@ -14,7 +14,7 @@ version = "main"
 source = "github"
 
 [[dependencies]]
-name = "ariady-putra/time_util"
+name = "aiken-extra/time_util"
 version = "main"
 source = "github"
 
