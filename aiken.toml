@@ -22,3 +22,8 @@ source = "github"
 name = "aiken-extra/string_util"
 version = "main"
 source = "github"
+
+[[dependencies]]
+name = "aiken-extra/tx_util"
+version = "main"
+source = "github"

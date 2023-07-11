@@ -16,6 +16,11 @@ name = "aiken-extra/string_util"
 version = "main"
 source = "github"
 
+[[requirements]]
+name = "aiken-extra/tx_util"
+version = "main"
+source = "github"
+
 [[packages]]
 name = "aiken-lang/stdlib"
 version = "main"
@@ -30,6 +35,12 @@ source = "github"
 
 [[packages]]
 name = "aiken-extra/string_util"
+version = "main"
+requirements = []
+source = "github"
+
+[[packages]]
+name = "aiken-extra/tx_util"
 version = "main"
 requirements = []
 source = "github"
