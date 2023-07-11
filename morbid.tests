@@ -1,6 +1,7 @@
     Compiling aiken-lang/stdlib main (/home/ariady/aiken/morbid/build/packages/aiken-lang-stdlib)
     Compiling aiken-extra/time_util main (/home/ariady/aiken/morbid/build/packages/aiken-extra-time_util)
     Compiling aiken-extra/string_util main (/home/ariady/aiken/morbid/build/packages/aiken-extra-string_util)
+    Compiling aiken-extra/tx_util main (/home/ariady/aiken/morbid/build/packages/aiken-extra-tx_util)
     Compiling ariady-putra/morbid 0.2.1 (/home/ariady/aiken/morbid)
       Testing ...
 
