@@ -19,6 +19,6 @@ version = "main"
 source = "github"
 
 [[dependencies]]
-name = "ariady-putra/string_util"
+name = "aiken-extra/string_util"
 version = "main"
 source = "github"

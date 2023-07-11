@@ -12,7 +12,7 @@ version = "main"
 source = "github"
 
 [[requirements]]
-name = "ariady-putra/string_util"
+name = "aiken-extra/string_util"
 version = "main"
 source = "github"
 
@@ -29,7 +29,7 @@ requirements = []
 source = "github"
 
 [[packages]]
-name = "ariady-putra/string_util"
+name = "aiken-extra/string_util"
 version = "main"
 requirements = []
 source = "github"
