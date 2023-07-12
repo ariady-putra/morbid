@@ -25,3 +25,22 @@ if [ $# -eq 0 ]; then
     echo -e "${MAGENTA}Running${RESET} ${WHITE}aiken docs${RESET}:"
     aiken docs
 fi
+
+# .gitignore
+GIT_IGNORES=()
+while read LINE; do
+    GIT_IGNORES+=("$LINE")
+done < .gitignore
+NEW_IGNORES=()
+NEW_IGNORES+=("*.tests")
+NEW_IGNORES+=("*.plutus")
+NEW_IGNORES+=("*.address")
+for GIT_IGNORE in "${GIT_IGNORES[@]}"
+do
+    if [ "$GIT_IGNORE" == "docs/" ]; then
+        NEW_IGNORES+=("# docs/")
+    else
+        NEW_IGNORES+=("$GIT_IGNORE")
+    fi
+done
+printf "%s\n" "${NEW_IGNORES[@]}" > .gitignore

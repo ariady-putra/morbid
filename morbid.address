@@ -1,8 +1,0 @@
-  [31m×[0m I found multiple suitable validators and I need you to tell me which one
-  [31m│[0m to pick.
-[36m  help: [0mHere's a list of all validators I've found in your project. Select
-        one of them using the appropriate options:
-        
-        → morbid.mint_chest
-        → morbid.validate
-
