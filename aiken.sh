@@ -40,7 +40,11 @@ do
     if [ "$GIT_IGNORE" == "docs/" ]; then
         NEW_IGNORES+=("# docs/")
     else
-        NEW_IGNORES+=("$GIT_IGNORE")
+        if [ "$GIT_IGNORE" != "*.tests" ] &&
+           [ "$GIT_IGNORE" != "*.plutus" ] &&
+           [ "$GIT_IGNORE" != "*.address" ]; then
+            NEW_IGNORES+=("$GIT_IGNORE")
+        fi
     fi
 done
 printf "%s\n" "${NEW_IGNORES[@]}" > .gitignore

@@ -5,5 +5,5 @@
 artifacts/
 # Aiken's project working directory
 build/
-# # Aiken's default documentation export
+# Aiken's default documentation export
 # docs/
