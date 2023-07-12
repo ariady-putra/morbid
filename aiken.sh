@@ -27,24 +27,19 @@ if [ $# -eq 0 ]; then
 fi
 
 # .gitignore
-GIT_IGNORES=()
+GITIGNORE=()
+GITIGNORE+=("*.tests")
+GITIGNORE+=("*.plutus")
+GITIGNORE+=("*.address")
 while read LINE; do
-    GIT_IGNORES+=("$LINE")
-done < .gitignore
-NEW_IGNORES=()
-NEW_IGNORES+=("*.tests")
-NEW_IGNORES+=("*.plutus")
-NEW_IGNORES+=("*.address")
-for GIT_IGNORE in "${GIT_IGNORES[@]}"
-do
-    if [ "$GIT_IGNORE" == "docs/" ]; then
-        NEW_IGNORES+=("# docs/")
+    if [ "$LINE" == "docs/" ]; then
+        GITIGNORE+=("# docs/")
     else
-        if [ "$GIT_IGNORE" != "*.tests" ] &&
-           [ "$GIT_IGNORE" != "*.plutus" ] &&
-           [ "$GIT_IGNORE" != "*.address" ]; then
-            NEW_IGNORES+=("$GIT_IGNORE")
+        if [ "$LINE" != "*.tests" ] &&
+           [ "$LINE" != "*.plutus" ] &&
+           [ "$LINE" != "*.address" ]; then
+            GITIGNORE+=("$LINE")
         fi
     fi
-done
-printf "%s\n" "${NEW_IGNORES[@]}" > .gitignore
+done < .gitignore
+printf "%s\n" "${GITIGNORE[@]}" > .gitignore
