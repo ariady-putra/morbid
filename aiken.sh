@@ -34,12 +34,10 @@ GITIGNORE+=("*.address")
 while read LINE; do
     if [ "$LINE" == "docs/" ]; then
         GITIGNORE+=("# docs/")
-    else
-        if [ "$LINE" != "*.tests" ] &&
-           [ "$LINE" != "*.plutus" ] &&
-           [ "$LINE" != "*.address" ]; then
-            GITIGNORE+=("$LINE")
-        fi
+    elif [ "$LINE" != "*.tests" ] &&
+         [ "$LINE" != "*.plutus" ] &&
+         [ "$LINE" != "*.address" ]; then
+        GITIGNORE+=("$LINE")
     fi
 done < .gitignore
 printf "%s\n" "${GITIGNORE[@]}" > .gitignore
