@@ -2,7 +2,7 @@
   "preamble": {
     "title": "ariady-putra/morbid",
     "description": "An Aiken contract for project 'ariady-putra/morbid'",
-    "version": "0.2.202307",
+    "version": "0.2.202307c",
     "plutusVersion": "v2",
     "license": "Apache-2.0"
   },

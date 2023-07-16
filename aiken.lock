@@ -8,7 +8,7 @@ source = "github"
 
 [[requirements]]
 name = "aiken-extra/string_util"
-version = "2.130.1011-alpha"
+version = "2.130.1013-alpha"
 source = "github"
 
 [[requirements]]
@@ -29,7 +29,7 @@ source = "github"
 
 [[packages]]
 name = "aiken-extra/string_util"
-version = "2.130.1011-alpha"
+version = "2.130.1013-alpha"
 requirements = []
 source = "github"
 

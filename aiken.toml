@@ -1,5 +1,5 @@
 name = "ariady-putra/morbid"
-version = "0.2.202307"
+version = "0.2.202307c"
 license = "Apache-2.0"
 description = "An Aiken contract for project 'ariady-putra/morbid'"
 
@@ -15,7 +15,7 @@ source = "github"
 
 [[dependencies]]
 name = "aiken-extra/string_util"
-version = "2.130.1011-alpha"
+version = "2.130.1013-alpha"
 source = "github"
 
 [[dependencies]]
