@@ -35,7 +35,7 @@ pub fn validate(
   context ctx: ScriptContext,
 ) -> Bool {
   expect Spend(_): ScriptPurpose = ctx.purpose
-  trace "MaybeDeadline" |> print(maybe_deadline)
+  trace print("MaybeDeadline", maybe_deadline)
   when action is {
     DelayUnlock -> ctx |> validate_delay_unlock(policy_id, chest_lock)
     UnlockChest -> ctx |> validate_unlock_chest(policy_id, chest_lock)
@@ -49,7 +49,7 @@ pub fn mint_chest(
   context ctx: ScriptContext,
 ) {
   expect Mint(policy_id): ScriptPurpose = ctx.purpose
-  trace "Redeemer" |> print(action)
+  trace print("Redeemer", action)
   ctx |> validate_mint_chest(utxo_ref, policy_id, chest_lock)
 }
 

@@ -65,8 +65,7 @@ test mint_chest() {
       |> add_tx_output(tx_out)
   //
   // Trace:
-  trace "ScriptContext"
-    |> print(tx)
+  trace print("ScriptContext", tx)
   //
   // Assert:
   locker.mint_chest(chest_name, utxo_ref, Void, tx)
@@ -116,8 +115,7 @@ test validate_delay_unlock() {
       |> add_signatory("ChestKeyHolder")
   //
   // Trace:
-  trace "ScriptContext"
-    |> print(tx)
+  trace print("ScriptContext", tx)
   //
   // Assert:
   locker.validate(chest_name, policy_id, Void, DelayUnlock, tx)
@@ -173,8 +171,7 @@ test invalidate_delay_unlock_with_imbalance_assets() {
       |> add_signatory("ChestKeyHolder")
   //
   // Trace:
-  trace "ScriptContext"
-    |> print(tx)
+  trace print("ScriptContext", tx)
   //
   // Assert:
   !locker.validate(chest_name, policy_id, Void, DelayUnlock, tx)
@@ -205,8 +202,7 @@ test validate_unlock_chest() {
       |> add_tx_output(tx_out)
   //
   // Trace:
-  trace "ScriptContext"
-    |> print(tx)
+  trace print("ScriptContext", tx)
   //
   // Assert:
   locker.validate(chest_name, policy_id, Void, UnlockChest, tx)
