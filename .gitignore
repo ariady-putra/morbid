@@ -1,6 +1,7 @@
 *.tests
 *.plutus
 *.address
+aiken.sh
 # Aiken compilation artifacts
 artifacts/
 # Aiken's project working directory

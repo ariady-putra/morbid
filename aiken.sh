@@ -6,24 +6,24 @@ RESET='\033[0m'
 
 # aiken check
 echo -e "${MAGENTA}Running${RESET} ${WHITE}aiken check${RESET}:"
-aiken check 2>&1 | tee ${PROJECT}.tests
+cargo-aiken check 2>&1 | tee ${PROJECT}.tests
 echo "" # new line
 
 # aiken build
 echo -e "${MAGENTA}Running${RESET} ${WHITE}aiken build${RESET}:"
-aiken build $1
+cargo-aiken build $1
 echo "" # new line
 
 # aiken blueprint & address
 echo -e "${MAGENTA}Running${RESET} ${WHITE}aiken blueprint${RESET} & ${WHITE}aiken address${RESET}:"
-aiken blueprint convert > ${PROJECT}.plutus
-aiken address > ${PROJECT}.address
+cargo-aiken blueprint convert > ${PROJECT}.plutus
+cargo-aiken address > ${PROJECT}.address
 echo "" # new line
 
 # aiken docs
 if [ $# -eq 0 ]; then
     echo -e "${MAGENTA}Running${RESET} ${WHITE}aiken docs${RESET}:"
-    aiken docs
+    cargo-aiken docs
 fi
 
 # .gitignore

@@ -8,17 +8,17 @@ source = "github"
 
 [[requirements]]
 name = "aiken-extra/string_util"
-version = "2.140.1013-alpha"
+version = "2.140.202308"
 source = "github"
 
 [[requirements]]
 name = "aiken-extra/time_util"
-version = "5.140.1013-alpha"
+version = "5.140.202308"
 source = "github"
 
 [[requirements]]
 name = "aiken-extra/tx_util"
-version = "1.140.1013-alpha"
+version = "1.140.202308"
 source = "github"
 
 [[packages]]
@@ -29,18 +29,18 @@ source = "github"
 
 [[packages]]
 name = "aiken-extra/string_util"
-version = "2.140.1013-alpha"
+version = "2.140.202308"
 requirements = []
 source = "github"
 
 [[packages]]
 name = "aiken-extra/time_util"
-version = "5.140.1013-alpha"
+version = "5.140.202308"
 requirements = []
 source = "github"
 
 [[packages]]
 name = "aiken-extra/tx_util"
-version = "1.140.1013-alpha"
+version = "1.140.202308"
 requirements = []
 source = "github"
