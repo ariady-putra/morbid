@@ -1,3 +1,4 @@
+//// /// Deprecated
 //// # Lazy Short-circuit Validations
 ////
 //// Chain together many validations that may fail.
@@ -39,14 +40,16 @@
 //// Using `list.and([fn(..) {..}])` or `reduce` or `foldr` and `foldl` loses the lazyness behavior for some reason.
 //// Hence this solution; internally it mimics the `option.and_then` function.
 
-pub fn validate() {
-  True
-}
+// /// Deprecated
+// pub fn validate() {
+//   True
+// }
 
-pub fn and(continue, next) {
-  if continue {
-    next(Void)
-  } else {
-    False
-  }
-}
+// /// Deprecated
+// pub fn and(continue, next) {
+//   if continue {
+//     next(Void)
+//   } else {
+//     False
+//   }
+// }
