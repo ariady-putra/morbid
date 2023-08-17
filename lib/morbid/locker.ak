@@ -157,9 +157,9 @@ fn must_unlock_after_deadline(
   policy_id: PolicyId,
   chest_lock: AssetName,
 ) -> Bool {
-  let unlock_after_deadline =
+  let unlocked_after_deadline =
     ctx |> unlock_after_deadline(policy_id, chest_lock)
-  unlock_after_deadline?
+  unlocked_after_deadline?
 }
 
 /// Must not drain: All values has value.
