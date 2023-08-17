@@ -16,7 +16,6 @@ use aiken/transaction/value.{
 }
 use morbid/action.{Action, DelayUnlock, UnlockChest}
 use morbid/alias.{FlattenValues, Qty, ValidatorHash}
-use morbid/chain.{and}
 use morbid/constant.{chest_key}
 use string_util/cbor.{print}
 use time_util/unsafe/bound as unsafe_unwrap
@@ -64,12 +63,12 @@ fn validate_mint_chest(
 ) -> Bool {
   when ctx |> minted_values_of(policy_id) is {
     // [ChestLock, ChestKey] or [ChestKey, ChestLock]
-    [asset_1, asset_2] ->
-      chain.validate()
-        |> and(must_mint_once(_, ctx, utxo_ref))
-        |> and(must_mint_chest_lock(_, [asset_1, asset_2], chest_lock))
-        |> and(must_mint_chest_key(_, [asset_1, asset_2], chest_key))
-        |> and(must_send_chest_lock(_, ctx, policy_id, chest_lock))
+    [asset_1, asset_2] -> and {
+        must_mint_once(ctx, utxo_ref),
+        must_mint_chest_lock([asset_1, asset_2], chest_lock),
+        must_mint_chest_key([asset_1, asset_2], chest_key),
+        must_send_chest_lock(ctx, policy_id, chest_lock),
+      }
     _ -> {
       let valid_number_of_asset = False
       valid_number_of_asset?
@@ -82,9 +81,10 @@ fn validate_delay_unlock(
   policy_id: PolicyId,
   chest_lock: AssetName,
 ) -> Bool {
-  chain.validate()
-    |> and(must_not_drain(_, ctx))
-    |> and(must_resend_chest_lock(_, ctx, policy_id, chest_lock))
+  and {
+    must_not_drain(ctx),
+    must_resend_chest_lock(ctx, policy_id, chest_lock),
+  }
 }
 
 fn validate_unlock_chest(
@@ -99,7 +99,7 @@ fn validate_unlock_chest(
 //            This section contains functions for tracing during the validation steps            //
 
 /// Validate mint chest: Must mint once only.
-fn must_mint_once(_, ctx: ScriptContext, utxo_ref: OutputReference) -> Bool {
+fn must_mint_once(ctx: ScriptContext, utxo_ref: OutputReference) -> Bool {
   let one_shot_minting =
     ctx.transaction.inputs
       |> any(fn(input) { input.output_reference == utxo_ref })
@@ -108,7 +108,6 @@ fn must_mint_once(_, ctx: ScriptContext, utxo_ref: OutputReference) -> Bool {
 
 /// Validate mint chest: Must mint exactly one `ChestLock`
 fn must_mint_chest_lock(
-  _,
   assets: List<(AssetName, Qty)>,
   chest_lock: AssetName,
 ) -> Bool {
@@ -118,7 +117,6 @@ fn must_mint_chest_lock(
 
 /// Validate mint chest: Must mint `ChestKey` of any qty.
 fn must_mint_chest_key(
-  _,
   assets: List<(AssetName, Qty)>,
   chest_key: AssetName,
 ) -> Bool {
@@ -129,7 +127,6 @@ fn must_mint_chest_key(
 
 /// Validate mint chest: Must send the `ChestLock`
 fn must_send_chest_lock(
-  _,
   ctx: ScriptContext,
   policy_id: PolicyId,
   chest_lock: AssetName,
@@ -139,14 +136,13 @@ fn must_send_chest_lock(
 }
 
 /// Validate delay unlock: Input and Output assets must be balance.
-fn must_not_drain(_, ctx: ScriptContext) -> Bool {
+fn must_not_drain(ctx: ScriptContext) -> Bool {
   let not_drained = ctx |> is_not_drained()
   not_drained?
 }
 
 /// Validate delay unlock: Must re-send the chest's lock with a later deadline as the new datum.
 fn must_resend_chest_lock(
-  _,
   ctx: ScriptContext,
   policy_id: PolicyId,
   chest_lock: AssetName,
@@ -168,7 +164,6 @@ fn must_unlock_after_deadline(
 
 /// Must not drain: All values has value.
 fn all_values_has_value(
-  _,
   l_values: FlattenValues,
   r_values: FlattenValues,
 ) -> Bool {
@@ -178,7 +173,7 @@ fn all_values_has_value(
 }
 
 /// Must not drain: Must be equal.
-fn must_be_equal(_, l, r) {
+fn must_be_equal(l, r) {
   (l == r)?
 }
 
@@ -216,7 +211,7 @@ fn send_chest_lock(
 /// (2) Unique input==output script address must be the same
 fn is_not_drained(ctx: ScriptContext) -> Bool {
   let txn = ctx.transaction
-  //
+
   // Anonymous fn to filter out non script addresses:
   let script_address =
     fn(address: Address) {
@@ -225,7 +220,7 @@ fn is_not_drained(ctx: ScriptContext) -> Bool {
         VerificationKeyCredential(_) -> False
       }
     }
-  //
+
   // Anonymous fn to collect values only from script address:
   let value_of_script_address =
     fn(output: transaction.Output) {
@@ -235,13 +230,13 @@ fn is_not_drained(ctx: ScriptContext) -> Bool {
         zero()
       }
     }
-  //
+
   // Anonymous fn to map `transaction.Output` to (value, address):
   let value_address =
     fn(output: transaction.Output) {
       (output |> value_of_script_address(), output.address)
     }
-  //
+
   // (Input Values, Input Address):
   let (input_value, input_address) =
     txn.inputs
@@ -255,7 +250,7 @@ fn is_not_drained(ctx: ScriptContext) -> Bool {
     input_value
       |> reduce(zero(), merge)
       |> flatten()
-  //
+
   // (Output Values, Output Address):
   let (output_value, output_address) =
     txn.outputs
@@ -269,12 +264,13 @@ fn is_not_drained(ctx: ScriptContext) -> Bool {
     output_value
       |> reduce(zero(), merge)
       |> flatten()
-  //
+
   // Return:
-  chain.validate()
-    |> and(all_values_has_value(_, input_value, output_value))
-    |> and(all_values_has_value(_, output_value, input_value))
-    |> and(must_be_equal(_, input_script_address, output_script_address))
+  and {
+    all_values_has_value(input_value, output_value),
+    all_values_has_value(output_value, input_value),
+    must_be_equal(input_script_address, output_script_address),
+  }
 }
 
 /// A function to help filter_map transaction.Outputs by the existence of `ChestLock`
@@ -351,10 +347,9 @@ fn resend_chest_lock(
       fn(input: transaction.Input) {
         let output = input.output
         when output.value |> flatten_with(filter_chest_key) is {
-          //
           // value does not contain chest_key:
           [] -> None
-          //
+
           // value contains chest_key:
           _ ->
             Some(
@@ -363,7 +358,7 @@ fn resend_chest_lock(
             )
         }
       }
-    //
+
     // return:
     when
       txn.reference_inputs |> filter_map(into_signed_by_chest_key_holder)
@@ -373,7 +368,8 @@ fn resend_chest_lock(
         found_chest_key_in_ref_inputs?
       }
       signed_by_all_chest_key_holder ->
-        list.and(signed_by_all_chest_key_holder)?
+        // all true ?
+        all(signed_by_all_chest_key_holder, fn(signed) { signed })
     }
   } else {
     False
