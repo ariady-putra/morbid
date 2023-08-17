@@ -7,8 +7,8 @@
     <meta name="theme-color" content="#eff1f5" media="(prefers-color-scheme: light)"/>
     <meta name="theme-color" content="#1e1e2e" media="(prefers-color-scheme: dark)"/>
     <link rel="icon" type="image/svg+xml" sizes="any" href="../favicon.svg"/>
-    <link rel="stylesheet" href="../css/index.css?v=1.0.13-alpha" type="text/css"/>
-    <link id="syntax-theme" rel="stylesheet" href="../css/atom-one-light.min.css?v=1.0.13-alpha"/>
+    <link rel="stylesheet" href="../css/index.css?v=1.0.14-alpha" type="text/css"/>
+    <link id="syntax-theme" rel="stylesheet" href="../css/atom-one-light.min.css?v=1.0.14-alpha"/>
   </head>
   <body class="prewrap-off theme-light drawer-closed">
     <script>
@@ -120,13 +120,13 @@
       <h2>
         <a href="../">morbid</a>
         <span id="project-version">
-          <span>v0.2.202308 </span>
+          <span>v0.2.202308e </span>
         </span>
         <script>
           "use strict";
 
           if ("undefined" !== typeof versionNodes) {
-            const currentVersion = "v0.2.202308";
+            const currentVersion = "v0.2.202308e";
             if (! versionNodes.find(element => element.version === currentVersion)) {
               versionNodes.unshift({ version: currentVersion, url: "#" });
             }
@@ -240,15 +240,6 @@
 
 
 
-<h2>Functions</h2>
-<ul>
-  
-  <li><a href="#and">and</a></li>
-  
-  <li><a href="#validate">validate</a></li>
-  
-</ul>
-
 
       </nav>
 
@@ -257,6 +248,7 @@
 <h1 id="module-name" class="module-name">
   <a href="#module-name">morbid/chain</a>
 </h1>
+<p>/// Deprecated</p>
 <h1>Lazy Short-circuit Validations</h1>
 <p>Chain together many validations that may fail.</p>
 <p>For example,</p>
@@ -298,41 +290,6 @@ Hence this solution; internally it mimics the <code>option.and_then</code> funct
 
 
 
-
-<section class="module-members">
-  <h1 id="module-functions" class="module-member-kind">
-    <a href="#module-functions">Functions</a>
-  </h1>
-  
-  <div class="member">
-    <div class="member-name">
-      <h2 id="and"><pre class="hljs language-aiken">and(continue: Bool, next: fn(Void) -&gt; Bool) -&gt; Bool</pre></h2>
-      
-      <!-- TODO: support source linking
-      <a class="member-source" alt="View Source" title="View Source" href="#todo">
-        &lt;/&gt;
-      </a>
-      -->
-      
-    </div>
-    <div class="rendered-markdown"></div>
-  </div>
-  
-  <div class="member">
-    <div class="member-name">
-      <h2 id="validate"><pre class="hljs language-aiken">validate() -&gt; Bool</pre></h2>
-      
-      <!-- TODO: support source linking
-      <a class="member-source" alt="View Source" title="View Source" href="#todo">
-        &lt;/&gt;
-      </a>
-      -->
-      
-    </div>
-    <div class="rendered-markdown"></div>
-  </div>
-  
-</section>
 
 
       </main>
@@ -384,13 +341,13 @@ Hence this solution; internally it mimics the <code>option.and_then</code> funct
       </defs>
     </svg>
 
-    <script src="../js/highlight.min.js?v=1.0.13-alpha"></script>
-    <script src="../js/highlightjs-aiken.js?v=1.0.13-alpha"></script>
+    <script src="../js/highlight.min.js?v=1.0.14-alpha"></script>
+    <script src="../js/highlightjs-aiken.js?v=1.0.14-alpha"></script>
     <script>
       document.querySelectorAll("pre code").forEach((elem) => {
-        if (elem.className === "") {
+        // if (elem.className === "") {
           elem.classList.add("aiken");
-        }
+        // }
       });
       hljs.highlightAll();
       document.querySelectorAll(".member-name > h2 > pre").forEach((el) => {
@@ -404,9 +361,9 @@ Hence this solution; internally it mimics the <code>option.and_then</code> funct
 	el.prepend(a);
       });
     </script>
-    <script src="../js/lunr.min.js?v=1.0.13-alpha"></script>
-    <script src="../js/index.js?v=1692117119"></script>
+    <script src="../js/lunr.min.js?v=1.0.14-alpha"></script>
+    <script src="../js/index.js?v=1692290597"></script>
     <!-- Load the search index using JSONP to avoid CORS issues -->
-    <script src="../search-data.js?v=1692117119"></script>
+    <script src="../search-data.js?v=1692290597"></script>
   </body>
 </html>
