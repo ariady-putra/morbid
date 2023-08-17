@@ -1,4 +1,6 @@
-//// /// Deprecated
+//// ⚠️ **DEPRECATED**:
+//// Use {`and`,`or`} blocks since [aiken v1.0.14-alpha](https://github.com/aiken-lang/aiken/releases/tag/v1.0.14-alpha)
+////
 //// # Lazy Short-circuit Validations
 ////
 //// Chain together many validations that may fail.
