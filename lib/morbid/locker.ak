@@ -14,6 +14,7 @@ use aiken/transaction/value.{
   AssetName, PolicyId, flatten, flatten_with, from_minted_value, merge,
   quantity_of, tokens, zero,
 }
+use auxlib/logics.{all_true}
 use morbid/action.{Action, DelayUnlock, UnlockChest}
 use morbid/alias.{FlattenValues, Qty, ValidatorHash}
 use morbid/constant.{chest_key}
@@ -172,10 +173,11 @@ fn all_values_has_value(
   all_values_has_value?
 }
 
-/// Must not drain: Must be equal.
-fn must_be_equal(l, r) {
-  (l == r)?
-}
+// /// Deprecated: Just use (_ == _)? directly.
+// /// Must not drain: Must be equal.
+// fn must_be_equal(l, r) {
+//   (l == r)?
+// }
 
 // ///////////////////////////////////// HELPER FUNCTIONS ///////////////////////////////////// //
 //           This section contains the functions to support the validation functions            //
@@ -269,7 +271,7 @@ fn is_not_drained(ctx: ScriptContext) -> Bool {
   and {
     all_values_has_value(input_value, output_value),
     all_values_has_value(output_value, input_value),
-    must_be_equal(input_script_address, output_script_address),
+    (input_script_address == output_script_address)?,
   }
 }
 
@@ -368,8 +370,7 @@ fn resend_chest_lock(
         found_chest_key_in_ref_inputs?
       }
       signed_by_all_chest_key_holder ->
-        // all true ?
-        all(signed_by_all_chest_key_holder, fn(signed) { signed })
+        all_true(signed_by_all_chest_key_holder)?
     }
   } else {
     False
