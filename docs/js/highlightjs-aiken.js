@@ -3,7 +3,7 @@ hljs.registerLanguage("aiken", highlightJS);
 
 function highlightJS(hljs) {
   const KEYWORDS =
-    "as when is const validator fn if else let use opaque pub expect trace todo error type";
+    "as when is const validator fn if else let use opaque pub expect trace todo error type pure fail";
   const COMMAS = {
     scope: "ponctuation",
     begin: "[, ]+",

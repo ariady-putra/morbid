@@ -7,23 +7,23 @@ version = "1.6.0"
 source = "github"
 
 [[requirements]]
+name = "aiken-extra/auxlib"
+version = "2.160.202310"
+source = "github"
+
+[[requirements]]
 name = "aiken-extra/string_util"
-version = "2.160.202309"
+version = "3.160.202310"
 source = "github"
 
 [[requirements]]
 name = "aiken-extra/time_util"
-version = "5.160.202309"
+version = "5.160.202310"
 source = "github"
 
 [[requirements]]
 name = "aiken-extra/tx_util"
-version = "1.160.202309"
-source = "github"
-
-[[requirements]]
-name = "aiken-extra/auxlib"
-version = "2.160.202309"
+version = "1.160.202310"
 source = "github"
 
 [[packages]]
@@ -33,25 +33,27 @@ requirements = []
 source = "github"
 
 [[packages]]
+name = "aiken-extra/auxlib"
+version = "2.160.202310"
+requirements = []
+source = "github"
+
+[[packages]]
 name = "aiken-extra/string_util"
-version = "2.160.202309"
+version = "3.160.202310"
 requirements = []
 source = "github"
 
 [[packages]]
 name = "aiken-extra/time_util"
-version = "5.160.202309"
+version = "5.160.202310"
 requirements = []
 source = "github"
 
 [[packages]]
 name = "aiken-extra/tx_util"
-version = "1.160.202309"
+version = "1.160.202310"
 requirements = []
 source = "github"
 
-[[packages]]
-name = "aiken-extra/auxlib"
-version = "2.160.202309"
-requirements = []
-source = "github"
+[etags]

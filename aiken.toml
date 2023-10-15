@@ -14,21 +14,21 @@ version = "1.6.0"
 source = "github"
 
 [[dependencies]]
+name = "aiken-extra/auxlib"
+version = "2.160.202310"
+source = "github"
+
+[[dependencies]]
 name = "aiken-extra/string_util"
-version = "2.160.202309"
+version = "3.160.202310"
 source = "github"
 
 [[dependencies]]
 name = "aiken-extra/time_util"
-version = "5.160.202309"
+version = "5.160.202310"
 source = "github"
 
 [[dependencies]]
 name = "aiken-extra/tx_util"
-version = "1.160.202309"
-source = "github"
-
-[[dependencies]]
-name = "aiken-extra/auxlib"
-version = "2.160.202309"
+version = "1.160.202310"
 source = "github"
