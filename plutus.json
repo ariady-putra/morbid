@@ -2,11 +2,11 @@
   "preamble": {
     "title": "ariady-putra/morbid",
     "description": "An Aiken contract for project 'ariady-putra/morbid'",
-    "version": "0.2.202311",
+    "version": "0.2.202312",
     "plutusVersion": "v2",
     "compiler": {
       "name": "Aiken",
-      "version": "v1.0.20-alpha+daeb0c5"
+      "version": "v1.0.21-alpha+c65e796"
     },
     "license": "Apache-2.0"
   },
