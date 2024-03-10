@@ -19,7 +19,7 @@
 ////
 //// Jakarta 2023
 ////
-//// _(re-compiled using [07122aaa88](https://github.com/aiken-lang/aiken/tree/07122aaa88925c1a9d9db0bc30517e4b2b3c55af))_
+//// _(re-compiled using [c169596c76](https://github.com/aiken-lang/aiken/tree/c169596c7652d6e2c5d5e918f6a11bbbfcbed1da))_
 
 use aiken/transaction.{OutputReference, ScriptContext}
 use aiken/transaction/value.{AssetName, PolicyId}

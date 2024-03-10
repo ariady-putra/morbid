@@ -6,12 +6,12 @@ RESET='\033[0m'
 
 # aiken check
 echo -e "${MAGENTA}Running${RESET} ${WHITE}aiken check${RESET}:"
-cargo-aiken check 2>&1 | tee ${PROJECT}.tests
+cargo-aiken c 2>&1 | tee ${PROJECT}.tests
 echo "" # new line
 
 # aiken build
 echo -e "${MAGENTA}Running${RESET} ${WHITE}aiken build${RESET}:"
-cargo-aiken build $1
+cargo-aiken b $1
 echo "" # new line
 
 # aiken blueprint & address

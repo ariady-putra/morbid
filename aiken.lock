@@ -23,7 +23,7 @@ source = "github"
 
 [[requirements]]
 name = "aiken-extra/tx_util"
-version = "1.170.202312"
+version = "1.170.202403"
 source = "github"
 
 [[packages]]
@@ -52,7 +52,7 @@ source = "github"
 
 [[packages]]
 name = "aiken-extra/tx_util"
-version = "1.170.202312"
+version = "1.170.202403"
 requirements = []
 source = "github"
 
