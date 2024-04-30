@@ -326,10 +326,10 @@ fn resend_chest_lock(
   expect [(input_address, old_deadline)]: List<(ValidatorHash, PosixTime)> =
     txn.inputs
       |> filter_map(
-           fn(input: transaction.Input) {
-             input.output |> into_script_deadline(policy_id, chest_lock)
-           },
-         )
+          fn(input: transaction.Input) {
+            input.output |> into_script_deadline(policy_id, chest_lock)
+          },
+        )
   expect [(output_address, new_deadline)]: List<(ValidatorHash, PosixTime)> =
     txn.outputs |> filter_map(into_script_deadline(_, policy_id, chest_lock))
   //
@@ -395,10 +395,10 @@ fn unlock_after_deadline(
   expect Some(input): Option<transaction.Input> =
     txn.inputs
       |> find(
-           fn(input) {
-             quantity_of(input.output.value, policy_id, chest_lock) == 1
-           },
-         )
+          fn(input) {
+            quantity_of(input.output.value, policy_id, chest_lock) == 1
+          },
+        )
   expect InlineDatum(datum): Datum = input.output.datum
   expect deadline: PosixTime = datum
   (unsafe_unwrap.finite_start_of(txn.validity_range) > deadline)?
