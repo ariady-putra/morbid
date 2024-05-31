@@ -109,16 +109,16 @@ fn must_mint_once(ctx: ScriptContext, utxo_ref: OutputReference) -> Bool {
 
 /// Validate mint chest: Must mint exactly one `ChestLock`
 fn must_mint_chest_lock(
-  assets: List<(AssetName, Qty)>,
+  assets: Pairs<AssetName, Qty>,
   chest_lock: AssetName,
 ) -> Bool {
-  let minted_chest_lock = assets |> has((chest_lock, 1))
+  let minted_chest_lock = assets |> has(Pair(chest_lock, 1))
   minted_chest_lock?
 }
 
 /// Validate mint chest: Must mint `ChestKey` of any qty.
 fn must_mint_chest_key(
-  assets: List<(AssetName, Qty)>,
+  assets: Pairs<AssetName, Qty>,
   chest_key: AssetName,
 ) -> Bool {
   let minted_chest_key =
@@ -185,11 +185,11 @@ fn all_values_has_value(
 fn minted_values_of(
   context ctx: ScriptContext,
   policy_id: PolicyId,
-) -> List<(AssetName, Qty)> {
+) -> Pairs<AssetName, Qty> {
   ctx.transaction.mint
     |> from_minted_value()
     |> tokens(policy_id)
-    |> dict.to_list()
+    |> dict.to_pairs()
 }
 
 /// (1) TxOuts must contain `ChestLock` with the specified Policy ID and Chest Name and its

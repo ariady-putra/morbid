@@ -3,56 +3,56 @@
 
 [[requirements]]
 name = "aiken-lang/stdlib"
-version = "1.8.0"
+version = "1.9.0"
 source = "github"
 
 [[requirements]]
 name = "aiken-extra/auxlib"
-version = "2.180.202403"
+version = "2.190.202405"
 source = "github"
 
 [[requirements]]
 name = "aiken-extra/string_util"
-version = "3.180.202403"
+version = "3.190.202405"
 source = "github"
 
 [[requirements]]
 name = "aiken-extra/time_util"
-version = "5.180.202403"
+version = "5.190.202405"
 source = "github"
 
 [[requirements]]
 name = "aiken-extra/tx_util"
-version = "1.180.202403"
+version = "1.190.202405"
 source = "github"
 
 [[packages]]
 name = "aiken-lang/stdlib"
-version = "1.8.0"
+version = "1.9.0"
 requirements = []
 source = "github"
 
 [[packages]]
 name = "aiken-extra/auxlib"
-version = "2.180.202403"
+version = "2.190.202405"
 requirements = []
 source = "github"
 
 [[packages]]
 name = "aiken-extra/string_util"
-version = "3.180.202403"
+version = "3.190.202405"
 requirements = []
 source = "github"
 
 [[packages]]
 name = "aiken-extra/time_util"
-version = "5.180.202403"
+version = "5.190.202405"
 requirements = []
 source = "github"
 
 [[packages]]
 name = "aiken-extra/tx_util"
-version = "1.180.202403"
+version = "1.190.202405"
 requirements = []
 source = "github"
 

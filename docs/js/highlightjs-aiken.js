@@ -1,7 +1,4 @@
-hljs.registerLanguage("gleam", highlightJS);
-hljs.registerLanguage("aiken", highlightJS);
-
-function highlightJS(hljs) {
+hljs.registerLanguage("aiken", function (hljs) {
   const KEYWORDS =
     "as when is const validator fn if else let use opaque pub expect trace todo error type pure fail";
   const COMMAS = {
@@ -133,4 +130,4 @@ function highlightJS(hljs) {
       NUMBER,
     ],
   };
-}
+});

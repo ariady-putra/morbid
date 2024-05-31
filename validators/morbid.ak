@@ -19,7 +19,7 @@
 ////
 //// Jakarta 2024
 ////
-//// _(re-compiled using [945a3f743b](https://github.com/aiken-lang/aiken/tree/945a3f743b4da3a71cb177b55df9ae850d9148c2))_
+//// _(re-compiled using `aiken v1.0.28-alpha`)_
 
 use aiken/transaction.{OutputReference, ScriptContext}
 use aiken/transaction/value.{AssetName, PolicyId}
