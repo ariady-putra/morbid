@@ -1,5 +1,10 @@
 # Davy Jones' Locker
 
+> [!IMPORTANT]
+> The offchain is likely to fail after Conway era (Chang hardfork).
+> A fix will be delivered some time later after the storm subsides.
+> Or probably a new and better front-end will be developed instead.
+
 <br/><div align="center">
   >_Fifteen men on the dead man's chest—_<br/>
   >_...Yo-ho-ho, and a bottle of rum!_<br/>
