@@ -19,21 +19,43 @@
 ////
 //// Jakarta 2024
 ////
-//// _(re-compiled using `aiken v1.0.28-alpha`)_
+//// _(re-compiled using `aiken v1.1.0`)_
 
-use aiken/transaction.{OutputReference, ScriptContext}
-use aiken/transaction/value.{AssetName, PolicyId}
+use cardano/assets.{AssetName, PolicyId}
+use cardano/script_context.{Minting, ScriptContext, Spending}
+use cardano/transaction.{OutputReference, Transaction}
 use morbid/action.{Action}
 use morbid/locker
 
-validator(utxo_ref: OutputReference, chest_name: AssetName) {
-  fn mint_chest(redeemer: Void, context: ScriptContext) {
+validator mint_chest(utxo_ref: OutputReference, chest_name: AssetName) {
+  mint(redeemer: Void, policy_id: PolicyId, transaction: Transaction) {
+    let info = Minting(policy_id)
+    let context = ScriptContext(transaction, redeemer, info)
+
     chest_name |> locker.mint_chest(utxo_ref, redeemer, context)
+  }
+
+  else(_) {
+    fail
   }
 }
 
-validator(policy_id: PolicyId, chest_name: AssetName) {
-  fn validate(datum: Data, redeemer: Action, context: ScriptContext) -> Bool {
-    chest_name |> locker.validate(policy_id, datum, redeemer, context)
+validator validate(policy_id: PolicyId, chest_name: AssetName) {
+  spend(
+    datum: Option<Data>,
+    redeemer: Action,
+    output_reference: OutputReference,
+    transaction: Transaction,
+  ) {
+    expect Some(data) = datum
+
+    let info = Spending(output_reference, datum)
+    let context = ScriptContext(transaction, redeemer, info)
+
+    chest_name |> locker.validate(policy_id, data, redeemer, context)
+  }
+
+  else(_) {
+    fail
   }
 }

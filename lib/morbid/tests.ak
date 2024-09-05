@@ -1,34 +1,33 @@
 //// ```
 //// ┍━ morbid/tests ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-//// │ PASS [mem: 2612028, cpu: 1538917279] mint_chest
+//// │ PASS [mem: 2323978, cpu:  685174685] mint_chest
 //// │ · with traces
-//// │ | ScriptContext: "d8799fd8799f9fd8799fd8799fd8799f46547848617368ff00ffd8799fd8799fd8799f4c436865737443726561746f72ffd87a80ffa140a1401a0280de80d87980d87a80ffffff809fd8799fd8799fd87a9f4c436865737441646472657373ffd87a80ffa240a1401a016e360048506f6c6963794944a14943686573744c6f636b01d87b9f05ffd87a80ffffa140a1401a001e8480a240a1400048506f6c6963794944a24843686573744b65790a4943686573744c6f636b0180a0d8799fd8799fd87a9f01ffd87a80ffd8799fd87b80d87a80ffff80a0a0d8799f40ffffd8799f48506f6c6963794944ffff"
-//// │ | Redeemer: "d87980"
-//// │ PASS [mem: 4259291, cpu: 2452512520] validate_delay_unlock
+//// │ | ScriptContext: 121([_ 121([_ [_ 121([_ 121([_ h'547848617368', 0]), 121([_ 121([_ 121([_ h'436865737443726561746F72']), 122([])]), {_ h'': {_ h'': 42000000 } }, 121([]), 122([])])])], [], [_ 121([_ 121([_ 122([_ h'436865737441646472657373']), 122([])]), {_ h'': {_ h'': 24000000 }, h'506F6C6963794944': {_ h'43686573744C6F636B': 1 } }, 123([_ 5]), 122([])])], 2000000, {_ h'506F6C6963794944': {_ h'43686573744B6579': 10, h'43686573744C6F636B': 1 } }, [], {}, 121([_ 121([_ 122([_ 1]), 122([])]), 121([_ 123([]), 122([])])]), [], {}, {}, h'', {}, [], 122([]), 122([])]), 121([]), 121([_ h'506F6C6963794944'])])
+//// │ | Redeemer: 121([])
+//// │ PASS [mem: 3892044, cpu: 1147079914] validate_delay_unlock
 //// │ · with traces
-//// │ | ScriptContext: "d8799fd8799f9fd8799fd8799fd8799f58284368657374416464726573735f4f6c6443686573744c6f636b446561646c696e655f547848617368ff00ffd8799fd8799fd87a9f4c436865737441646472657373ffd87a80ffa240a1401a016e360048506f6c6963794944a14943686573744c6f636b01d87b9f05ffd87a80ffffff9fd8799fd8799fd8799f5543686573744b6579486f6c6465725f547848617368ff00ffd8799fd8799fd8799f4e43686573744b6579486f6c646572ffd87a80ffa240a1401a0280de8048506f6c6963794944a14843686573744b65790ad87980d87a80ffffff9fd8799fd8799fd87a9f4c436865737441646472657373ffd87a80ffa240a1401a016e360048506f6c6963794944a14943686573744c6f636b01d87b9f0affd87a80ffffa140a1401a001e8480a140a1400080a0d8799fd8799fd87a9f02ffd87a80ffd8799fd87b80d87a80ffff9f4e43686573744b6579486f6c646572ffa0a0d8799f40ffffd87a9fd8799fd8799f40ff00ffffff"
-//// │ | MaybeDeadline: "d87980"
-//// │ PASS [mem: 4959345, cpu: 2866289407] invalidate_delay_unlock_with_imbalance_assets
+//// │ | ScriptContext: 121([_ 121([_ [_ 121([_ 121([_ h'4368657374416464726573735F4F6C6443686573744C6F636B446561646C696E655F547848617368', 0]), 121([_ 121([_ 122([_ h'436865737441646472657373']), 122([])]), {_ h'': {_ h'': 24000000 }, h'506F6C6963794944': {_ h'43686573744C6F636B': 1 } }, 123([_ 5]), 122([])])])], [_ 121([_ 121([_ h'43686573744B6579486F6C6465725F547848617368', 0]), 121([_ 121([_ 121([_ h'43686573744B6579486F6C646572']), 122([])]), {_ h'': {_ h'': 42000000 }, h'506F6C6963794944': {_ h'43686573744B6579': 10 } }, 121([]), 122([])])])], [_ 121([_ 121([_ 122([_ h'436865737441646472657373']), 122([])]), {_ h'': {_ h'': 24000000 }, h'506F6C6963794944': {_ h'43686573744C6F636B': 1 } }, 123([_ 10]), 122([])])], 2000000, {}, [], {}, 121([_ 121([_ 122([_ 2]), 122([])]), 121([_ 123([]), 122([])])]), [_ h'43686573744B6579486F6C646572'], {}, {}, h'', {}, [], 122([]), 122([])]), 121([]), 122([_ 121([_ h'', 0]), 122([])])])
+//// │ | MaybeDeadline: 121([])
+//// │ PASS [mem: 4605772, cpu: 1358545301] invalidate_delay_unlock_with_imbalance_assets
 //// │ · with traces
-//// │ | ScriptContext: "d8799fd8799f9fd8799fd8799fd8799f58284368657374416464726573735f4f6c6443686573744c6f636b446561646c696e655f547848617368ff00ffd8799fd8799fd87a9f4c436865737441646472657373ffd87a80ffa440a1401a016e360048506f6c6963794944a14943686573744c6f636b0149547265617375726531a1434e46540149547265617375726532a145546f6b656e1864d87b9f05ffd87a80ffffff9fd8799fd8799fd8799f5543686573744b6579486f6c6465725f547848617368ff00ffd8799fd8799fd8799f4e43686573744b6579486f6c646572ffd87a80ffa240a1401a0280de8048506f6c6963794944a14843686573744b65790ad87980d87a80ffffff9fd8799fd8799fd87a9f4c436865737441646472657373ffd87a80ffa440a1401a016e360048506f6c6963794944a14943686573744c6f636b0149547265617375726531a1434e46540149547265617375726532a145546f6b656e184bd87b9f0affd87a80ffffa140a1401a001e8480a140a1400080a0d8799fd8799fd87b80d87a80ffd8799fd87980d87a80ffff9f4e43686573744b6579486f6c646572ffa0a0d8799f40ffffd87a9fd8799fd8799f40ff00ffffff"
-//// │ | MaybeDeadline: "d87980"
+//// │ | ScriptContext: 121([_ 121([_ [_ 121([_ 121([_ h'4368657374416464726573735F4F6C6443686573744C6F636B446561646C696E655F547848617368', 0]), 121([_ 121([_ 122([_ h'436865737441646472657373']), 122([])]), {_ h'': {_ h'': 24000000 }, h'506F6C6963794944': {_ h'43686573744C6F636B': 1 }, h'547265617375726531': {_ h'4E4654': 1 }, h'547265617375726532': {_ h'546F6B656E': 100 } }, 123([_ 5]), 122([])])])], [_ 121([_ 121([_ h'43686573744B6579486F6C6465725F547848617368', 0]), 121([_ 121([_ 121([_ h'43686573744B6579486F6C646572']), 122([])]), {_ h'': {_ h'': 42000000 }, h'506F6C6963794944': {_ h'43686573744B6579': 10 } }, 121([]), 122([])])])], [_ 121([_ 121([_ 122([_ h'436865737441646472657373']), 122([])]), {_ h'': {_ h'': 24000000 }, h'506F6C6963794944': {_ h'43686573744C6F636B': 1 }, h'547265617375726531': {_ h'4E4654': 1 }, h'547265617375726532': {_ h'546F6B656E': 75 } }, 123([_ 10]), 122([])])], 2000000, {}, [], {}, 121([_ 121([_ 123([]), 122([])]), 121([_ 121([]), 122([])])]), [_ h'43686573744B6579486F6C646572'], {}, {}, h'', {}, [], 122([]), 122([])]), 121([]), 122([_ 121([_ h'', 0]), 122([])])])
+//// │ | MaybeDeadline: 121([])
 //// │ | all_values_has_value ? False
 //// │ | not_drained ? False
-//// │ PASS [mem: 2306959, cpu: 1388950384] validate_unlock_chest
+//// │ PASS [mem: 2059586, cpu:  604424085] validate_unlock_chest
 //// │ · with traces
-//// │ | ScriptContext: "d8799fd8799f9fd8799fd8799fd8799f534368657374416464726573735f547848617368ff00ffd8799fd8799fd87a9f4c436865737441646472657373ffd87a80ffa240a1401a016e360048506f6c6963794944a14943686573744c6f636b01d87b9f0affd87a80ffffff809fd8799fd8799fd8799f4d4368657374556e6c6f636b6572ffd87a80ffa140a1401a016e3600d87980d87a80ffffa140a1401a001e8480a140a1400080a0d8799fd8799fd87a9f14ffd87a80ffd8799fd87b80d87a80ffff80a0a0d8799f40ffffd87a9fd8799fd8799f40ff00ffffff"
-//// │ | MaybeDeadline: "d87980"
-//// ┕━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4 tests | 4 passed | 0 failed
+//// │ | ScriptContext: 121([_ 121([_ [_ 121([_ 121([_ h'4368657374416464726573735F547848617368', 0]), 121([_ 121([_ 122([_ h'436865737441646472657373']), 122([])]), {_ h'': {_ h'': 24000000 }, h'506F6C6963794944': {_ h'43686573744C6F636B': 1 } }, 123([_ 10]), 122([])])])], [], [_ 121([_ 121([_ 121([_ h'4368657374556E6C6F636B6572']), 122([])]), {_ h'': {_ h'': 24000000 } }, 121([]), 122([])])], 2000000, {}, [], {}, 121([_ 121([_ 122([_ 20]), 122([])]), 121([_ 123([]), 122([])])]), [], {}, {}, h'', {}, [], 122([]), 122([])]), 121([]), 122([_ 121([_ h'', 0]), 122([])])])
+//// │ | MaybeDeadline: 121([])
+//// ┕━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4 tests | 4 passed | 0 failed
 //// ```
 
-use aiken/interval.{after, empty}
-use aiken/transaction.{InlineDatum, NoDatum, OutputReference, TransactionId}
-use aiken/transaction/credential.{from_script, from_verification_key}
-use aiken/transaction/value.{from_asset, merge, to_minted_value}
+use aiken/interval.{after}
+use cardano/address.{from_script, from_verification_key}
+use cardano/assets.{from_asset, merge}
+use cardano/transaction.{InlineDatum, NoDatum, OutputReference}
 use morbid/action.{DelayUnlock, UnlockChest}
 use morbid/constant
 use morbid/locker
-use string_util/cbor.{print}
 use tx_util/builder.{
   add_asset_to_tx_output, add_signatory, add_tx_input, add_tx_output,
   add_tx_ref_input, build_txn_context, mint_assets, new_tx_input, new_tx_output,
@@ -43,9 +42,9 @@ test mint_chest() {
   let chest_name = "ChestLock"
   let chest_lock = policy_id |> from_asset(chest_name, 1)
   let chest_key = policy_id |> from_asset(constant.chest_key, 10)
-  let minted_assets = merge(chest_lock, chest_key) |> to_minted_value()
+  let minted_assets = merge(chest_lock, chest_key)
   let tx_hash = "TxHash"
-  let utxo_ref = OutputReference(TransactionId(tx_hash), 0)
+  let utxo_ref = OutputReference(tx_hash, 0)
   let tx_in =
     new_tx_input(
       tx_hash,
@@ -68,7 +67,7 @@ test mint_chest() {
       |> add_tx_output(tx_out)
 
   // Trace:
-  trace print("ScriptContext", tx)
+  trace @"ScriptContext": tx
 
   // Assert:
   locker.mint_chest(chest_name, utxo_ref, Void, tx)
@@ -109,7 +108,7 @@ test validate_delay_unlock() {
     )
       |> add_asset_to_tx_output(chest_lock)
   let tx =
-    after(now) // empty() is also allowed
+    after(now) // `interval.empty` is also allowed
       |> build_txn_context()
       |> add_tx_ref_input(tx_ref_in)
       |> add_tx_input(tx_in)
@@ -117,7 +116,7 @@ test validate_delay_unlock() {
       |> add_signatory("ChestKeyHolder")
 
   // Trace:
-  trace print("ScriptContext", tx)
+  trace @"ScriptContext": tx
 
   // Assert:
   locker.validate(chest_name, policy_id, Void, DelayUnlock, tx)
@@ -164,15 +163,14 @@ test invalidate_delay_unlock_with_imbalance_assets() {
       |> add_asset_to_tx_output(treasure_1) //   |> add_asset_to_tx_output(treasure_2)
       |> add_asset_to_tx_output(treasure_2_partial)
   let tx =
-    empty()
-      |> build_txn_context()
+    build_txn_context(interval.empty)
       |> add_tx_ref_input(tx_ref_in)
       |> add_tx_input(tx_in)
       |> add_tx_output(tx_out)
       |> add_signatory("ChestKeyHolder")
 
   // Trace:
-  trace print("ScriptContext", tx)
+  trace @"ScriptContext": tx
 
   // Assert:
   !locker.validate(chest_name, policy_id, Void, DelayUnlock, tx)
@@ -202,7 +200,7 @@ test validate_unlock_chest() {
       |> add_tx_output(tx_out)
 
   // Trace:
-  trace print("ScriptContext", tx)
+  trace @"ScriptContext": tx
 
   // Assert:
   locker.validate(chest_name, policy_id, Void, UnlockChest, tx)

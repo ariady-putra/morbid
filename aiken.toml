@@ -1,5 +1,5 @@
 name = "ariady-putra/morbid"
-version = "0.2.202405"
+version = "0.2.202409"
 license = "Apache-2.0"
 description = "An Aiken contract for project 'ariady-putra/morbid'"
 
@@ -10,25 +10,20 @@ platform = "github"
 
 [[dependencies]]
 name = "aiken-lang/stdlib"
-version = "1.9.0"
+version = "v2"
 source = "github"
 
 [[dependencies]]
 name = "aiken-extra/auxlib"
-version = "2.190.202405"
-source = "github"
-
-[[dependencies]]
-name = "aiken-extra/string_util"
-version = "3.190.202405"
+version = "2.200.202409"
 source = "github"
 
 [[dependencies]]
 name = "aiken-extra/time_util"
-version = "5.190.202405"
+version = "5.200.202409"
 source = "github"
 
 [[dependencies]]
 name = "aiken-extra/tx_util"
-version = "1.190.202405"
+version = "1.200.202409"
 source = "github"

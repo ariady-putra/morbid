@@ -1,24 +1,19 @@
 use aiken/builtin.{fst_pair}
-use aiken/dict
-use aiken/list.{
+use aiken/collection/dict
+use aiken/collection/list.{
   all, any, filter, filter_map, find, has, map, reduce, unique, unzip,
 }
-use aiken/time.{PosixTime}
-use aiken/transaction.{
-  Datum, InlineDatum, Mint, OutputReference, ScriptContext, ScriptPurpose, Spend,
-}
-use aiken/transaction/credential.{
-  Address, Credential, ScriptCredential, VerificationKeyCredential,
-}
-use aiken/transaction/value.{
-  AssetName, PolicyId, flatten, flatten_with, from_minted_value, merge,
-  quantity_of, tokens, zero,
-}
 use auxlib/logics.{all_true}
+use cardano/address.{Address, Credential, Script, VerificationKey}
+use cardano/assets.{
+  AssetName, PolicyId, flatten, flatten_with, merge, quantity_of, tokens,
+}
+use cardano/script_context.{Minting, ScriptContext, ScriptInfo, Spending}
+use cardano/transaction.{Datum, InlineDatum, OutputReference}
 use morbid/action.{Action, DelayUnlock, UnlockChest}
 use morbid/alias.{FlattenValues, Qty, ValidatorHash}
 use morbid/constant.{chest_key}
-use string_util/cbor.{print}
+use time_util/time.{PosixTime}
 use time_util/unsafe/bound as unsafe_unwrap
 
 /// When delaying unlock of a UTxO, the transaction must include any `ChestKey`
@@ -34,8 +29,8 @@ pub fn validate(
   redeemer action: Action,
   context ctx: ScriptContext,
 ) -> Bool {
-  expect Spend(_): ScriptPurpose = ctx.purpose
-  trace print("MaybeDeadline", maybe_deadline)
+  expect Spending { .. }: ScriptInfo = ctx.info
+  trace @"MaybeDeadline": maybe_deadline
   when action is {
     DelayUnlock -> ctx |> validate_delay_unlock(policy_id, chest_lock)
     UnlockChest -> ctx |> validate_unlock_chest(policy_id, chest_lock)
@@ -48,8 +43,8 @@ pub fn mint_chest(
   redeemer action: Void,
   context ctx: ScriptContext,
 ) {
-  expect Mint(policy_id): ScriptPurpose = ctx.purpose
-  trace print("Redeemer", action)
+  expect Minting(policy_id): ScriptInfo = ctx.info
+  trace @"Redeemer": action
   ctx |> validate_mint_chest(utxo_ref, policy_id, chest_lock)
 }
 
@@ -173,12 +168,6 @@ fn all_values_has_value(
   all_values_has_value?
 }
 
-// /// Deprecated: Just use (_ == _)? directly.
-// /// Must not drain: Must be equal.
-// fn must_be_equal(l, r) {
-//   (l == r)?
-// }
-
 // ///////////////////////////////////// HELPER FUNCTIONS ///////////////////////////////////// //
 //           This section contains the functions to support the validation functions            //
 
@@ -187,17 +176,15 @@ fn minted_values_of(
   policy_id: PolicyId,
 ) -> Pairs<AssetName, Qty> {
   ctx.transaction.mint
-    |> from_minted_value()
     |> tokens(policy_id)
     |> dict.to_pairs()
 }
 
 /// (1) TxOuts must contain `ChestLock` with the specified Policy ID and Chest Name and its
-///     `address.payment_credential` must be of type `ScriptCredential`, and contain the
+///     `address.payment_credential` must be of type `Script`, and contain the
 ///     deadline datum with a future value.
 /// PS: It is, however, possible that the script address of the output (destination) is not
-///     the address of the chest. Since there is no way of knowing the runtime value of the
-///     chest address beforehand. But there is no incentive for the chest creator to do so.
+///     the address of the chest. But there is no incentive for the chest creator to do so.
 fn send_chest_lock(
   ctx: ScriptContext,
   policy_id: PolicyId,
@@ -215,21 +202,21 @@ fn is_not_drained(ctx: ScriptContext) -> Bool {
   let txn = ctx.transaction
 
   // Anonymous fn to filter out non script addresses:
-  let script_address =
+  let is_script_address =
     fn(address: Address) {
       when address.payment_credential is {
-        ScriptCredential(_) -> True
-        VerificationKeyCredential(_) -> False
+        Script(_) -> True
+        VerificationKey(_) -> False
       }
     }
 
   // Anonymous fn to collect values only from script address:
   let value_of_script_address =
     fn(output: transaction.Output) {
-      if output.address |> script_address() {
+      if output.address |> is_script_address() {
         output.value
       } else {
-        zero()
+        assets.zero
       }
     }
 
@@ -246,11 +233,11 @@ fn is_not_drained(ctx: ScriptContext) -> Bool {
       |> unzip()
   expect [input_script_address] =
     input_address
-      |> filter(script_address)
+      |> filter(is_script_address)
       |> unique()
   let input_value =
     input_value
-      |> reduce(zero(), merge)
+      |> reduce(assets.zero, merge)
       |> flatten()
 
   // (Output Values, Output Address):
@@ -260,11 +247,11 @@ fn is_not_drained(ctx: ScriptContext) -> Bool {
       |> unzip()
   expect [output_script_address] =
     output_address
-      |> filter(script_address)
+      |> filter(is_script_address)
       |> unique()
   let output_value =
     output_value
-      |> reduce(zero(), merge)
+      |> reduce(assets.zero, merge)
       |> flatten()
 
   // Return:
@@ -291,8 +278,8 @@ fn into_script_deadline(
       }
     }
   when output.address.payment_credential is {
-    VerificationKeyCredential(_) -> None
-    ScriptCredential(script_address) ->
+    VerificationKey(_) -> None
+    Script(script_address) ->
       when output.value |> flatten_with(filter_chest_lock) is {
         // there must be at max 1 Chest Lock:
         [_] ->
@@ -312,7 +299,7 @@ fn into_script_deadline(
 
 /// (1) TxIns must contain `ChestLock` with the specified Policy ID and Chest Name, and contain the deadline datum.
 /// (2) TxOuts must contain `ChestLock` with the same Policy ID and Chest Name, and contain the deadline datum with a newer value.
-/// (3) `address.payment_credential` of (1) and (2) must be `ScriptCredential`, same value, and there's only 1 unique script address.
+/// (3) `address.payment_credential` of (1) and (2) must be `Script`, same value, and there's only 1 unique script address.
 ///     (unique input==output script address validation has been done during drain validation)
 /// (4) TxRefIns must contain `ChestKey` and its `address.payment_credential` must exist in `extra_signatories`
 fn resend_chest_lock(
@@ -379,8 +366,8 @@ fn resend_chest_lock(
 
 fn unwrap_credential(credential: Credential) -> ByteArray {
   when credential is {
-    VerificationKeyCredential(pub_key_hash) -> pub_key_hash
-    ScriptCredential(validator_hash) -> validator_hash
+    VerificationKey(pub_key_hash) -> pub_key_hash
+    Script(validator_hash) -> validator_hash
   }
 }
 
@@ -401,7 +388,7 @@ fn unlock_after_deadline(
         )
   expect InlineDatum(datum): Datum = input.output.datum
   expect deadline: PosixTime = datum
-  (unsafe_unwrap.finite_start_of(txn.validity_range) > deadline)?
+  (unsafe_unwrap.finite_start_of(txn.validity_range) >= deadline)?
 }
 // ///////////////////////////////////// UTILITY FUNCTIONS ///////////////////////////////////// //
 //            This section contains support function(s) not specific to the contract             //

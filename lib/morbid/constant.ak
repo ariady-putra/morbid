@@ -1,4 +1,4 @@
-use aiken/transaction/value.{AssetName}
+use cardano/assets.{AssetName}
 
 /// Used as the token name. Attach metadata when minting
 /// to keep details such as chest name and address.

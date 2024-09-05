@@ -3,57 +3,47 @@
 
 [[requirements]]
 name = "aiken-lang/stdlib"
-version = "1.9.0"
+version = "v2"
 source = "github"
 
 [[requirements]]
 name = "aiken-extra/auxlib"
-version = "2.190.202405"
-source = "github"
-
-[[requirements]]
-name = "aiken-extra/string_util"
-version = "3.190.202405"
+version = "2.200.202409"
 source = "github"
 
 [[requirements]]
 name = "aiken-extra/time_util"
-version = "5.190.202405"
+version = "5.200.202409"
 source = "github"
 
 [[requirements]]
 name = "aiken-extra/tx_util"
-version = "1.190.202405"
+version = "1.200.202409"
 source = "github"
 
 [[packages]]
 name = "aiken-lang/stdlib"
-version = "1.9.0"
+version = "v2"
 requirements = []
 source = "github"
 
 [[packages]]
 name = "aiken-extra/auxlib"
-version = "2.190.202405"
-requirements = []
-source = "github"
-
-[[packages]]
-name = "aiken-extra/string_util"
-version = "3.190.202405"
+version = "2.200.202409"
 requirements = []
 source = "github"
 
 [[packages]]
 name = "aiken-extra/time_util"
-version = "5.190.202405"
+version = "5.200.202409"
 requirements = []
 source = "github"
 
 [[packages]]
 name = "aiken-extra/tx_util"
-version = "1.190.202405"
+version = "1.200.202409"
 requirements = []
 source = "github"
 
 [etags]
+"aiken-lang/stdlib@v2" = [{ secs_since_epoch = 1725504669, nanos_since_epoch = 165477303 }, "d79382d2b6ecb3aee9b0755c31d8a5bbafe88a7b3706d7fb8a52fd4d05818501"]

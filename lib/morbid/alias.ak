@@ -1,7 +1,6 @@
-use aiken/hash.{Blake2b_224, Blake2b_256, Hash}
-use aiken/transaction.{Transaction}
-use aiken/transaction/credential.{Script, VerificationKey}
-use aiken/transaction/value.{AssetName, PolicyId}
+use aiken/crypto.{Blake2b_224, Blake2b_256, Hash, Script, VerificationKey}
+use cardano/assets.{AssetName, PolicyId}
+use cardano/transaction.{Transaction}
 
 pub type Qty =
   Int
