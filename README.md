@@ -1,9 +1,10 @@
 # Davy Jones' Locker
 
-> [!IMPORTANT]
-> The offchain is likely to fail after Conway era (Chang hardfork).
-> A fix will be delivered some time later after the storm subsides.
-> Or probably a new and better front-end will be developed instead.
+> [!WARNING]
+> This project is outdated! It's very likely to fail since the Conway era.
+> The logic should be improved, and the frontend is not up to the standard
+> as `lucid-cardano` is no longer maintained actively. Also, it was using
+> the old version of NextJS.
 
 <br/><div align="center">
   >_Fifteen men on the dead man's chest—_<br/>
@@ -22,13 +23,13 @@ This is a dead-man's switch contract where you can:
 ## Create Chest
 Mints `ChestLock` and `ChestKey`(s), a new address will be generated. Send `ChestLock`
 while depositing initial assets. Keep `ChestKey` token(s) in your wallet, you will need
-to show it when `DelayUnlock`.
+to show them when `DelayUnlock`.
 
-Give access for delaying the chest unlocking deadline to anyone by sending them the
+Give access to delaying the chest unlocking deadline to anyone by sending them the
 `ChestKey` token.
 
 ## Add Treasure
-Anyone can deposit more assets to the chest. Don't forget to include an arbitrary inline
+Anyone can deposit more assets into the chest. Don't forget to include an arbitrary inline
 datum to be redeemable.
 
 ## Delay Unlock
@@ -39,8 +40,8 @@ Redeem all assets from the chest when the deadline has passed. You will also rec
 `ChestLock` NFT.
 
 ## Resend Chest
-Resend `ChestLock` to the chest address. Similar to `CreateChest` but it is done by
-the chest unlocker. There is no real benefit to do this, but it's possible.
+Resend `ChestLock` to the chest address. Similar to `CreateChest`, but it is done by
+the chest unlocker. There is no real benefit to doing this, but it's possible.
 
 ---
 
